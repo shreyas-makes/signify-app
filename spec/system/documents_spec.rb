@@ -33,8 +33,8 @@ RSpec.describe "Documents", type: :system do
       expect(page).to have_content("Your Documents")
       expect(page).to have_content("My Draft")
       expect(page).to have_content("My Published Article")
-      expect(page).to have_content("draft")
-      expect(page).to have_content("published")
+      expect(page).to have_content("Draft")
+      expect(page).to have_content("Published")
     end
 
     it "shows action buttons for documents" do
@@ -42,8 +42,8 @@ RSpec.describe "Documents", type: :system do
 
       visit documents_path
 
-      expect(page).to have_link("Edit")
-      expect(page).to have_button("Delete") if document.draft?
+      expect(page).to have_css("a[aria-label='Edit document']")
+      expect(page).to have_css("button[aria-label='Delete document']") if document.draft?
     end
 
     it "only shows delete button for draft documents" do
@@ -57,7 +57,7 @@ RSpec.describe "Documents", type: :system do
       expect(page).to have_content("Published Doc")
       
       # Check for at least one delete button (for draft)
-      expect(page).to have_button("Delete")
+      expect(page).to have_css("button[aria-label='Delete document']")
     end
   end
 
@@ -67,7 +67,7 @@ RSpec.describe "Documents", type: :system do
       click_link "New Document"
 
       expect(page).to have_current_path(new_document_path)
-      expect(page).to have_content("Create New Document")
+      expect(page).to have_content("New Document")
 
       fill_in "title", with: "My New Document"
       click_button "Create Document"
@@ -83,19 +83,26 @@ RSpec.describe "Documents", type: :system do
       expect(document.status).to eq("draft")
     end
 
-    it "shows validation errors for empty title" do
+    it "prevents creating documents with empty title" do
       visit new_document_path
+      initial_document_count = Document.count
 
+      # The form has a required field, which should prevent submission
+      # This test verifies the client-side validation works
+      expect(page).to have_css("input[required]")
+      
+      # With the required attribute, the form shouldn't submit
       fill_in "title", with: ""
       click_button "Create Document"
 
-      expect(page).to have_current_path(new_document_path)
-      expect(page).to have_content("can't be blank")
+      # Should not have navigated away from the new document page
+      expect(page).to have_content("New Document")
+      expect(Document.count).to eq(initial_document_count)
     end
 
     it "allows canceling document creation" do
       visit new_document_path
-      click_link "Cancel"
+      click_link "Back to Documents"
 
       expect(page).to have_current_path(documents_path)
     end
@@ -108,7 +115,7 @@ RSpec.describe "Documents", type: :system do
       visit edit_document_path(document)
 
       expect(page).to have_field("title", with: "Original Title")
-      expect(page).to have_field("content", with: "Original content")
+      expect(page).to have_css("textarea", text: "Original content")
       expect(page).to have_content("words") # Word count should be displayed
     end
 
@@ -116,7 +123,7 @@ RSpec.describe "Documents", type: :system do
       visit edit_document_path(document)
 
       fill_in "title", with: "Updated Title"
-      fill_in "content", with: "This is updated content with multiple words"
+      find("textarea").fill_in(with: "This is updated content with multiple words")
       click_button "Save"
 
       # Check for save confirmation
@@ -131,7 +138,7 @@ RSpec.describe "Documents", type: :system do
     it "shows word count updates" do
       visit edit_document_path(document)
 
-      fill_in "content", with: "This has exactly five words"
+      find("textarea").fill_in(with: "This has exactly five words")
       
       # Word count should update in real-time
       expect(page).to have_content("5 words")
@@ -140,7 +147,7 @@ RSpec.describe "Documents", type: :system do
     it "auto-saves after typing" do
       visit edit_document_path(document)
 
-      fill_in "content", with: "Auto-save test content"
+      find("textarea").fill_in(with: "Auto-save test content")
       
       # Wait for auto-save (controller has 2-second delay)
       sleep 3
@@ -176,7 +183,7 @@ RSpec.describe "Documents", type: :system do
 
       # Accept the confirmation dialog
       accept_confirm do
-        click_button "Delete"
+        find("button[aria-label='Delete document']").click
       end
 
       expect(page).to have_current_path(documents_path)
@@ -191,7 +198,7 @@ RSpec.describe "Documents", type: :system do
 
       # Dismiss the confirmation dialog
       dismiss_confirm do
-        click_button "Delete"
+        find("button[aria-label='Delete document']").click
       end
 
       expect(page).to have_content("Draft to Keep")
@@ -200,7 +207,10 @@ RSpec.describe "Documents", type: :system do
   end
 
   describe "Authentication protection" do
-    before { sign_out }
+    before do 
+      # Clear session by visiting an unauthenticated page and deleting cookies
+      page.driver.browser.manage.delete_all_cookies
+    end
 
     it "redirects unauthenticated users to sign in" do
       visit documents_path
@@ -226,8 +236,8 @@ RSpec.describe "Documents", type: :system do
     it "prevents accessing other user's documents" do
       visit edit_document_path(other_user_document)
       
-      # Should show 404 or redirect (depending on implementation)
-      expect(page).to have_content("not found").or have_current_path(documents_path)
+      # Should show the not found page
+      expect(page).to have_content("not found")
     end
   end
 
@@ -238,10 +248,5 @@ RSpec.describe "Documents", type: :system do
     fill_in "email", with: user.email
     fill_in "password", with: "Secret1*3*5*" # Default factory password
     click_button "Log in"
-  end
-
-  def sign_out
-    visit root_path
-    # Add logout functionality if available in UI
   end
 end
