@@ -13,10 +13,12 @@ class User < ApplicationRecord
 
 
   has_many :sessions, dependent: :destroy
+  has_many :documents, dependent: :destroy
 
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true, format: {with: URI::MailTo::EMAIL_REGEXP}
   validates :password, allow_nil: true, length: {minimum: 12}
+  validates :display_name, presence: true, length: {maximum: 100}
 
   normalizes :email, with: -> { _1.strip.downcase }
 

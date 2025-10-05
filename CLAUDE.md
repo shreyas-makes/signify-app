@@ -6,6 +6,8 @@ For info on building shadcn-ui components, apps, refer to docs/shadcn-ui.md
 
 For info on building inertia-rails apps, refer to docs/inertia-rails.md
 
+Once you implement instructions from @prompts, make sure to update @todo.md checklist to reflect the changes.
+
 ## Architecture Overview
 
 ### Stack

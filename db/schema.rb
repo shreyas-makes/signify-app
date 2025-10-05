@@ -10,7 +10,36 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_11_160811) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_05_131824) do
+  create_table "documents", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "content"
+    t.string "slug"
+    t.integer "status"
+    t.integer "user_id", null: false
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["published_at"], name: "index_documents_on_published_at"
+    t.index ["slug"], name: "index_documents_on_slug", unique: true
+    t.index ["status"], name: "index_documents_on_status"
+    t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "keystrokes", force: :cascade do |t|
+    t.integer "document_id", null: false
+    t.integer "event_type"
+    t.string "key_code"
+    t.string "character"
+    t.datetime "timestamp"
+    t.integer "sequence_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["document_id", "sequence_number"], name: "index_keystrokes_on_document_id_and_sequence_number"
+    t.index ["document_id"], name: "index_keystrokes_on_document_id"
+    t.index ["timestamp"], name: "index_keystrokes_on_timestamp"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "user_agent"
@@ -27,8 +56,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_11_160811) do
     t.boolean "verified", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "display_name"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "documents", "users"
+  add_foreign_key "keystrokes", "documents"
   add_foreign_key "sessions", "users"
 end
