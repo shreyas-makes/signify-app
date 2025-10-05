@@ -43,13 +43,27 @@ export default function Register() {
               </div>
 
               <div className="grid gap-2">
+                <Label htmlFor="display_name">Display Name</Label>
+                <Input
+                  id="display_name"
+                  type="text"
+                  name="display_name"
+                  required
+                  tabIndex={2}
+                  autoComplete="nickname"
+                  placeholder="How should others see your name?"
+                />
+                <InputError message={errors.display_name} className="mt-2" />
+              </div>
+
+              <div className="grid gap-2">
                 <Label htmlFor="email">Email address</Label>
                 <Input
                   id="email"
                   type="email"
                   name="email"
                   required
-                  tabIndex={2}
+                  tabIndex={3}
                   autoComplete="email"
                   placeholder="email@example.com"
                 />
@@ -63,7 +77,7 @@ export default function Register() {
                   type="password"
                   name="password"
                   required
-                  tabIndex={3}
+                  tabIndex={4}
                   autoComplete="new-password"
                   placeholder="Password"
                 />
@@ -77,14 +91,14 @@ export default function Register() {
                   type="password"
                   name="password_confirmation"
                   required
-                  tabIndex={4}
+                  tabIndex={5}
                   autoComplete="new-password"
                   placeholder="Confirm password"
                 />
                 <InputError message={errors.password_confirmation} />
               </div>
 
-              <Button type="submit" className="mt-2 w-full" tabIndex={5}>
+              <Button type="submit" className="mt-2 w-full" tabIndex={6}>
                 {processing && (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
                 )}
@@ -94,7 +108,7 @@ export default function Register() {
 
             <div className="text-muted-foreground text-center text-sm">
               Already have an account?{" "}
-              <TextLink href={signInPath()} tabIndex={6}>
+              <TextLink href={signInPath()} tabIndex={7}>
                 Log in
               </TextLink>
             </div>

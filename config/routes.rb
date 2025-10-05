@@ -16,6 +16,8 @@ Rails.application.routes.draw do
 
   get :dashboard, to: "dashboard#index"
 
+  resources :documents, except: [:show]
+
   namespace :settings do
     resource :profile, only: [:show, :update]
     resource :password, only: [:show, :update]

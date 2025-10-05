@@ -11,6 +11,7 @@ class Document < ApplicationRecord
   validates :status, presence: true
 
   before_validation :generate_slug, if: -> { slug.blank? }
+  before_validation :set_default_status, if: -> { status.blank? }
 
   scope :published, -> { where(status: :published) }
   scope :drafts, -> { where(status: :draft) }
@@ -30,5 +31,9 @@ class Document < ApplicationRecord
     end
 
     self.slug = slug_candidate
+  end
+
+  def set_default_status
+    self.status = :draft
   end
 end

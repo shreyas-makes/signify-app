@@ -45,3 +45,14 @@ export interface Session {
   ip_address: string
   created_at: string
 }
+
+export interface Document {
+  id: number
+  title: string
+  slug: string
+  status: 'draft' | 'published'
+  content: string
+  word_count: number
+  created_at: string
+  updated_at: string
+}

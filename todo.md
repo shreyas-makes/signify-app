@@ -12,19 +12,19 @@ A focused checklist for building a Simple, Lovable, Complete MVP of Signify - a 
 - [ ] Create basic database seeds for development
 
 ### Enhanced Authentication
-- [ ] Update registration form to include display name
-- [ ] Add authentication helpers for document access
-- [ ] Implement proper authorization (users access only their documents)
-- [ ] Test authentication flows
+- [x] Update registration form to include display name
+- [x] Add authentication helpers for document access
+- [x] Implement proper authorization (users access only their documents)
+- [x] Test authentication flows
 
 ## Phase 2: Core Writing Experience
 
 ### Document CRUD Operations
-- [ ] Create documents controller with full CRUD
-- [ ] Implement document listing interface
-- [ ] Add document creation form
-- [ ] Build document edit interface
-- [ ] Implement basic delete functionality
+- [x] Create documents controller with full CRUD
+- [x] Implement document listing interface
+- [x] Add document creation form
+- [x] Build document edit interface
+- [x] Implement basic delete functionality
 
 ### Writing Editor Component
 - [ ] Build clean, distraction-free writing interface

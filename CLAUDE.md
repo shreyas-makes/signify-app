@@ -6,7 +6,7 @@ For info on building shadcn-ui components, apps, refer to docs/shadcn-ui.md
 
 For info on building inertia-rails apps, refer to docs/inertia-rails.md
 
-Once you implement instructions from @prompts, make sure to update @todo.md checklist to reflect the changes.
+Once you implement instructions from @prompts, make sure to update @todo.md checklist to reflect the changes. As we go through all the files in @prompts, we build a simple, lovable, complete MVP of Signify.
 
 ## Architecture Overview
 
@@ -207,3 +207,129 @@ bin/kamal app logs          # View application logs
 
 ## Dependency Management Notes
 - The package-lock.json and docs/inertia-rails.md references are lower priority and can be updated when dependencies are reinstalled or docs are regenerated.
+
+## Memory Log
+
+### System Testing
+- System tests need to work with inertia.js and should use selenium headless for the same purposes.
+
+### Document CRUD Implementation Learnings
+- **Controller before_action scope**: Only include actions that actually exist in before_action callbacks (e.g., avoid `:show` if no show action exists)
+- **Model validations with defaults**: Always provide default values for required enum fields via before_validation callbacks
+- **Authentication helpers for request specs**: Use `request.cookie_jar.signed[:session_token]` for request specs, not direct cookie access
+- **Inertia controller patterns**: Use redirects for successful POST/PATCH/DELETE actions, render inertia for GET and failed validations
+- **Test database changes**: Use `Document.count` instead of `user.documents.count` in change expectations for better reliability
+
+## Development Patterns from Step 3 Implementation
+
+### CRUD Controller Best Practices
+```ruby
+# Good pattern for Inertia controllers
+class DocumentsController < InertiaController
+  before_action :set_document, only: [:edit, :update, :destroy] # Only existing actions
+  
+  def create
+    @document = Current.user.documents.build(document_params)
+    if @document.save
+      redirect_to edit_document_path(@document), notice: "Created successfully."
+    else
+      render inertia: "documents/new", props: inertia_errors(@document)
+    end
+  end
+  
+  def update
+    if @document.update(document_params)
+      render json: { document: document_json(@document), flash: { success: "Saved." } }
+    else
+      render json: inertia_errors(@document), status: :unprocessable_content
+    end
+  end
+end
+```
+
+### Model Pattern for Enums with Defaults
+```ruby
+class Document < ApplicationRecord
+  enum :status, {draft: 0, published: 1}
+  validates :status, presence: true
+  before_validation :set_default_status, if: -> { status.blank? }
+  
+  private
+  def set_default_status
+    self.status = :draft
+  end
+end
+```
+
+### React Component Patterns for Inertia
+```tsx
+// Auto-save pattern
+const { data, setData, patch, processing } = useForm({ title: document.title })
+const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
+
+useEffect(() => {
+  if (data.title !== document.title) {
+    setSaveStatus('unsaved')
+    const timeout = setTimeout(() => handleSave(), 2000)
+    return () => clearTimeout(timeout)
+  }
+}, [data.title])
+
+// Word count pattern
+const [wordCount, setWordCount] = useState(0)
+useEffect(() => {
+  const words = data.content.trim() ? data.content.trim().split(/\s+/).length : 0
+  setWordCount(words)
+}, [data.content])
+```
+
+### Testing Authentication in Request Specs
+```ruby
+# spec/support/authentication_helpers.rb
+def sign_in_as(user)
+  session = user.sessions.create!
+  if respond_to?(:request) && request.respond_to?(:cookie_jar)
+    request.cookie_jar.signed[:session_token] = session.id
+  end
+end
+```
+
+### Route Generation After Model Changes
+```bash
+# Always regenerate JS routes after adding new resource routes
+bin/rails js:routes
+```
+
+### TypeScript Interface Updates
+```tsx
+// Always update types when adding new models
+export interface Document {
+  id: number
+  title: string
+  slug: string
+  status: 'draft' | 'published'
+  content: string
+  word_count: number
+  created_at: string
+  updated_at: string
+}
+```
+
+### Comprehensive Testing Strategy
+1. **Request specs**: Test all CRUD operations, authentication, authorization
+2. **System specs**: Test complete user workflows with browser simulation
+3. **Authorization tests**: Ensure users can't access other users' resources
+4. **Validation tests**: Test both success and failure scenarios
+
+### Important Learnings and Future App Instructions
+- Always create a comprehensive README.md with setup, development, and deployment instructions
+- Implement a robust authentication system with secure password hashing and token management
+- Use TypeScript for type safety and improved developer experience
+- Leverage Inertia.js for seamless server-side routing and data sharing
+- Utilize shadcn/ui for consistent and customizable UI components
+- Implement comprehensive testing with RSpec and system tests
+- Follow a modular and scalable file structure for frontend and backend
+- Use Tailwind CSS for rapid and responsive styling
+- Set up CI/CD pipelines for automated testing and deployment
+- Implement performance optimizations like asset caching and HMR
+- Always consider security best practices in authentication and data handling
