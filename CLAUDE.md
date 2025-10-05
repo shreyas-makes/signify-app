@@ -321,6 +321,157 @@ export interface Document {
 3. **Authorization tests**: Ensure users can't access other users' resources
 4. **Validation tests**: Test both success and failure scenarios
 
+## Inertia.js + Rails Integration Learnings
+
+### Auto-Save and AJAX Patterns
+
+**Problem**: Inertia.js is designed for full-page navigation, but auto-save features need AJAX-style requests without page transitions.
+
+**Solution**: Use hybrid approach based on request type:
+```ruby
+# Controller pattern for handling both Inertia and AJAX requests
+def update
+  if @document.update(document_params)
+    if request.xhr?
+      # AJAX requests (auto-save) - return JSON
+      render json: {
+        document: document_json(@document),
+        flash: { success: "Document saved." }
+      }
+    else
+      # Form submissions - use Inertia redirect
+      redirect_to edit_document_path(@document), notice: "Document saved."
+    end
+  else
+    if request.xhr?
+      render json: inertia_errors(@document), status: :unprocessable_content
+    else
+      render inertia: "documents/edit", props: {
+        document: document_json(@document),
+        **inertia_errors(@document)
+      }
+    end
+  end
+end
+```
+
+**Frontend implementation**:
+```tsx
+// Use fetch() for auto-save with proper headers
+const handleSave = async () => {
+  const response = await fetch(documentPath({ id: document.id }), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': window.document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+      'X-Requested-With': 'XMLHttpRequest' // Key for Rails to detect AJAX
+    },
+    body: JSON.stringify({
+      document: { title: data.document.title, content: data.document.content }
+    })
+  })
+}
+```
+
+### Parameter Conventions and Form Data Structure
+
+**Critical**: Rails expects nested parameters (`document: {title, content}`) but Inertia forms can send flat parameters.
+
+**Best Practice**: Always structure useForm data to match Rails strong parameters:
+```tsx
+// ✅ Correct - matches Rails params.require(:document).permit(:title, :content)
+const { data, setData } = useForm({
+  document: {
+    title: document.title,
+    content: document.content,
+  },
+})
+
+// ❌ Wrong - sends flat parameters that don't match Rails expectations
+const { data, setData } = useForm({
+  title: document.title,
+  content: document.content,
+})
+```
+
+**Form field binding**:
+```tsx
+// Use nested setData calls
+onChange={(e) => setData('document.title', e.target.value)}
+// Reference nested data
+value={data.document.title}
+// Handle nested errors
+{errors['document.title'] && <p>{errors['document.title']}</p>}
+```
+
+### Variable Naming Conflicts in React Components
+
+**Problem**: Component props can conflict with global objects (e.g., `document` prop vs `window.document`).
+
+**Solution**: Always be explicit when accessing global objects:
+```tsx
+// ✅ Correct - explicit reference to DOM document
+'X-CSRF-Token': window.document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+
+// ❌ Wrong - conflicts with component prop named 'document'
+'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+```
+
+### Response Format Consistency
+
+**Key Principle**: All Inertia requests must receive Inertia responses, AJAX requests get JSON.
+
+**Detection Pattern**:
+- Use `request.xhr?` in Rails controllers to detect AJAX requests
+- Set `X-Requested-With: XMLHttpRequest` header in fetch requests
+- Never mix JSON responses with Inertia requests without proper detection
+
+### State Management for Auto-Save Features
+
+**Pattern**: Separate UI state from form state for better UX:
+```tsx
+// Form state (Inertia)
+const { data, setData } = useForm({ document: { title, content } })
+
+// UI state (local)
+const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
+const [wordCount, setWordCount] = useState(0)
+
+// Don't mix Inertia's 'processing' state with custom save states
+// Use saveStatus for button disabling, not processing
+disabled={saveStatus === 'saving' || saveStatus === 'saved'}
+```
+
+### Error Handling and Debugging
+
+**Always include**:
+- Console logging for AJAX requests
+- Proper error boundaries
+- Network error handling
+- Status code checking
+
+```tsx
+try {
+  const response = await fetch(url, options)
+  if (response.ok) {
+    const result = await response.json()
+    console.log('Success:', result) // Helpful for debugging
+  } else {
+    console.error('Save failed:', response.status, response.statusText)
+  }
+} catch (error) {
+  console.error('Network error:', error)
+}
+```
+
+### Testing Auto-Save Features
+
+**System Test Considerations**:
+- Test both manual save and auto-save functionality
+- Verify proper state transitions (unsaved → saving → saved)
+- Test network failure scenarios
+- Ensure CSRF protection works with AJAX requests
+
 ### Important Learnings and Future App Instructions
 - Always create a comprehensive README.md with setup, development, and deployment instructions
 - Implement a robust authentication system with secure password hashing and token management

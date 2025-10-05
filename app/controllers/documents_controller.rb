@@ -13,8 +13,8 @@ class DocumentsController < InertiaController
           title: document.title,
           slug: document.slug,
           status: document.status,
-          content: document.content.present? ? document.content.truncate(100) : "",
-          word_count: document.content.present? ? document.content.split.size : 0,
+          content: document.content.present? ? ActionController::Base.helpers.strip_tags(document.content).truncate(100) : "",
+          word_count: document.content.present? ? calculate_word_count(document.content) : 0,
           created_at: document.created_at,
           updated_at: document.updated_at
         }
@@ -46,12 +46,25 @@ class DocumentsController < InertiaController
 
   def update
     if @document.update(document_params)
-      render json: {
-        document: document_json(@document),
-        flash: { success: "Document saved." }
-      }
+      # For AJAX requests (auto-save), return JSON
+      if request.xhr?
+        render json: {
+          document: document_json(@document),
+          flash: { success: "Document saved." }
+        }
+      else
+        # For form submissions, redirect with Inertia
+        redirect_to edit_document_path(@document), notice: "Document saved."
+      end
     else
-      render json: inertia_errors(@document), status: :unprocessable_content
+      if request.xhr?
+        render json: inertia_errors(@document), status: :unprocessable_content
+      else
+        render inertia: "documents/edit", props: {
+          document: document_json(@document),
+          **inertia_errors(@document)
+        }
+      end
     end
   end
 
@@ -88,9 +101,17 @@ class DocumentsController < InertiaController
       slug: document.slug,
       status: document.status,
       content: document.content || "",
-      word_count: document.content.present? ? document.content.split.size : 0,
+      word_count: document.content.present? ? calculate_word_count(document.content) : 0,
       created_at: document.created_at,
       updated_at: document.updated_at
     }
+  end
+
+  def calculate_word_count(html_content)
+    return 0 if html_content.blank?
+    
+    # Strip HTML tags and count words
+    text_content = ActionController::Base.helpers.strip_tags(html_content)
+    text_content.strip.blank? ? 0 : text_content.strip.split(/\s+/).size
   end
 end

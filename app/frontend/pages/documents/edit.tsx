@@ -3,10 +3,9 @@ import { ArrowLeft, Save } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import AppLayout from "@/layouts/app-layout"
 import { documentsPath, documentPath } from "@/routes"
 import type { BreadcrumbItem, Document } from "@/types"
@@ -27,15 +26,17 @@ const breadcrumbs = (document: Document): BreadcrumbItem[] => [
 ]
 
 export default function DocumentsEdit({ document }: DocumentsEditProps) {
-  const { data, setData, patch, processing, errors } = useForm({
-    title: document.title,
-    content: document.content,
+  const { data, setData, errors } = useForm({
+    document: {
+      title: document.title,
+      content: document.content,
+    },
   })
   
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
-  const [wordCount, setWordCount] = useState(document.word_count)
-  const saveTimeoutRef = useRef<NodeJS.Timeout>()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const editorRef = useRef<RichTextEditorRef>(null)
 
   // Auto-save functionality
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
       clearTimeout(saveTimeoutRef.current)
     }
 
-    if (data.title !== document.title || data.content !== document.content) {
+    if (data.document.title !== document.title || data.document.content !== document.content) {
       setSaveStatus('unsaved')
       
       // Auto-save after 2 seconds of no changes
@@ -57,32 +58,51 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [data.title, data.content])
+  }, [data.document.title, data.document.content])
 
   // Update word count when content changes
   useEffect(() => {
-    const words = data.content.trim() ? data.content.trim().split(/\s+/).length : 0
+    // Remove HTML tags and count words
+    const textContent = data.document.content.replace(/<[^>]*>/g, '').trim()
+    const words = textContent ? textContent.split(/\s+/).length : 0
     setWordCount(words)
-  }, [data.content])
+  }, [data.document.content])
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
-    }
-  }, [data.content])
+  const handleContentChange = (content: string) => {
+    setData('document.content', content)
+  }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaveStatus('saving')
-    patch(documentPath({ id: document.id }), {
-      onSuccess: () => {
+    
+    try {
+      const response = await fetch(documentPath({ id: document.id }), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': window.document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          document: {
+            title: data.document.title,
+            content: data.document.content
+          }
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
         setSaveStatus('saved')
-      },
-      onError: () => {
+        console.log('Document saved successfully:', result)
+      } else {
+        console.error('Save failed:', response.status, response.statusText)
         setSaveStatus('unsaved')
       }
-    })
+    } catch (error) {
+      console.error('Save error:', error)
+      setSaveStatus('unsaved')
+    }
   }
 
   const getSaveStatusText = () => {
@@ -111,8 +131,9 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
     <AppLayout breadcrumbs={breadcrumbs(document)}>
       <Head title={`Edit: ${document.title}`} />
 
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="h-screen flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-background">
           <Button variant="ghost" size="sm" asChild>
             <a href={documentsPath()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -129,7 +150,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
             </Badge>
             <Button
               onClick={handleSave}
-              disabled={processing || saveStatus === 'saved'}
+              disabled={saveStatus === 'saving' || saveStatus === 'saved'}
               size="sm"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -138,45 +159,40 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  type="text"
-                  value={data.title}
-                  onChange={(e) => setData('title', e.target.value)}
-                  placeholder="Document title"
-                  className="text-xl font-semibold"
-                />
-                {errors.title && (
-                  <p className="text-sm text-destructive">{errors.title}</p>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
-              <textarea
-                ref={textareaRef}
-                id="content"
-                name="content"
-                value={data.content}
-                onChange={(e) => setData('content', e.target.value)}
-                placeholder="Start writing your document..."
-                className="w-full min-h-[400px] p-4 border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                style={{ overflow: 'hidden' }}
+        {/* Editor */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
+            {/* Title */}
+            <div className="mb-8">
+              <Input
+                id="title"
+                name="title"
+                type="text"
+                value={data.document.title}
+                onChange={(e) => setData('document.title', e.target.value)}
+                placeholder="Untitled Document"
+                className="text-4xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
               />
-              {errors.content && (
-                <p className="text-sm text-destructive">{errors.content}</p>
+              {errors['document.title'] && (
+                <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
               )}
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Content */}
+            <div className="flex-1 border border-input rounded-lg overflow-hidden bg-background shadow-sm">
+              <RichTextEditor
+                ref={editorRef}
+                value={data.document.content}
+                onChange={handleContentChange}
+                placeholder="Start writing your document..."
+                className="h-full min-h-[calc(100vh-300px)]"
+              />
+              {errors['document.content'] && (
+                <p className="text-sm text-destructive mt-2 px-6">{errors['document.content']}</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </AppLayout>
   )
