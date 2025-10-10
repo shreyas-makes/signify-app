@@ -1,13 +1,16 @@
-import { Head, useForm } from "@inertiajs/react"
-import { ArrowLeft, Save } from "lucide-react"
+import { Head, router, useForm } from "@inertiajs/react"
+import { ArrowLeft, Eye, RefreshCw, Save, Send } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
+import { useAutoSave } from "@/hooks/useAutoSave"
+import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
+import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
-import { documentsPath, documentPath } from "@/routes"
+import { documentPath, documentsPath } from "@/routes"
 import type { BreadcrumbItem, Document } from "@/types"
 
 interface DocumentsEditProps {
@@ -33,31 +36,108 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
     },
   })
   
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const editorRef = useRef<RichTextEditorRef>(null)
+  const titleInputRef = useRef<HTMLInputElement>(null)
+  
+  // Keystroke capture
+  const { attachToElement, getKeystrokesForTransmission, keystrokeCount } = useKeystrokeCapture({
+    enabled: true
+  })
+
+  // Paste prevention
+  const { 
+    attachToElement: attachPastePrevention, 
+    getPasteAttempts, 
+    pasteAttemptCount 
+  } = usePastePrevention({
+    enabled: true,
+    detectRapidInput: true,
+    rapidInputThreshold: 200
+  })
 
   // Auto-save functionality
-  useEffect(() => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-
-    if (data.document.title !== document.title || data.document.content !== document.content) {
-      setSaveStatus('unsaved')
-      
-      // Auto-save after 2 seconds of no changes
-      saveTimeoutRef.current = setTimeout(() => {
-        handleSave()
-      }, 2000)
-    }
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
+  const autoSave = useAutoSave({
+    saveInterval: 2000, // 2 seconds
+    typingIndicatorDelay: 1000, // 1 second
+    retryAttempts: 3,
+    retryDelay: 2000, // 2 seconds
+    onSave: async (saveData) => {
+      try {
+        const response = await fetch(documentPath({ id: document.id }), {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(saveData)
+        })
+        
+        if (response.ok) {
+          const result = await response.json() as unknown
+          console.log('Document saved successfully:', result)
+          if (saveData.keystrokes && Array.isArray(saveData.keystrokes)) {
+            console.log(`Transmitted ${saveData.keystrokes.length} keystrokes`)
+          }
+          if (saveData.paste_attempts && Array.isArray(saveData.paste_attempts)) {
+            console.log(`Transmitted ${saveData.paste_attempts.length} paste attempts`)
+          }
+          return true
+        } else {
+          console.error('Save failed:', response.status, response.statusText)
+          return false
+        }
+      } catch (error) {
+        console.error('Save error:', error)
+        return false
       }
+    },
+    onError: (error, attempt) => {
+      console.error(`Save attempt ${attempt} failed:`, error)
     }
+  })
+
+  // Attach keystroke capture and paste prevention to editor
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (editorRef.current) {
+        const editorElement = editorRef.current.getElement()
+        if (editorElement) {
+          console.log('Attaching keystroke capture and paste prevention to editor element')
+          attachToElement(editorElement)
+          attachPastePrevention(editorElement)
+        } else {
+          console.warn('Editor element not found when trying to attach keystroke capture and paste prevention')
+        }
+      }
+    }, 100) // Small delay to ensure editor is mounted
+
+    return () => clearTimeout(timer)
+  }, [attachToElement, attachPastePrevention])
+
+  // Attach paste prevention to title input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (titleInputRef.current) {
+        console.log('Attaching paste prevention to title input')
+        attachPastePrevention(titleInputRef.current)
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [attachPastePrevention])
+
+  // Update auto-save when data changes
+  useEffect(() => {
+    autoSave.updateData({
+      document: {
+        title: data.document.title,
+        content: data.document.content
+      },
+      keystrokes: getKeystrokesForTransmission(),
+      paste_attempts: getPasteAttempts()
+    })
   }, [data.document.title, data.document.content])
 
   // Update word count when content changes
@@ -72,59 +152,51 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
     setData('document.content', content)
   }
 
-  const handleSave = async () => {
-    setSaveStatus('saving')
+  const handleManualSave = async () => {
+    const keystrokeData = getKeystrokesForTransmission()
+    const pasteAttemptData = getPasteAttempts()
     
-    try {
-      const response = await fetch(documentPath({ id: document.id }), {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': window.document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-          'X-Requested-With': 'XMLHttpRequest'
+    await autoSave.save({
+      document: {
+        title: data.document.title,
+        content: data.document.content
+      },
+      keystrokes: keystrokeData,
+      paste_attempts: pasteAttemptData
+    })
+  }
+
+  const canPublish = () => {
+    const hasTitle = data.document.title.trim().length > 0
+    const hasContent = data.document.content.trim().length > 0
+    const hasKeystrokes = keystrokeCount > 0
+    const isNotPublished = document.status !== 'published'
+    
+    return hasTitle && hasContent && hasKeystrokes && isNotPublished
+  }
+
+  const handlePublish = () => {
+    if (!canPublish()) return
+    
+    // Save first, then publish
+    void handleManualSave().then(() => {
+      router.post(`/documents/${document.id}/publish`, {}, {
+        onSuccess: () => {
+          // Will be redirected by the controller
         },
-        body: JSON.stringify({
-          document: {
-            title: data.document.title,
-            content: data.document.content
-          }
-        })
+        onError: (errors) => {
+          console.error('Publishing failed:', errors)
+        }
       })
-      
-      if (response.ok) {
-        const result = await response.json()
-        setSaveStatus('saved')
-        console.log('Document saved successfully:', result)
-      } else {
-        console.error('Save failed:', response.status, response.statusText)
-        setSaveStatus('unsaved')
-      }
-    } catch (error) {
-      console.error('Save error:', error)
-      setSaveStatus('unsaved')
-    }
+    })
   }
 
-  const getSaveStatusText = () => {
-    switch (saveStatus) {
-      case 'saving':
-        return 'Saving...'
-      case 'saved':
-        return 'Saved'
-      case 'unsaved':
-        return 'Unsaved changes'
-    }
-  }
-
-  const getSaveStatusColor = () => {
-    switch (saveStatus) {
-      case 'saving':
-        return 'secondary'
-      case 'saved':
-        return 'default'
-      case 'unsaved':
-        return 'destructive'
-    }
+  const getPublishButtonText = () => {
+    if (document.status === 'published') return 'Published'
+    if (!data.document.title.trim()) return 'Add title to publish'
+    if (!data.document.content.trim()) return 'Add content to publish'
+    if (keystrokeCount === 0) return 'No keystrokes recorded'
+    return 'Publish'
   }
 
   return (
@@ -143,19 +215,52 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
 
           <div className="flex items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              {wordCount} words
+              {wordCount} words • {keystrokeCount} keystrokes
+              {pasteAttemptCount > 0 && (
+                <span className="text-amber-600 font-medium">
+                  • {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
+                </span>
+              )}
             </div>
-            <Badge variant={getSaveStatusColor()}>
-              {getSaveStatusText()}
+            <Badge variant={autoSave.getSaveStatusColor()}>
+              {autoSave.getSaveStatusText()}
             </Badge>
+            {autoSave.saveStatus === 'error' && (
+              <Button
+                onClick={() => void autoSave.retry()}
+                variant="outline"
+                size="sm"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            )}
             <Button
-              onClick={handleSave}
-              disabled={saveStatus === 'saving' || saveStatus === 'saved'}
+              onClick={() => void handleManualSave()}
+              disabled={autoSave.saveStatus === 'saving' || (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)}
               size="sm"
+              variant="outline"
             >
               <Save className="h-4 w-4 mr-2" />
               Save
             </Button>
+            
+            {document.status === 'published' ? (
+              <Button size="sm" disabled variant="default">
+                <Eye className="h-4 w-4 mr-2" />
+                Published
+              </Button>
+            ) : (
+              <Button
+                onClick={handlePublish}
+                disabled={!canPublish() || autoSave.saveStatus === 'saving'}
+                size="sm"
+                variant={canPublish() ? "default" : "outline"}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {getPublishButtonText()}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -165,6 +270,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
             {/* Title */}
             <div className="mb-8">
               <Input
+                ref={titleInputRef}
                 id="title"
                 name="title"
                 type="text"

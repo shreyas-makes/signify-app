@@ -12,6 +12,7 @@ FactoryBot.define do
     trait :published do
       status { :published }
       published_at { 1.day.ago }
+      sequence(:public_slug) { |n| "published-document-#{n}" }
     end
 
     trait :with_content do

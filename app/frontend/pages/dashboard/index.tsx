@@ -1,9 +1,54 @@
-import { Head } from "@inertiajs/react"
+import { Head, Link, router } from "@inertiajs/react"
+import {
+  ArrowUpDown, 
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock, 
+  Edit, 
+  Eye, 
+  FileText,
+  Grid,
+  Keyboard,
+  List,
+  MoreHorizontal, 
+  Plus, 
+  Search, 
+  Trash2
+} from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
-import { PlaceholderPattern } from "@/components/placeholder-pattern"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem,
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import AppLayout from "@/layouts/app-layout"
-import { dashboardPath } from "@/routes"
-import type { BreadcrumbItem } from "@/types"
+import { dashboardBulkActionPath, dashboardPath, documentPath, editDocumentPath, newDocumentPath } from "@/routes"
+import type { 
+  BreadcrumbItem, 
+  Document, 
+  DocumentFilters, 
+  DocumentPagination, 
+  DocumentStatistics 
+} from "@/types"
+
+interface DashboardProps {
+  documents: Document[]
+  pagination: DocumentPagination
+  filters: DocumentFilters
+  statistics: DocumentStatistics
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -12,25 +57,529 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ]
 
-export default function Dashboard() {
+export default function Dashboard({ 
+  documents, 
+  pagination, 
+  filters, 
+  statistics 
+}: DashboardProps) {
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
+  const [selectedDocuments, setSelectedDocuments] = useState<number[]>([])
+  const [isPerformingBulkAction, setIsPerformingBulkAction] = useState(false)
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published': return 'default'
+      case 'ready_to_publish': return 'secondary'
+      default: return 'outline'
+    }
+  }
+
+  const getStatusBadgeText = (status: string) => {
+    return status.replace('_', ' ')
+  }
+
+  const handleSearch = (search: string) => {
+    router.get(dashboardPath(), { ...filters, search, page: 1 }, { preserveState: true })
+  }
+
+  const handleFilter = (key: string, value: string) => {
+    router.get(dashboardPath(), { ...filters, [key]: value, page: 1 }, { preserveState: true })
+  }
+
+  const handleSort = (column: string) => {
+    const direction = filters.sort === column && filters.direction === 'asc' ? 'desc' : 'asc'
+    router.get(dashboardPath(), { ...filters, sort: column, direction }, { preserveState: true })
+  }
+
+  const handlePageChange = (page: number) => {
+    router.get(dashboardPath(), { ...filters, page }, { preserveState: true })
+  }
+
+  const toggleDocumentSelection = (documentId: number) => {
+    setSelectedDocuments(prev => 
+      prev.includes(documentId) 
+        ? prev.filter(id => id !== documentId)
+        : [...prev, documentId]
+    )
+  }
+
+  const toggleSelectAll = () => {
+    setSelectedDocuments(prev => 
+      prev.length === documents.length ? [] : documents.map(doc => doc.id)
+    )
+  }
+
+  const handleBulkAction = async (action: string) => {
+    if (selectedDocuments.length === 0) {
+      toast.error("Please select documents first")
+      return
+    }
+
+    setIsPerformingBulkAction(true)
+    
+    try {
+      const response = await fetch(dashboardBulkActionPath(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '',
+        },
+        body: JSON.stringify({
+          document_ids: selectedDocuments,
+          bulk_action: action
+        })
+      })
+
+      const result = await response.json() as { success: boolean; message: string }
+      
+      if (result.success) {
+        toast.success(result.message)
+        setSelectedDocuments([])
+        router.reload()
+      } else {
+        toast.error(result.message)
+      }
+    } catch {
+      toast.error("An error occurred while performing the action")
+    } finally {
+      setIsPerformingBulkAction(false)
+    }
+  }
+
+  const formatReadingTime = (minutes: number) => {
+    return minutes === 1 ? '1 min' : `${minutes} mins`
+  }
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={breadcrumbs[breadcrumbs.length - 1].title} />
+      <Head title="Dashboard" />
 
-      <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mt-4 space-y-1">
+              <p className="text-lg text-muted-foreground">
+                Create and manage your verified writings
+              </p>
+            </div>
+            <Button asChild size="lg" className="mt-4 shrink-0">
+              <Link href={newDocumentPath()}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Document
+              </Link>
+            </Button>
           </div>
-          <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+          {/* Statistics */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Total Documents</span>
+                </div>
+                <p className="text-2xl font-bold">{statistics.total_documents}</p>
+                <p className="text-xs text-muted-foreground">
+                  {statistics.draft_count} drafts, {statistics.published_count} published
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Total Words</span>
+                </div>
+                <p className="text-2xl font-bold">{statistics.total_words.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">
+                  ~{formatReadingTime(statistics.avg_reading_time)} avg reading time
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Keyboard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Keystrokes</span>
+                </div>
+                <p className="text-2xl font-bold">{statistics.total_keystrokes.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">
+                  Verified authenticity
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Ready to Publish</span>
+                </div>
+                <p className="text-2xl font-bold">{statistics.ready_to_publish_count}</p>
+                <p className="text-xs text-muted-foreground">
+                  Documents ready for publication
+                </p>
+              </CardContent>
+            </Card>
           </div>
-          <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+          {/* Filters and Controls */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
+              <div className="relative w-full sm:w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search documents..."
+                  value={filters.search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={filters.status} onValueChange={(value) => handleFilter('status', value)}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="ready_to_publish">Ready to Publish</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {selectedDocuments.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={isPerformingBulkAction}>
+                      <MoreHorizontal className="h-4 w-4 mr-2" />
+                      Bulk Actions ({selectedDocuments.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => void handleBulkAction('mark_ready')}>
+                      Mark as Ready to Publish
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => void handleBulkAction('mark_draft')}>
+                      Mark as Draft
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => void handleBulkAction('delete')}
+                      className="text-destructive"
+                    >
+                      Delete Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              
+              <div className="flex items-center border rounded-md">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-r-none"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="rounded-l-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border md:min-h-min">
-          <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+          {/* Documents Content */}
+          {documents.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+                  <FileText className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <h3 className="mt-6 text-xl font-semibold">
+                  {filters.search || filters.status !== 'all' ? 'No documents found' : 'No documents yet'}
+                </h3>
+                <p className="mt-2 text-muted-foreground text-center max-w-sm">
+                  {filters.search || filters.status !== 'all' 
+                    ? 'Try adjusting your search criteria or filters.'
+                    : 'Start writing your first verified document to get started with keystroke-verified authorship.'
+                  }
+                </p>
+                {(!filters.search && filters.status === 'all') && (
+                  <Button asChild className="mt-6" size="lg">
+                    <Link href={newDocumentPath()}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create your first document
+                    </Link>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : viewMode === 'grid' ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {documents.map((document) => (
+                <Card key={document.id} className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 hover:-translate-y-1">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-3 flex-1">
+                        <Checkbox
+                          checked={selectedDocuments.includes(document.id)}
+                          onCheckedChange={() => toggleDocumentSelection(document.id)}
+                        />
+                        <CardTitle className="text-xl font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+                          {document.title || "Untitled Document"}
+                        </CardTitle>
+                      </div>
+                      <Badge 
+                        variant={getStatusColor(document.status)}
+                        className="shrink-0 capitalize"
+                      >
+                        {getStatusBadgeText(document.status)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-4">
+                      {document.content && (
+                        <p className="text-muted-foreground line-clamp-3 leading-relaxed">
+                          {document.content}
+                        </p>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground border-t pt-4">
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          <span>{document.word_count} words</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Keyboard className="h-4 w-4" />
+                          <span>{document.keystroke_count}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          <span>{formatReadingTime(document.reading_time_minutes)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(document.updated_at)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 pt-2 justify-end">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        {document.status === 'draft' && (
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            aria-label="Delete document"
+                            onClick={() => {
+                              if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+                                router.delete(documentPath({ id: document.id }))
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedDocuments.length === documents.length}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('title')}
+                          className="h-auto p-0 font-medium"
+                        >
+                          Title
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('status')}
+                          className="h-auto p-0 font-medium"
+                        >
+                          Status
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('word_count')}
+                          className="h-auto p-0 font-medium"
+                        >
+                          Words
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>Keystrokes</TableHead>
+                      <TableHead>Reading Time</TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('updated_at')}
+                          className="h-auto p-0 font-medium"
+                        >
+                          Updated
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-20">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documents.map((document) => (
+                      <TableRow key={document.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedDocuments.includes(document.id)}
+                            onCheckedChange={() => toggleDocumentSelection(document.id)}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <Link 
+                            href={editDocumentPath({ id: document.id })}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {document.title || "Untitled Document"}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusColor(document.status)} className="capitalize">
+                            {getStatusBadgeText(document.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{document.word_count}</TableCell>
+                        <TableCell>{document.keystroke_count}</TableCell>
+                        <TableCell>{formatReadingTime(document.reading_time_minutes)}</TableCell>
+                        <TableCell>{formatDate(document.updated_at)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
+                                <Edit className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            {document.status === 'draft' && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                aria-label="Delete document"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+                                    router.delete(documentPath({ id: document.id }))
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pagination */}
+          {pagination.total_pages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to{' '}
+                {Math.min(pagination.current_page * pagination.per_page, pagination.total_documents)} of{' '}
+                {pagination.total_documents} documents
+              </p>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.current_page - 1)}
+                  disabled={pagination.current_page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                {Array.from({ length: pagination.total_pages }, (_, i) => i + 1)
+                  .filter(page => 
+                    page === 1 || 
+                    page === pagination.total_pages ||
+                    Math.abs(page - pagination.current_page) <= 2
+                  )
+                  .map((page, index, array) => (
+                    <div key={page} className="flex items-center">
+                      {index > 0 && array[index - 1] !== page - 1 && (
+                        <span className="px-2 text-muted-foreground">...</span>
+                      )}
+                      <Button
+                        variant={page === pagination.current_page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className="w-10"
+                      >
+                        {page}
+                      </Button>
+                    </div>
+                  ))
+                }
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.current_page + 1)}
+                  disabled={pagination.current_page === pagination.total_pages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

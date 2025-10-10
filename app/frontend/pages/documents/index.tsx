@@ -1,5 +1,5 @@
 import { Head, Link, router } from "@inertiajs/react"
-import { Calendar, Edit, Eye, FileText, Plus, Trash2 } from "lucide-react"
+import { Calendar, Edit, ExternalLink, Eye, FileText, Plus, Trash2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -32,17 +32,22 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
     return status === 'published' ? 'default' : 'secondary'
   }
 
+  const getPublicUrl = (document: Document) => {
+    return document.public_slug ? `/posts/${document.public_slug}` : null
+  }
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Documents" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
+          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold tracking-tight">Your Documents</h1>
               <p className="text-lg text-muted-foreground">
-                Create and manage your verified writings
+                Simple document listing
               </p>
             </div>
             <Button asChild size="lg" className="shrink-0">
@@ -53,6 +58,7 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
             </Button>
           </div>
 
+          {/* Documents Content */}
           {documents.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-16">
@@ -108,6 +114,18 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                       </div>
 
                       <div className="flex gap-3 pt-2 justify-end">
+                        {document.status === 'published' && getPublicUrl(document) && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a 
+                              href={getPublicUrl(document)!} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              aria-label="View published post"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
                         <Button variant="outline" size="sm" asChild>
                           <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
                             <Edit className="h-4 w-4" />

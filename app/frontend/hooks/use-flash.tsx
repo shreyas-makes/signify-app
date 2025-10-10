@@ -19,10 +19,10 @@ export const useFlash = () => {
   })
 
   useEffect(() => {
-    if (currentFlash.alert) {
+    if (currentFlash?.alert) {
       toast.error(currentFlash.alert)
     }
-    if (currentFlash.notice) {
+    if (currentFlash?.notice) {
       toast(currentFlash.notice)
     }
   }, [currentFlash])

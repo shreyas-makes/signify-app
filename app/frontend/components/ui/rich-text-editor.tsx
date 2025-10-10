@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef, useEffect } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
 interface RichTextEditorProps {
   value?: string
@@ -12,6 +12,7 @@ export interface RichTextEditorRef {
   getContent: () => string
   setContent: (content: string) => void
   focus: () => void
+  getElement: () => HTMLTextAreaElement | null
 }
 
 export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
@@ -20,7 +21,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
 
     useImperativeHandle(ref, () => ({
       getContent: () => {
-        return textareaRef.current?.value || ''
+        return textareaRef.current?.value ?? ''
       },
       setContent: (content: string) => {
         if (textareaRef.current) {
@@ -30,6 +31,9 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       },
       focus: () => {
         textareaRef.current?.focus()
+      },
+      getElement: () => {
+        return textareaRef.current
       }
     }))
 

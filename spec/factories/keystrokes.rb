@@ -8,6 +8,7 @@ FactoryBot.define do
     character { "a" }
     timestamp { Time.current }
     sequence(:sequence_number)
+    cursor_position { 0 }
 
     trait :keyup do
       event_type { :keyup }

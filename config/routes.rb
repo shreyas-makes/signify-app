@@ -15,8 +15,19 @@ Rails.application.routes.draw do
   end
 
   get :dashboard, to: "dashboard#index"
+  post :dashboard_bulk_action, to: "dashboard#bulk_action"
 
-  resources :documents, except: [:show]
+  # Redirect /documents to dashboard
+  get "documents", to: redirect("/dashboard")
+  
+  resources :documents, except: [:show, :index] do
+    member do
+      post :publish
+    end
+    collection do
+      post :bulk_action
+    end
+  end
 
   namespace :settings do
     resource :profile, only: [:show, :update]
@@ -25,6 +36,11 @@ Rails.application.routes.draw do
     resources :sessions, only: [:index]
     inertia :appearance
   end
+
+  # Public post routes (no authentication required)
+  get "posts", to: "public/posts#index", as: :public_posts
+  get "posts/:public_slug", to: "public/posts#show", as: :public_post
+  get "posts/:public_slug/keystrokes", to: "public/posts#keystrokes", as: :public_post_keystrokes
 
   root "home#index"
 

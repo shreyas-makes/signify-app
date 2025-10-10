@@ -8,6 +8,8 @@ For info on building inertia-rails apps, refer to docs/inertia-rails.md
 
 Once you implement instructions from @prompts, make sure to update @todo.md checklist to reflect the changes. As we go through all the files in @prompts, we build a simple, lovable, complete MVP of Signify.
 
+bin/setup to run the app.
+
 ## Architecture Overview
 
 ### Stack
@@ -472,6 +474,81 @@ try {
 - Test network failure scenarios
 - Ensure CSRF protection works with AJAX requests
 
+## Auto-Save System Implementation (Step 7)
+
+### Key Features Implemented
+- **Auto-save timer**: 30-second intervals with intelligent pausing during user activity
+- **Visual status indicators**: Typing, Saving, Saved, Error states with timestamps
+- **Robust error handling**: Automatic retry logic (3 attempts) with manual retry option
+- **Optimized operations**: Change detection to prevent unnecessary saves
+- **Comprehensive hook**: Reusable `useAutoSave` hook for timer and state management
+
+### Auto-Save Hook Architecture
+
+```typescript
+// useAutoSave.ts - Complete auto-save solution
+const autoSave = useAutoSave({
+  saveInterval: 30000,        // 30 seconds
+  typingIndicatorDelay: 1000, // 1 second
+  retryAttempts: 3,
+  retryDelay: 2000,          // 2 seconds
+  onSave: async (saveData) => {
+    // Custom save implementation
+    const response = await fetch(url, { ... })
+    return response.ok
+  },
+  onError: (error, attempt) => {
+    console.error(`Save attempt ${attempt} failed:`, error)
+  }
+})
+
+// Usage in components
+useEffect(() => {
+  autoSave.updateData({
+    document: { title, content },
+    keystrokes: keystrokeData,
+    paste_attempts: pasteAttemptData
+  })
+}, [title, content])
+```
+
+### Smart Auto-Save Behavior
+- **Typing detection**: Shows "Typing..." immediately when user starts typing
+- **Activity-aware**: Pauses auto-save while user is actively typing
+- **Change detection**: Only saves when content actually changes
+- **Network resilience**: Automatic retries with exponential backoff
+- **Manual override**: Save button for immediate saves
+- **Error recovery**: Retry button when auto-save fails
+
+### Status Management
+```typescript
+// Status states with appropriate UI feedback
+type SaveStatus = 'typing' | 'saving' | 'saved' | 'error'
+
+// Visual indicators with proper colors
+getSaveStatusColor() // 'secondary' | 'default' | 'destructive'
+getSaveStatusText()  // 'Typing...' | 'Saving...' | 'Saved at 2:34 PM' | 'Error saving (attempt 2/3)'
+```
+
+### Integration with Keystroke Capture
+The auto-save system seamlessly integrates with keystroke capture and paste prevention:
+- Transmits keystroke data with each save
+- Includes paste attempt logs
+- Maintains data integrity across save operations
+- Batches keystroke data efficiently
+
+### Performance Optimizations
+- **Debounced updates**: Prevents excessive API calls
+- **Timer management**: Proper cleanup to prevent memory leaks
+- **State batching**: Efficient React state updates
+- **Network optimization**: Only sends changed data
+
+### Testing Strategy
+- **Unit tests**: Hook behavior and state management
+- **System tests**: Full auto-save workflow with browser simulation
+- **Error scenarios**: Network failures and retry logic
+- **Integration tests**: Keystroke data transmission
+
 ### Important Learnings and Future App Instructions
 - Always create a comprehensive README.md with setup, development, and deployment instructions
 - Implement a robust authentication system with secure password hashing and token management
@@ -484,3 +561,7 @@ try {
 - Set up CI/CD pipelines for automated testing and deployment
 - Implement performance optimizations like asset caching and HMR
 - Always consider security best practices in authentication and data handling
+- **Auto-save systems**: Create reusable hooks with proper timer management and error handling
+- **User feedback**: Always provide clear visual indicators for save states
+- **Network resilience**: Implement retry logic for unreliable connections
+- **Data integrity**: Ensure keystroke and content data are saved together atomically

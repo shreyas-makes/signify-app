@@ -54,6 +54,7 @@ RSpec.describe Document, type: :model do
     end
 
     it "validates presence of status" do
+      document.define_singleton_method(:set_default_status) { nil } # Prevent callback
       document.status = nil
       expect(document).not_to be_valid
       expect(document.errors[:status]).to include("can't be blank")
@@ -73,13 +74,19 @@ RSpec.describe Document, type: :model do
 
   describe "enums" do
     it "defines status enum with correct values" do
-      expect(Document.statuses).to eq({"draft" => 0, "published" => 1})
+      expect(Document.statuses).to eq({"draft" => 0, "ready_to_publish" => 1, "published" => 2})
     end
 
     it "allows setting status to draft" do
       document = build(:document, status: :draft)
       expect(document.status).to eq("draft")
       expect(document).to be_draft
+    end
+
+    it "allows setting status to ready_to_publish" do
+      document = build(:document, status: :ready_to_publish)
+      expect(document.status).to eq("ready_to_publish")
+      expect(document).to be_ready_to_publish
     end
 
     it "allows setting status to published" do
@@ -91,7 +98,8 @@ RSpec.describe Document, type: :model do
 
   describe "scopes" do
     let!(:draft_document) { create(:document, status: :draft) }
-    let!(:published_document) { create(:document, status: :published) }
+    let!(:ready_document) { create(:document, status: :ready_to_publish) }
+    let!(:published_document) { create(:document, :published) }
 
     describe ".published" do
       it "returns only published documents" do
@@ -102,6 +110,12 @@ RSpec.describe Document, type: :model do
     describe ".drafts" do
       it "returns only draft documents" do
         expect(Document.drafts).to contain_exactly(draft_document)
+      end
+    end
+
+    describe ".ready_to_publish" do
+      it "returns only ready_to_publish documents" do
+        expect(Document.ready_to_publish).to contain_exactly(ready_document)
       end
     end
   end
@@ -140,15 +154,234 @@ RSpec.describe Document, type: :model do
   describe "status changes" do
     let(:document) { create(:document, status: :draft) }
 
-    it "can change from draft to published" do
+    it "can change from draft to ready_to_publish" do
+      document.update!(status: :ready_to_publish)
+      expect(document).to be_ready_to_publish
+    end
+
+    it "can change from ready_to_publish to published" do
+      document.update!(status: :ready_to_publish)
       document.update!(status: :published)
       expect(document).to be_published
     end
 
-    it "can change from published to draft" do
+    it "can change from draft to published directly" do
       document.update!(status: :published)
-      document.update!(status: :draft)
-      expect(document).to be_draft
+      expect(document).to be_published
+    end
+  end
+
+  describe "publishing-related validations" do
+    describe "public_slug validation" do
+      it "validates uniqueness of public_slug" do
+        create(:document, public_slug: "unique-public-slug")
+        document = build(:document, public_slug: "unique-public-slug")
+        expect(document).not_to be_valid
+        expect(document.errors[:public_slug]).to include("has already been taken")
+      end
+
+      it "allows nil public_slug" do
+        document = build(:document, public_slug: nil)
+        expect(document).to be_valid
+      end
+
+      it "validates public_slug format" do
+        document = build(:document, public_slug: "Invalid Slug!")
+        expect(document).not_to be_valid
+        expect(document.errors[:public_slug]).to include("is invalid")
+      end
+    end
+
+    describe "published document validations" do
+      it "requires published_at when published" do
+        document = create(:document, :published)
+        document.update_column(:published_at, nil) # Bypass callbacks and validations
+        document.reload
+        expect(document).not_to be_valid
+        expect(document.errors[:published_at]).to include("can't be blank")
+      end
+
+      it "requires public_slug when published" do
+        document = create(:document, :published)
+        document.update_column(:public_slug, nil) # Bypass callbacks and validations
+        document.reload
+        expect(document).not_to be_valid
+        expect(document.errors[:public_slug]).to include("can't be blank")
+      end
+
+      it "prevents editing published documents" do
+        document = create(:document, :published, title: "Original", content: "Original content")
+        document.title = "Changed"
+        expect(document).not_to be_valid
+        expect(document.errors[:base]).to include("Published documents cannot be edited")
+      end
+
+      it "prevents editing content of published documents" do
+        document = create(:document, :published, title: "Original", content: "Original content")
+        document.content = "Changed content"
+        expect(document).not_to be_valid
+        expect(document.errors[:base]).to include("Published documents cannot be edited")
+      end
+    end
+
+    describe "count validations" do
+      it "validates word_count is non-negative" do
+        document = build(:document, word_count: -1)
+        expect(document).not_to be_valid
+        expect(document.errors[:word_count]).to include("must be greater than or equal to 0")
+      end
+
+      it "validates reading_time_minutes is non-negative" do
+        document = build(:document, reading_time_minutes: -1)
+        expect(document).not_to be_valid
+        expect(document.errors[:reading_time_minutes]).to include("must be greater than or equal to 0")
+      end
+
+      it "validates keystroke_count is non-negative" do
+        document = build(:document, keystroke_count: -1)
+        expect(document).not_to be_valid
+        expect(document.errors[:keystroke_count]).to include("must be greater than or equal to 0")
+      end
+    end
+  end
+
+  describe "convenience methods" do
+    let(:draft_doc) { build(:document, status: :draft) }
+    let(:ready_doc) { build(:document, status: :ready_to_publish) }
+    let(:published_doc) { build(:document, status: :published) }
+
+    describe "#can_edit?" do
+      it "returns true for draft documents" do
+        expect(draft_doc.can_edit?).to be true
+      end
+
+      it "returns true for ready_to_publish documents" do
+        expect(ready_doc.can_edit?).to be true
+      end
+
+      it "returns false for published documents" do
+        expect(published_doc.can_edit?).to be false
+      end
+    end
+  end
+
+  describe "content analysis methods" do
+    let(:document) { build(:document, content: "This is a test document with exactly ten words here.") }
+
+    describe "#calculate_word_count" do
+      it "counts words correctly" do
+        expect(document.calculate_word_count).to eq(10)
+      end
+
+      it "handles empty content" do
+        document.content = ""
+        expect(document.calculate_word_count).to eq(0)
+      end
+
+      it "handles nil content" do
+        document.content = nil
+        expect(document.calculate_word_count).to eq(0)
+      end
+
+      it "handles multiple spaces" do
+        document.content = "Word    with    multiple    spaces"
+        expect(document.calculate_word_count).to eq(4)
+      end
+    end
+
+    describe "#calculate_reading_time" do
+      it "calculates reading time based on 200 words per minute" do
+        document.content = "word " * 200
+        expect(document.calculate_reading_time).to eq(1)
+      end
+
+      it "rounds up partial minutes" do
+        document.content = "word " * 250
+        expect(document.calculate_reading_time).to eq(2)
+      end
+
+      it "returns 0 for empty content" do
+        document.content = ""
+        expect(document.calculate_reading_time).to eq(0)
+      end
+    end
+
+    describe "#calculate_keystroke_count" do
+      it "counts associated keystrokes" do
+        document = create(:document)
+        create_list(:keystroke, 5, document: document)
+        expect(document.calculate_keystroke_count).to eq(5)
+      end
+
+      it "returns 0 when no keystrokes" do
+        document = create(:document)
+        expect(document.calculate_keystroke_count).to eq(0)
+      end
+    end
+
+    describe "#content_statistics" do
+      it "returns hash with all statistics" do
+        document = create(:document, content: "Test content")
+        create_list(:keystroke, 5, document: document)
+        document.save! # Trigger content statistics update
+        stats = document.content_statistics
+        
+        expect(stats[:word_count]).to eq(2)
+        expect(stats[:reading_time_minutes]).to eq(1)
+        expect(stats[:keystroke_count]).to eq(5)
+        expect(stats[:character_count]).to eq(12)
+      end
+    end
+  end
+
+  describe "public slug generation" do
+    context "when status changes to published" do
+      it "generates public_slug from title" do
+        document = create(:document, title: "Test Document", status: :draft)
+        document.update!(status: :published)
+        expect(document.public_slug).to eq("test-document")
+      end
+
+      it "handles duplicate public slugs" do
+        create(:document, :published, title: "Test Document", public_slug: "test-document")
+        document = create(:document, title: "Test Document", status: :draft)
+        document.update!(status: :published)
+        expect(document.public_slug).to eq("test-document-1")
+      end
+
+      it "excludes current document from uniqueness check" do
+        document = create(:document, :published, title: "Test Document", public_slug: "test-document")
+        document.save!
+        expect(document.public_slug).to eq("test-document")
+      end
+    end
+  end
+
+  describe "callbacks" do
+    describe "on save" do
+      it "sets published_at when transitioning to published" do
+        document = create(:document, status: :draft)
+        expect(document.published_at).to be_nil
+        
+        document.update!(status: :published)
+        expect(document.published_at).to be_present
+        expect(document.published_at).to be_within(1.second).of(Time.current)
+      end
+
+      it "updates content statistics on save" do
+        document = create(:document, content: "Test content with five words")
+        document.reload
+        expect(document.word_count).to eq(5)
+        expect(document.reading_time_minutes).to eq(1)
+      end
+
+      it "sets default counts for new records" do
+        document = Document.new(title: "Test", user: create(:user))
+        document.valid?
+        expect(document.word_count).to eq(0)
+        expect(document.reading_time_minutes).to eq(0)
+        expect(document.keystroke_count).to eq(0)
+      end
     end
   end
 end
