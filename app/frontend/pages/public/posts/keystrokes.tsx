@@ -297,7 +297,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
         <meta name="twitter:card" content={meta.twitter_card} />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {/* Navigation */}
           <div className="mb-6">
@@ -314,20 +314,20 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-start gap-3 mb-4">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+              <Badge variant="secondary">
                 <Shield className="h-3 w-3 mr-1" />
                 Keystroke Verified
               </Badge>
-              <Badge variant="outline" className="border-green-300 text-green-700">
+              <Badge variant="outline">
                 <Activity className="h-3 w-3 mr-1" />
                 Live Replay
               </Badge>
             </div>
             
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Keystroke Timeline: {post.title}
             </h1>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               Watch the authentic keystroke-by-keystroke creation by {post.author.display_name}
             </p>
 
@@ -348,19 +348,19 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                 <CardContent>
                   {/* Progress Bar */}
                   <div className="mb-4">
-                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <div className="flex justify-between text-sm text-muted-foreground mb-2">
                       <span>Progress: {currentKeystroke.toLocaleString()} / {allKeystrokes.length.toLocaleString()}</span>
                       <span>{progress.toFixed(1)}%</span>
                     </div>
                     {pagination.has_more && (
-                      <div className="flex items-center gap-2 text-xs text-amber-600 mb-1">
+                      <div className="flex items-center gap-2 text-xs text-yellow-600 mb-1">
                         {loadingMore && <Loader2 className="h-3 w-3 animate-spin" />}
                         {loadingMore ? 'Loading additional keystrokes...' : `${pagination.total_keystrokes - allKeystrokes.length} more keystrokes available`}
                       </div>
                     )}
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-muted rounded-full h-2">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-150"
+                        className="bg-primary h-2 rounded-full transition-all duration-150"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -384,7 +384,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                     </Button>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">Speed:</span>
+                      <span className="text-sm text-muted-foreground">Speed:</span>
                       {[1, 2, 5, 10].map(speed => (
                         <Button
                           key={speed}
@@ -400,11 +400,11 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                   </div>
 
                   {/* Replay Text Area */}
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 min-h-[200px] font-mono text-sm leading-relaxed">
-                    <div className="text-gray-600 mb-2 text-xs">Replay Output:</div>
+                  <div className="bg-card border-2 border-border rounded-lg p-4 min-h-[200px] font-mono text-sm leading-relaxed">
+                    <div className="text-muted-foreground mb-2 text-xs">Replay Output:</div>
                     <div className="whitespace-pre-wrap">
                       {replayText}
-                      <span className="animate-pulse bg-blue-500 text-blue-500 ml-0.5">|</span>
+                      <span className="animate-pulse bg-primary text-primary ml-0.5">|</span>
                     </div>
                   </div>
                 </CardContent>
@@ -433,7 +433,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                     {timelineEvents.slice(0, 10).map((event, index) => (
                       <div 
                         key={index}
-                        className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 border"
+                        className="flex items-center gap-3 p-2 rounded-lg bg-muted border"
                       >
                         <div className={`w-3 h-3 rounded-full ${
                           event.type === 'typing' ? 'bg-green-500' :
@@ -441,16 +441,16 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                         }`} />
                         <div className="flex-1 text-sm">
                           <span className="font-medium capitalize">{event.type}</span>
-                          {event.keystrokes && <span className="text-gray-600 ml-2">({event.keystrokes} keys)</span>}
-                          {event.duration && <span className="text-gray-600 ml-2">({(event.duration/1000).toFixed(1)}s)</span>}
+                          {event.keystrokes && <span className="text-muted-foreground ml-2">({event.keystrokes} keys)</span>}
+                          {event.duration && <span className="text-muted-foreground ml-2">({(event.duration/1000).toFixed(1)}s)</span>}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {new Date(event.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
                     ))}
                     {timelineEvents.length > 10 && (
-                      <div className="text-center text-sm text-gray-500 py-2">
+                      <div className="text-center text-sm text-muted-foreground py-2">
                         ... and {timelineEvents.length - 10} more events
                       </div>
                     )}
@@ -512,7 +512,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                         <span>Typing Consistency</span>
                         <span className="text-green-600 font-medium">Natural</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-2">
                         <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }} />
                       </div>
                     </div>
@@ -522,7 +522,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                         <span>Pause Patterns</span>
                         <span className="text-green-600 font-medium">Human-like</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-2">
                         <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }} />
                       </div>
                     </div>
@@ -532,12 +532,12 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                         <span>Correction Rate</span>
                         <span className="text-green-600 font-medium">Typical</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-2">
                         <div className="bg-green-500 h-2 rounded-full" style={{ width: '78%' }} />
                       </div>
                     </div>
 
-                    <div className="pt-2 text-xs text-gray-600">
+                    <div className="pt-2 text-xs text-muted-foreground">
                       Analysis shows natural human typing patterns with realistic pauses, corrections, and rhythm variations.
                     </div>
                   </div>

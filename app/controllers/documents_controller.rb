@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class DocumentsController < InertiaController
-  before_action :set_document, only: [:edit, :update, :destroy, :publish]
+  before_action :set_document, only: [:edit, :update, :destroy, :publish, :download_data]
 
   def index
     @documents = Current.user.documents.order(updated_at: :desc)
@@ -103,7 +103,19 @@ class DocumentsController < InertiaController
     
     redirect_to documents_path
   end
-  
+
+  def download_data
+    format = params[:format]&.downcase || "json"
+    
+    case format
+    when "json"
+      send_json_data
+    when "csv"
+      send_csv_data
+    else
+      redirect_to edit_document_path(@document), alert: "Unsupported format. Use 'json' or 'csv'"
+    end
+  end
 
   private
 
@@ -175,5 +187,99 @@ class DocumentsController < InertiaController
     Rails.logger.info "Processed #{keystroke_data.length} keystrokes for document #{@document.id}"
   rescue => e
     Rails.logger.error "Error processing keystrokes: #{e.message}"
+  end
+
+  def send_json_data
+    keystrokes = @document.keystrokes.ordered
+    
+    data = {
+      document: {
+        id: @document.id,
+        title: @document.title,
+        slug: @document.slug,
+        public_slug: @document.public_slug,
+        status: @document.status,
+        content: @document.content,
+        word_count: @document.word_count,
+        reading_time_minutes: @document.reading_time_minutes,
+        keystroke_count: @document.keystroke_count,
+        character_count: @document.content&.length || 0,
+        created_at: @document.created_at.iso8601,
+        updated_at: @document.updated_at.iso8601,
+        published_at: @document.published_at&.iso8601,
+        author: {
+          display_name: @document.user.display_name
+        }
+      },
+      keystrokes: keystrokes.map do |keystroke|
+        {
+          id: keystroke.id,
+          sequence_number: keystroke.sequence_number,
+          event_type: keystroke.event_type,
+          key_code: keystroke.key_code,
+          character: keystroke.character,
+          timestamp: keystroke.timestamp.to_f,
+          cursor_position: keystroke.cursor_position,
+          created_at: keystroke.created_at.iso8601,
+          updated_at: keystroke.updated_at.iso8601
+        }
+      end,
+      export_metadata: {
+        exported_at: Time.current.iso8601,
+        export_format: "json",
+        total_keystrokes: keystrokes.count,
+        data_version: "1.0"
+      }
+    }
+
+    filename = "#{@document.slug}-data-#{Date.current.strftime('%Y%m%d')}.json"
+    
+    send_data data.to_json, 
+      filename: filename,
+      type: 'application/json',
+      disposition: 'attachment'
+  end
+
+  def send_csv_data
+    require 'csv'
+    
+    keystrokes = @document.keystrokes.ordered
+    
+    csv_data = CSV.generate(headers: true) do |csv|
+      # Header row
+      csv << [
+        'id',
+        'sequence_number',
+        'event_type', 
+        'key_code',
+        'character',
+        'timestamp',
+        'cursor_position',
+        'created_at',
+        'updated_at'
+      ]
+      
+      # Data rows
+      keystrokes.each do |keystroke|
+        csv << [
+          keystroke.id,
+          keystroke.sequence_number,
+          keystroke.event_type,
+          keystroke.key_code,
+          keystroke.character,
+          keystroke.timestamp.to_f,
+          keystroke.cursor_position,
+          keystroke.created_at.iso8601,
+          keystroke.updated_at.iso8601
+        ]
+      end
+    end
+
+    filename = "#{@document.slug}-keystrokes-#{Date.current.strftime('%Y%m%d')}.csv"
+    
+    send_data csv_data, 
+      filename: filename,
+      type: 'text/csv',
+      disposition: 'attachment'
   end
 end

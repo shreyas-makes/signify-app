@@ -113,9 +113,9 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                         </div>
                       </div>
 
-                      <div className="flex gap-3 pt-2 justify-end">
+                      <div className="flex gap-2 sm:gap-3 pt-2 justify-end">
                         {document.status === 'published' && getPublicUrl(document) && (
-                          <Button variant="outline" size="sm" asChild>
+                          <Button variant="outline" size="sm" asChild className="touch-manipulation min-h-[44px] min-w-[44px]">
                             <a 
                               href={getPublicUrl(document)!} 
                               target="_blank" 
@@ -126,7 +126,7 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                             </a>
                           </Button>
                         )}
-                        <Button variant="outline" size="sm" asChild>
+                        <Button variant="outline" size="sm" asChild className="touch-manipulation min-h-[44px] min-w-[44px]">
                           <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
                             <Edit className="h-4 w-4" />
                           </Link>
@@ -136,6 +136,7 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                             variant="destructive" 
                             size="sm"
                             aria-label="Delete document"
+                            className="touch-manipulation min-h-[44px] min-w-[44px]"
                             onClick={() => {
                               if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
                                 router.delete(documentPath({ id: document.id }))

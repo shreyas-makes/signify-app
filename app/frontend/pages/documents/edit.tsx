@@ -1,6 +1,7 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import { ArrowLeft, Eye, RefreshCw, Save, Send } from "lucide-react"
+import { ArrowLeft, Eye, Loader2, RefreshCw, Save, Send } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,6 +38,8 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
   })
   
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   
@@ -86,15 +89,20 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
           return true
         } else {
           console.error('Save failed:', response.status, response.statusText)
+          toast.error(`Failed to save: ${response.statusText}`)
           return false
         }
       } catch (error) {
         console.error('Save error:', error)
+        toast.error('Network error: Unable to save document')
         return false
       }
     },
     onError: (error, attempt) => {
       console.error(`Save attempt ${attempt} failed:`, error)
+      if (attempt === 3) {
+        toast.error('Save failed after 3 attempts. Please try again.')
+      }
     }
   })
 
@@ -153,17 +161,29 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
   }
 
   const handleManualSave = async () => {
-    const keystrokeData = getKeystrokesForTransmission()
-    const pasteAttemptData = getPasteAttempts()
-    
-    await autoSave.save({
-      document: {
-        title: data.document.title,
-        content: data.document.content
-      },
-      keystrokes: keystrokeData,
-      paste_attempts: pasteAttemptData
-    })
+    setIsSaving(true)
+    try {
+      const keystrokeData = getKeystrokesForTransmission()
+      const pasteAttemptData = getPasteAttempts()
+      
+      const success = await autoSave.save({
+        document: {
+          title: data.document.title,
+          content: data.document.content
+        },
+        keystrokes: keystrokeData,
+        paste_attempts: pasteAttemptData
+      })
+      
+      if (success) {
+        toast.success('Document saved successfully')
+      }
+    } catch (error) {
+      console.error('Manual save error:', error)
+      toast.error('Failed to save document')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const canPublish = () => {
@@ -175,20 +195,35 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
     return hasTitle && hasContent && hasKeystrokes && isNotPublished
   }
 
-  const handlePublish = () => {
-    if (!canPublish()) return
+  const handlePublish = async () => {
+    if (!canPublish() || isPublishing) return
     
-    // Save first, then publish
-    void handleManualSave().then(() => {
+    setIsPublishing(true)
+    try {
+      // Save first, then publish
+      toast.loading('Saving document before publishing...')
+      await handleManualSave()
+      
+      toast.loading('Publishing document...')
       router.post(`/documents/${document.id}/publish`, {}, {
         onSuccess: () => {
+          toast.success('Document published successfully!')
           // Will be redirected by the controller
         },
         onError: (errors) => {
           console.error('Publishing failed:', errors)
+          toast.error('Failed to publish document. Please try again.')
+          setIsPublishing(false)
+        },
+        onFinish: () => {
+          setIsPublishing(false)
         }
       })
-    })
+    } catch (error) {
+      console.error('Publish error:', error)
+      toast.error('Failed to publish document')
+      setIsPublishing(false)
+    }
   }
 
   const getPublishButtonText = () => {
@@ -205,70 +240,88 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
 
       <div className="h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-background">
-          <Button variant="ghost" size="sm" asChild>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b bg-background gap-4">
+          <Button variant="ghost" size="sm" asChild className="self-start">
             <a href={documentsPath()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Documents
+              <span className="hidden sm:inline">Back to Documents</span>
+              <span className="sm:hidden">Back</span>
             </a>
           </Button>
 
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-muted-foreground">
-              {wordCount} words • {keystrokeCount} keystrokes
+          {/* Stats Row */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="text-sm text-muted-foreground order-2 sm:order-1">
+              <span className="inline-block">{wordCount} words</span>
+              <span className="hidden sm:inline"> • </span>
+              <span className="block sm:inline">{keystrokeCount} keystrokes</span>
               {pasteAttemptCount > 0 && (
-                <span className="text-amber-600 font-medium">
-                  • {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
+                <span className="text-amber-600 font-medium block sm:inline">
+                  <span className="hidden sm:inline"> • </span>
+                  {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
                 </span>
               )}
             </div>
-            <Badge variant={autoSave.getSaveStatusColor()}>
-              {autoSave.getSaveStatusText()}
-            </Badge>
-            {autoSave.saveStatus === 'error' && (
-              <Button
-                onClick={() => void autoSave.retry()}
-                variant="outline"
-                size="sm"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            )}
-            <Button
-              onClick={() => void handleManualSave()}
-              disabled={autoSave.saveStatus === 'saving' || (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)}
-              size="sm"
-              variant="outline"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </Button>
             
-            {document.status === 'published' ? (
-              <Button size="sm" disabled variant="default">
-                <Eye className="h-4 w-4 mr-2" />
-                Published
-              </Button>
-            ) : (
+            {/* Actions Row */}
+            <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto justify-end">
+              <Badge variant={autoSave.getSaveStatusColor()} className="text-xs">
+                {autoSave.getSaveStatusText()}
+              </Badge>
+              {autoSave.saveStatus === 'error' && (
+                <Button
+                  onClick={() => void autoSave.retry()}
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:flex"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+              )}
               <Button
-                onClick={handlePublish}
-                disabled={!canPublish() || autoSave.saveStatus === 'saving'}
+                onClick={() => void handleManualSave()}
+                disabled={isSaving || autoSave.saveStatus === 'saving' || (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)}
                 size="sm"
-                variant={canPublish() ? "default" : "outline"}
+                variant="outline"
               >
-                <Send className="h-4 w-4 mr-2" />
-                {getPublishButtonText()}
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 sm:mr-2" />
+                )}
+                <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save'}</span>
               </Button>
-            )}
+              
+              {document.status === 'published' ? (
+                <Button size="sm" disabled variant="default">
+                  <Eye className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Published</span>
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => void handlePublish()}
+                  disabled={!canPublish() || autoSave.saveStatus === 'saving' || isPublishing}
+                  size="sm"
+                  variant={canPublish() ? "default" : "outline"}
+                >
+                  {isPublishing ? (
+                    <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 sm:mr-2" />
+                  )}
+                  <span className="hidden sm:inline">{isPublishing ? 'Publishing...' : getPublishButtonText()}</span>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Editor */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
+          <div className="h-full flex flex-col max-w-4xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-8">
             {/* Title */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <Input
                 ref={titleInputRef}
                 id="title"
@@ -277,7 +330,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
                 value={data.document.title}
                 onChange={(e) => setData('document.title', e.target.value)}
                 placeholder="Untitled Document"
-                className="text-4xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                className="text-2xl sm:text-4xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation"
               />
               {errors['document.title'] && (
                 <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
@@ -285,16 +338,16 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 border border-input rounded-lg overflow-hidden bg-background shadow-sm">
+            <div className="flex-1 border border-input rounded-lg overflow-hidden bg-background shadow-sm min-h-0">
               <RichTextEditor
                 ref={editorRef}
                 value={data.document.content}
                 onChange={handleContentChange}
                 placeholder="Start writing your document..."
-                className="h-full min-h-[calc(100vh-300px)]"
+                className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
               />
               {errors['document.content'] && (
-                <p className="text-sm text-destructive mt-2 px-6">{errors['document.content']}</p>
+                <p className="text-sm text-destructive mt-2 px-4 sm:px-6">{errors['document.content']}</p>
               )}
             </div>
           </div>

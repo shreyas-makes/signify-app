@@ -48,14 +48,14 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
     <>
       <Head title="Published Posts - Signify" />
       
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
               Published Posts
             </h1>
-            <p className="text-lg text-gray-600 mb-6">
+            <p className="text-lg text-muted-foreground mb-6">
               Discover verified human-written content on Signify
             </p>
             
@@ -63,7 +63,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
             <form onSubmit={handleSearch} className="max-w-md mx-auto">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     type="text"
                     placeholder="Search posts..."
@@ -82,11 +82,11 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
           {/* Posts */}
           {posts.length === 0 ? (
             <div className="text-center py-12">
-              <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 {search ? 'No posts found' : 'No posts yet'}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {search 
                   ? 'Try adjusting your search terms.'
                   : 'Check back later for published content.'
@@ -104,10 +104,10 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                        <CardTitle className="text-xl font-semibold text-foreground mb-2 hover:text-primary transition-colors">
                           {post.title}
                         </CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>By {post.author.display_name}</span>
                           <span>{post.published_at}</span>
                         </div>
@@ -120,11 +120,11 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                   </CardHeader>
                   
                   <CardContent>
-                    <p className="text-gray-700 mb-4 leading-relaxed">
+                    <p className="text-foreground/80 mb-4 leading-relaxed">
                       {post.excerpt}
                     </p>
                     
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <BookOpen className="h-4 w-4" />
                         {post.word_count.toLocaleString()} words

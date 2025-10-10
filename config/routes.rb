@@ -41,6 +41,25 @@ Rails.application.routes.draw do
   get "posts", to: "public/posts#index", as: :public_posts
   get "posts/:public_slug", to: "public/posts#show", as: :public_post
   get "posts/:public_slug/keystrokes", to: "public/posts#keystrokes", as: :public_post_keystrokes
+  
+  # Data access and verification API
+  namespace :api do
+    namespace :v1 do
+      resources :posts, only: [], param: :public_slug do
+        member do
+          get :data, to: "data_access#show"
+          get :verify, to: "verification#show"
+        end
+      end
+    end
+  end
+  
+  # Raw data downloads (authenticated - user's own documents)
+  resources :documents, only: [] do
+    member do
+      get :download_data
+    end
+  end
 
   root "home#index"
 

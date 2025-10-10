@@ -96,7 +96,7 @@ export function GitCommitGraph({
   if (commits.length === 0) {
     return (
       <Card className={className}>
-        <CardContent className="p-6 text-center text-gray-500">
+        <CardContent className="p-6 text-center text-muted-foreground">
           No keystroke data available for visualization
         </CardContent>
       </Card>
@@ -134,14 +134,14 @@ export function GitCommitGraph({
       )}
       
       <CardContent className="p-4 relative">
-        <div className="relative overflow-visible">
+        <div className="relative w-full overflow-hidden">
           <svg 
-            width={width} 
+            width="100%" 
             height={height}
             viewBox={`0 0 ${width} ${height}`}
-            className="border rounded-lg"
+            className="border rounded-lg w-full"
             onMouseLeave={() => setTooltip(null)}
-            style={{ overflow: 'visible' }}
+            preserveAspectRatio="xMidYMid meet"
           >
             {/* Enhanced artistic background with gradients and patterns */}
             <defs>
@@ -247,9 +247,9 @@ export function GitCommitGraph({
           {/* Tooltip */}
           {tooltip && tooltip.visible && (
             <div
-              className="absolute z-10 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none max-w-xs"
+              className="absolute z-10 bg-popover text-popover-foreground text-xs rounded-lg px-3 py-2 pointer-events-none max-w-xs border shadow-md"
               style={{
-                left: Math.min(tooltip.x + 10, width - 200),
+                left: Math.min(tooltip.x + 10, 600),
                 top: Math.max(tooltip.y - 10, 0),
                 transform: tooltip.y > 100 ? 'translateY(-100%)' : 'translateY(10px)'
               }}
@@ -264,7 +264,7 @@ export function GitCommitGraph({
         </div>
         
         {/* Legend */}
-        <div className="mt-4 text-xs text-gray-600">
+        <div className="mt-4 text-xs text-muted-foreground">
           <div className="flex items-center justify-center gap-6 flex-wrap">
             <span className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-green-500" />

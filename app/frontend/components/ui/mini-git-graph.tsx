@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { processKeystrokesToGitGraph } from '@/lib/keystroke-to-git'
-import type { GitCommit, GitBranch, Keystroke } from '@/types'
+import type { GitBranch, GitCommit, Keystroke } from '@/types'
 
 interface MiniGitGraphProps {
   keystrokes: Keystroke[]
@@ -127,31 +127,41 @@ export function MiniGitGraph({
     return enhanceMiniPattern(processed.commits, processed.branches, width, height)
   }, [keystrokes, width, height])
 
-  const getNodeColor = (type: string) => {
+  const getNodeColor = () => {
+    // Single color scheme - professional blue with varying opacity
+    return '#3b82f6'
+  }
+
+  const getNodeOpacity = (type: string) => {
     switch (type) {
-      case 'typing':
-        return '#22c55e'
-      case 'pause':
-        return '#fbbf24'
-      case 'correction':
-        return '#ef4444'
       case 'milestone':
-        return '#3b82f6'
+        return 1.0
+      case 'typing':
+        return 0.8
+      case 'correction':
+        return 0.6
+      case 'pause':
+        return 0.4
       default:
-        return '#9ca3af'
+        return 0.5
     }
   }
 
-  const getBranchColor = (type: string) => {
+  const getBranchColor = () => {
+    // Single color for all branches
+    return '#3b82f6'
+  }
+
+  const getBranchOpacity = (type: string) => {
     switch (type) {
-      case 'main':
-        return '#22c55e'
-      case 'correction':
-        return '#ef4444'
       case 'merge':
-        return '#3b82f6'
+        return 0.8
+      case 'main':
+        return 0.6
+      case 'correction':
+        return 0.4
       default:
-        return '#9ca3af'
+        return 0.3
     }
   }
 
@@ -166,7 +176,7 @@ export function MiniGitGraph({
   if (commits.length === 0) {
     return (
       <div 
-        className={`inline-flex items-center justify-center text-xs text-gray-400 ${className}`}
+        className={`inline-flex items-center justify-center text-xs text-muted-foreground ${className}`}
         style={{ width, height }}
       >
         No data
@@ -229,10 +239,10 @@ export function MiniGitGraph({
                   toCommit.position.x,
                   toCommit.position.y
                 )}
-                stroke={getBranchColor(branch.type)}
+                stroke={getBranchColor()}
                 strokeWidth={strokeWidth}
                 fill="none"
-                opacity={0.9}
+                opacity={getBranchOpacity(branch.type)}
                 strokeLinecap="round"
               />
             </g>
@@ -252,7 +262,7 @@ export function MiniGitGraph({
                 cy={commit.position.y}
                 r={glowRadius}
                 fill={getNodeColor(commit.type)}
-                opacity={0.2}
+                opacity={getNodeOpacity(commit.type) * 0.2}
               />
               {/* Shadow for depth */}
               <circle
@@ -267,6 +277,7 @@ export function MiniGitGraph({
                 cy={commit.position.y}
                 r={nodeSize}
                 fill={getNodeColor(commit.type)}
+                fillOpacity={getNodeOpacity(commit.type)}
                 stroke="rgba(255, 255, 255, 0.95)"
                 strokeWidth={1.2}
               />

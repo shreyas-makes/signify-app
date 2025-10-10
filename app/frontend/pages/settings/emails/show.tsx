@@ -69,7 +69,7 @@ export default function Email() {
                         href={identityEmailVerificationPath()}
                         method="post"
                         as="button"
-                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                        className="text-foreground underline decoration-muted underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current"
                       >
                         Click here to resend the verification email.
                       </Link>
@@ -102,7 +102,7 @@ export default function Email() {
                     leave="transition ease-in-out"
                     leaveTo="opacity-0"
                   >
-                    <p className="text-sm text-neutral-600">Saved</p>
+                    <p className="text-sm text-muted-foreground">Saved</p>
                   </Transition>
                 </div>
               </>

@@ -152,10 +152,10 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         {/* Reading Progress Bar */}
         <div 
-          className="fixed top-0 left-0 h-1 bg-blue-600 z-50 transition-all duration-150 no-print"
+          className="fixed top-0 left-0 h-1 bg-primary z-50 transition-all duration-150 no-print"
           style={{ width: `${readingProgress}%` }}
         />
         
@@ -174,26 +174,26 @@ export default function PublicPostShow({ post, meta }: Props) {
 
           {/* Article Header */}
           <header className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-4xl font-bold text-foreground mb-4 leading-tight">
               {post.title}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
+            <div className="flex flex-wrap items-center gap-4 text-muted-foreground mb-6">
               <span className="text-lg">By {post.author.display_name}</span>
               <span>•</span>
               <span>{post.published_at}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <BookOpen className="h-4 w-4" />
                 {post.word_count.toLocaleString()} words
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 {post.reading_time_minutes} min read
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Keyboard className="h-4 w-4" />
                 {post.keystroke_count.toLocaleString()} keystrokes
               </div>
@@ -222,7 +222,7 @@ export default function PublicPostShow({ post, meta }: Props) {
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs font-medium text-green-700">Writing Pattern Fingerprint:</span>
                           </div>
-                          <div className="bg-white/80 rounded-lg p-3 border border-green-200 shadow-sm">
+                          <div className="bg-card/80 rounded-lg p-3 border border-green-200 shadow-sm">
                             <div className="flex items-center justify-center">
                               <MiniGitGraph 
                                 keystrokes={post.sample_keystrokes} 
@@ -272,12 +272,12 @@ export default function PublicPostShow({ post, meta }: Props) {
 
           {/* Article Content */}
           <article 
-            className="prose prose-lg prose-gray max-w-none mb-12 print:text-black"
+            className="prose prose-lg max-w-none mb-12 print:text-black"
             role="main"
             aria-label="Article content"
           >
             <div 
-              className="text-gray-800 leading-relaxed font-serif text-lg sm:text-xl print:text-base"
+              className="text-foreground leading-relaxed font-serif text-lg sm:text-xl print:text-base"
               style={{ 
                 lineHeight: '1.7',
                 letterSpacing: '0.01em'
@@ -288,13 +288,13 @@ export default function PublicPostShow({ post, meta }: Props) {
 
           {/* Enhanced Share Section */}
           <div className="border-t pt-8 no-print">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Share this verified content</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Share this verified content</h3>
             <div className="flex flex-wrap gap-3">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => void handleShare('twitter')}
-                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300"
+                className="flex items-center gap-2"
               >
                 <Twitter className="h-4 w-4 text-blue-500" />
                 Twitter
@@ -303,7 +303,7 @@ export default function PublicPostShow({ post, meta }: Props) {
                 variant="outline" 
                 size="sm"
                 onClick={() => void handleShare('linkedin')}
-                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300"
+                className="flex items-center gap-2"
               >
                 <Linkedin className="h-4 w-4 text-blue-600" />
                 LinkedIn
@@ -312,7 +312,7 @@ export default function PublicPostShow({ post, meta }: Props) {
                 variant="outline" 
                 size="sm"
                 onClick={() => void handleShare('facebook')}
-                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300"
+                className="flex items-center gap-2"
               >
                 <Facebook className="h-4 w-4 text-blue-600" />
                 Facebook
@@ -321,47 +321,47 @@ export default function PublicPostShow({ post, meta }: Props) {
                 variant="outline" 
                 size="sm"
                 onClick={() => void handleShare('copy')}
-                className="flex items-center gap-2 hover:bg-gray-50"
+                className="flex items-center gap-2"
               >
                 <LinkIcon className="h-4 w-4" />
                 {copyLinkText}
               </Button>
             </div>
-            <p className="text-sm text-gray-600 mt-3">
+            <p className="text-sm text-muted-foreground mt-3">
               Help others discover authentic, human-generated content verified by keystroke tracking.
             </p>
           </div>
 
           {/* Enhanced Author Section */}
           <div className="border-t pt-8 mt-8">
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200">
+            <div className="bg-gradient-to-r from-muted/50 to-primary/10 rounded-lg p-6 border border-border">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-700 font-semibold text-lg">
+                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                    <span className="text-primary font-semibold text-lg">
                       {post.author.display_name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{post.author.display_name}</h3>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+                    <h3 className="text-lg font-semibold text-foreground">{post.author.display_name}</h3>
+                    <Badge variant="secondary">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       Verified Writer
                     </Badge>
                   </div>
-                  <p className="text-gray-700 mb-3">
+                  <p className="text-foreground/80 mb-3">
                     A verified writer on Signify, committed to creating authentic human-generated content 
                     without AI assistance. Every keystroke is tracked and verified for content authenticity.
                   </p>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Shield className="h-4 w-4 text-green-600" />
                       <span>Human-verified content</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Keyboard className="h-4 w-4 text-blue-600" />
+                      <Keyboard className="h-4 w-4 text-primary" />
                       <span>Keystroke authenticated</span>
                     </div>
                   </div>
