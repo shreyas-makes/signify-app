@@ -61,6 +61,23 @@ Rails.application.routes.draw do
     end
   end
 
+  # Legal pages
+  namespace :legal do
+    inertia :terms
+    inertia :privacy
+  end
+  
+  # Support pages
+  namespace :support do
+    inertia :contact
+  end
+  
+  # Admin interface
+  namespace :admin do
+    root "dashboard#index"
+    get :dashboard, to: "dashboard#index"
+  end
+  
   root "home#index"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

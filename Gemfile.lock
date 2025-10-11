@@ -230,6 +230,8 @@ GEM
     raabro (1.4.0)
     racc (1.8.1)
     rack (3.2.1)
+    rack-attack (6.7.0)
+      rack (>= 1.0, < 4)
     rack-proxy (0.7.7)
       rack
     rack-session (2.1.1)
@@ -431,6 +433,7 @@ DEPENDENCIES
   letter_opener
   propshaft
   puma (>= 5.0)
+  rack-attack
   rails (~> 8.0.2)
   rspec-rails (~> 8.0)
   rubocop-rails-omakase

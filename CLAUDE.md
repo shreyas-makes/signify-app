@@ -102,6 +102,386 @@ bin/rails assets:precompile # Precompile assets (includes js:routes)
 - `app/frontend/lib/utils.ts` - Utility functions
 - `app/frontend/components/ui/` - shadcn/ui components
 
+## Design System & Component Guidelines
+
+### Component Architecture
+```
+app/frontend/components/
+├── ui/                    # shadcn/ui base components (Button, Input, etc.)
+├── forms/                 # Form-specific components (FormField, FormSection)
+├── layout/                # Layout components (Header, Sidebar, Container)
+├── feedback/              # User feedback (Toast, Alert, LoadingSpinner)
+└── domain/                # Feature-specific components (DocumentCard, WriteEditor)
+```
+
+### Component Conventions
+
+#### Base Components (shadcn/ui)
+Use shadcn/ui components as the foundation:
+```bash
+npx shadcn@latest add button input textarea card badge alert
+```
+
+#### Custom Component Patterns
+```tsx
+// Component naming: PascalCase with descriptive names
+export function DocumentEditor({ document, onSave }: DocumentEditorProps) {
+  // Use consistent prop patterns
+  return (
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle>{document.title || 'Untitled Document'}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Component content */}
+      </CardContent>
+    </Card>
+  )
+}
+
+// Always define interfaces for props
+interface DocumentEditorProps {
+  document: Document
+  onSave: (document: Document) => void
+  className?: string // Always include optional className for flexibility
+}
+```
+
+### Design Tokens & Styling
+
+#### Color System
+```css
+/* Use CSS variables for consistent theming */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.5rem;
+}
+```
+
+#### Typography Scale
+```tsx
+// Use consistent typography classes
+<h1 className="text-4xl font-bold tracking-tight">Page Title</h1>
+<h2 className="text-2xl font-semibold tracking-tight">Section Title</h2>
+<h3 className="text-lg font-medium">Subsection</h3>
+<p className="text-sm text-muted-foreground">Helper text</p>
+<p className="text-base leading-7">Body text</p>
+```
+
+#### Spacing System
+```tsx
+// Use consistent spacing patterns
+<div className="space-y-6">           {/* Vertical spacing between sections */}
+  <div className="space-y-4">         {/* Vertical spacing within sections */}
+    <div className="flex items-center gap-2"> {/* Horizontal spacing */}
+      <Button size="sm" className="px-4 py-2">Action</Button>
+    </div>
+  </div>
+</div>
+
+// Container patterns
+<div className="container mx-auto px-4">      {/* Page containers */}
+<div className="max-w-4xl mx-auto">           {/* Content width limits */}
+<div className="p-6">                         {/* Card padding */}
+```
+
+### Interactive States & Feedback
+
+#### Button States
+```tsx
+// Primary actions
+<Button variant="default" size="default">Save Document</Button>
+
+// Secondary actions  
+<Button variant="outline" size="sm">Cancel</Button>
+
+// Destructive actions
+<Button variant="destructive" size="sm">Delete</Button>
+
+// Loading states
+<Button disabled={isLoading}>
+  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  {isLoading ? 'Saving...' : 'Save'}
+</Button>
+```
+
+#### Status Indicators
+```tsx
+// Use Badge component for status
+<Badge variant="secondary">Draft</Badge>
+<Badge variant="default">Published</Badge>
+<Badge variant="destructive">Error</Badge>
+
+// Save status with colors
+<Badge variant={status === 'saved' ? 'default' : status === 'saving' ? 'secondary' : 'destructive'}>
+  {status === 'saved' && <Check className="w-3 h-3 mr-1" />}
+  {status === 'saving' && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+  {statusText}
+</Badge>
+```
+
+#### Form Patterns
+```tsx
+// Consistent form field structure
+<div className="space-y-2">
+  <Label htmlFor="title">Document Title</Label>
+  <Input
+    id="title"
+    value={data.document.title}
+    onChange={(e) => setData('document.title', e.target.value)}
+    placeholder="Enter document title..."
+    className="text-base"
+  />
+  {errors['document.title'] && (
+    <p className="text-sm text-destructive">{errors['document.title']}</p>
+  )}
+</div>
+
+// Textarea for content
+<div className="space-y-2">
+  <Label htmlFor="content">Content</Label>
+  <Textarea
+    id="content"
+    value={data.document.content}
+    onChange={(e) => setData('document.content', e.target.value)}
+    placeholder="Start writing..."
+    className="min-h-[400px] text-base leading-7 resize-none"
+  />
+</div>
+```
+
+### Layout Patterns
+
+#### Page Structure
+```tsx
+// Standard page layout
+export default function DocumentPage({ document }: { document: Document }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-semibold">Signify</h1>
+        </div>
+      </header>
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Page content */}
+        </div>
+      </main>
+    </div>
+  )
+}
+```
+
+#### Card Layouts
+```tsx
+// Standard card pattern
+<Card className="w-full">
+  <CardHeader className="space-y-1">
+    <div className="flex items-center justify-between">
+      <CardTitle className="text-xl">{document.title}</CardTitle>
+      <Badge variant="secondary">{document.status}</Badge>
+    </div>
+    <CardDescription>
+      {wordCount} words • Last saved {formatTime(document.updated_at)}
+    </CardDescription>
+  </CardHeader>
+  
+  <CardContent className="space-y-4">
+    {/* Card content */}
+  </CardContent>
+  
+  <CardFooter className="flex justify-between">
+    <Button variant="outline" size="sm">Cancel</Button>
+    <Button size="sm">Save Changes</Button>
+  </CardFooter>
+</Card>
+```
+
+### Responsive Design
+
+#### Breakpoint Usage
+```tsx
+// Mobile-first responsive patterns
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Responsive grid */}
+</div>
+
+<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+  {/* Responsive flex layouts */}
+</div>
+
+// Text scaling
+<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+  Responsive Heading
+</h1>
+```
+
+#### Mobile Considerations
+```tsx
+// Touch-friendly button sizes
+<Button size="default" className="min-h-[44px]">Mobile Friendly</Button>
+
+// Adequate spacing for touch
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+  {/* More spacing on larger screens */}
+</div>
+```
+
+### Animation & Transitions
+
+#### Subtle Animations
+```tsx
+// Hover states
+<Button className="transition-colors hover:bg-primary/90">
+  Hover Effect
+</Button>
+
+// Loading animations
+<Loader2 className="h-4 w-4 animate-spin" />
+
+// Content transitions
+<div className="transition-all duration-200 ease-in-out hover:shadow-md">
+  {/* Smooth transitions */}
+</div>
+```
+
+### Accessibility Guidelines
+
+#### Semantic HTML
+```tsx
+// Use proper heading hierarchy
+<h1>Page Title</h1>
+<h2>Section Title</h2>
+<h3>Subsection</h3>
+
+// Form accessibility
+<Label htmlFor="document-title">Document Title</Label>
+<Input 
+  id="document-title"
+  aria-describedby="title-help"
+  aria-invalid={!!errors['document.title']}
+/>
+<p id="title-help" className="text-sm text-muted-foreground">
+  Choose a descriptive title for your document
+</p>
+```
+
+#### Keyboard Navigation
+```tsx
+// Focus management
+<Button 
+  autoFocus={isFirstAction}
+  onKeyDown={(e) => {
+    if (e.key === 'Escape') handleCancel()
+  }}
+>
+  Action Button
+</Button>
+```
+
+### Component Testing Patterns
+
+#### Component Test Structure
+```tsx
+// Test essential component behaviors
+describe('DocumentEditor', () => {
+  it('renders document title and content', () => {
+    render(<DocumentEditor document={mockDocument} onSave={jest.fn()} />)
+    expect(screen.getByDisplayValue(mockDocument.title)).toBeInTheDocument()
+  })
+  
+  it('calls onSave when save button is clicked', async () => {
+    const onSave = jest.fn()
+    render(<DocumentEditor document={mockDocument} onSave={onSave} />)
+    
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
+      title: mockDocument.title
+    }))
+  })
+})
+```
+
+### Component Documentation
+
+#### Props Documentation
+```tsx
+/**
+ * A comprehensive document editor with auto-save functionality
+ * 
+ * @param document - The document to edit
+ * @param onSave - Callback when document is saved
+ * @param className - Additional CSS classes
+ * @param autoSaveInterval - Auto-save interval in milliseconds (default: 30000)
+ */
+export function DocumentEditor({
+  document,
+  onSave,
+  className,
+  autoSaveInterval = 30000
+}: DocumentEditorProps) {
+  // Component implementation
+}
+```
+
+### Performance Considerations
+
+#### Component Optimization
+```tsx
+// Memoize expensive components
+const DocumentCard = memo(function DocumentCard({ document }: { document: Document }) {
+  return (
+    <Card>
+      {/* Component content */}
+    </Card>
+  )
+})
+
+// Optimize event handlers
+const handleSave = useCallback(async () => {
+  await onSave(document)
+}, [document, onSave])
+```
+
+### Error Boundaries
+
+#### Error Handling Pattern
+```tsx
+// Wrap components in error boundaries
+<ErrorBoundary fallback={<ErrorMessage />}>
+  <DocumentEditor document={document} onSave={handleSave} />
+</ErrorBoundary>
+
+// Error display component
+function ErrorMessage({ error }: { error?: Error }) {
+  return (
+    <Alert variant="destructive">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Something went wrong</AlertTitle>
+      <AlertDescription>
+        {error?.message || 'An unexpected error occurred'}
+      </AlertDescription>
+    </Alert>
+  )
+}
+```
+
 ## Important Patterns & Conventions
 
 ### File Organization

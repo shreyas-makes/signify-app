@@ -1,103 +1,100 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { GitBranch } from '@/components/ui/git-branch'
-import { GitNode } from '@/components/ui/git-node'
-import { processKeystrokesToGitGraph } from '@/lib/keystroke-to-git'
-import type { GitCommit, Keystroke } from '@/types'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import type { Keystroke } from '@/types'
 
-interface GitCommitGraphProps {
-  keystrokes: Keystroke[]
-  width?: number
-  height?: number
-  interactive?: boolean
-  showStats?: boolean
-  className?: string
+// Shared heatmap calculation logic (DRY principle)
+function calculateHeatmapGrid(
+  keystrokes: Keystroke[], 
+  containerWidth: number, 
+  isMini: boolean = false
+) {
+  if (keystrokes.length === 0) {
+    return { 
+      bins: [], 
+      maxIntensity: 1, 
+      colsPerRow: isMini ? 20 : 40, 
+      numRows: isMini ? 2 : 4, 
+      timeUnit: 'second',
+      intervalMs: 1000,
+      startTime: Date.now()
+    };
+  }
+  
+  // Sort keystrokes by timestamp (convert ISO strings to milliseconds)
+  const sortedKeystrokes = [...keystrokes].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const startTime = new Date(sortedKeystrokes[0].timestamp).getTime()
+  const endTime = new Date(sortedKeystrokes[sortedKeystrokes.length - 1].timestamp).getTime()
+  const totalDuration = endTime - startTime
+  
+  // Calculate optimal grid to fill the available space
+  const minCellSize = isMini ? 6 : 8 // Smaller minimum for mini view
+  const targetCols = Math.floor(containerWidth / minCellSize)
+  const targetRows = isMini ? 4 : 6 // Responsive rows for both mini and main
+  const totalCells = targetCols * targetRows
+  
+  // Calculate interval that will distribute keystrokes across all cells
+  let intervalMs = Math.max(1000, Math.ceil(totalDuration / totalCells)) // At least 1 second intervals
+  
+  // Adjust interval to create meaningful time units
+  let timeUnit: string
+  if (intervalMs < 5000) { // < 5 seconds
+    intervalMs = Math.max(1000, Math.ceil(intervalMs / 1000) * 1000) // Round to nearest second
+    timeUnit = 'second'
+  } else if (intervalMs < 60000) { // < 1 minute  
+    intervalMs = Math.ceil(intervalMs / 5000) * 5000 // Round to nearest 5 seconds
+    timeUnit = intervalMs === 5000 ? '5sec' : `${intervalMs/1000}sec`
+  } else if (intervalMs < 300000) { // < 5 minutes
+    intervalMs = Math.ceil(intervalMs / 15000) * 15000 // Round to nearest 15 seconds
+    timeUnit = `${intervalMs/1000}sec`
+  } else { // >= 5 minutes
+    intervalMs = Math.ceil(intervalMs / 60000) * 60000 // Round to nearest minute
+    timeUnit = intervalMs === 60000 ? 'minute' : `${intervalMs/60000}min`
+  }
+  
+  // Recalculate grid based on actual interval
+  const actualTotalIntervals = Math.ceil(totalDuration / intervalMs)
+  const colsPerRow = Math.min(targetCols, Math.max(isMini ? 10 : 20, actualTotalIntervals))
+  const numRows = Math.max(1, Math.ceil(actualTotalIntervals / colsPerRow))
+  const totalBins = colsPerRow * numRows
+  
+  // Create bins for the calculated grid
+  const intensityBins = new Array(totalBins).fill(0)
+  
+  // Group keystrokes into time intervals
+  for (const ks of sortedKeystrokes) {
+    const keystrokeTime = new Date(ks.timestamp).getTime()
+    const intervalsSinceStart = Math.floor((keystrokeTime - startTime) / intervalMs)
+    const binIndex = Math.min(intervalsSinceStart, totalBins - 1)
+    
+    if (binIndex >= 0 && binIndex < totalBins) {
+      intensityBins[binIndex]++
+    }
+  }
+
+  return {
+    bins: intensityBins,
+    maxIntensity: Math.max(...intensityBins, 1),
+    colsPerRow,
+    numRows,
+    timeUnit,
+    intervalMs,
+    startTime,
+  }
 }
 
-interface CommitTooltip {
-  commit: GitCommit
-  visible: boolean
-  x: number
-  y: number
-}
-
-export function GitCommitGraph({ 
-  keystrokes, 
-  width = 800, 
-  height = 250,
-  interactive = true,
-  showStats = true,
+export function GitCommitGraph({
+  keystrokes,
   className = ""
-}: GitCommitGraphProps) {
-  const [activeCommit, setActiveCommit] = useState<string | null>(null)
-  const [tooltip, setTooltip] = useState<CommitTooltip | null>(null)
-
-  // Responsive adjustments based on width
-  const isCompact = width < 600
-  const maxCommits = isCompact ? 25 : 50
-  const nodeSize = isCompact ? 12 : 16
-
-  // Process keystrokes into git graph
-  const { commits, branches } = useMemo(() => {
-    return processKeystrokesToGitGraph(keystrokes, { 
-      maxCommits, 
-      width, 
-      height 
-    })
-  }, [keystrokes, width, height, maxCommits])
-
-  const stats = useMemo(() => {
-    if (commits.length === 0) return null
-    
-    const typingCommits = commits.filter(c => c.type === 'typing').length
-    const correctionCommits = commits.filter(c => c.type === 'correction').length
-    const pauseCommits = commits.filter(c => c.type === 'pause').length
-    const milestoneCommits = commits.filter(c => c.type === 'milestone').length
-    
-    return {
-      total: commits.length,
-      typing: typingCommits,
-      corrections: correctionCommits,
-      pauses: pauseCommits,
-      milestones: milestoneCommits
-    }
-  }, [commits])
-
-  const handleCommitClick = (commit: GitCommit) => {
-    if (!interactive) return
-    setActiveCommit(activeCommit === commit.id ? null : commit.id)
-  }
-
-  const handleCommitHover = (commit: GitCommit | null, event?: React.MouseEvent) => {
-    if (!interactive || !commit || !event) {
-      setTooltip(null)
-      return
-    }
-
-    const rect = event.currentTarget.getBoundingClientRect()
-    setTooltip({
-      commit,
-      visible: true,
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    })
-  }
-
-  const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString()
-  }
-
-  const formatDuration = (duration: number) => {
-    if (duration < 1000) return `${duration}ms`
-    return `${(duration / 1000).toFixed(1)}s`
-  }
-
-  if (commits.length === 0) {
+}: {
+  keystrokes: Keystroke[],
+  className?: string
+}) {
+  if (keystrokes.length === 0) {
     return (
       <Card className={className}>
         <CardContent className="p-6 text-center text-muted-foreground">
-          No keystroke data available for visualization
+          No keystroke data available for visualization.
         </CardContent>
       </Card>
     )
@@ -105,186 +102,200 @@ export function GitCommitGraph({
 
   return (
     <Card className={className}>
-      {showStats && (
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Git-Style Commit Graph</span>
-            {stats && (
-              <div className="flex items-center gap-4 text-sm font-normal">
-                <span className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  {stats.typing} typing
-                </span>
-                <span className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  {stats.corrections} corrections
-                </span>
-                <span className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  {stats.pauses} pauses
-                </span>
-                <span className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  {stats.milestones} milestones
-                </span>
-              </div>
-            )}
-          </CardTitle>
-        </CardHeader>
-      )}
-      
-      <CardContent className="p-4 relative">
-        <div className="relative w-full overflow-hidden">
-          <svg 
-            width="100%" 
-            height={height}
-            viewBox={`0 0 ${width} ${height}`}
-            className="border rounded-lg w-full"
-            onMouseLeave={() => setTooltip(null)}
-            preserveAspectRatio="xMidYMid meet"
-          >
-            {/* Enhanced artistic background with gradients and patterns */}
-            <defs>
-              {/* Artistic grid pattern */}
-              <pattern id="artisticGrid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="1" fill="#e5e7eb" opacity="0.3"/>
-                <path d="M 0 30 L 60 30 M 30 0 L 30 60" stroke="#f3f4f6" strokeWidth="0.5" opacity="0.2"/>
-              </pattern>
-              
-              {/* Radial gradient for depth */}
-              <radialGradient id="backgroundGradient" cx="50%" cy="50%" r="70%">
-                <stop offset="0%" stopColor="#fafafa" stopOpacity="1"/>
-                <stop offset="100%" stopColor="#f1f5f9" stopOpacity="1"/>
-              </radialGradient>
-              
-              {/* Activity-based color zones */}
-              <linearGradient id="activityGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ecfdf5" stopOpacity="0.6"/>
-                <stop offset="50%" stopColor="#f0f9ff" stopOpacity="0.4"/>
-                <stop offset="100%" stopColor="#fefce8" stopOpacity="0.6"/>
-              </linearGradient>
-              
-              {/* Timeline gradient */}
-              <linearGradient id="timelineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.8"/>
-                <stop offset="50%" stopColor="#64748b" stopOpacity="1"/>
-                <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.8"/>
-              </linearGradient>
-            </defs>
-            
-            {/* Multi-layered artistic background */}
-            <rect width="100%" height="100%" fill="url(#backgroundGradient)" />
-            <rect width="100%" height="100%" fill="url(#activityGradient)" />
-            <rect width="100%" height="100%" fill="url(#artisticGrid)" />
-            
-            {/* Render branches first (behind nodes) */}
-            {branches.map(branch => (
-              <GitBranch
-                key={branch.id}
-                branch={branch}
-                commits={commits}
-                isActive={activeCommit === branch.fromCommit || activeCommit === branch.toCommit}
-              />
-            ))}
-            
-            {/* Render commit nodes */}
-            {commits.map(commit => (
-              <GitNode
-                key={commit.id}
-                commit={commit}
-                size={nodeSize}
-                isActive={activeCommit === commit.id}
-                onClick={handleCommitClick}
-                onHover={handleCommitHover}
-              />
-            ))}
-            
-            {/* Enhanced timeline axis with artistic styling */}
-            <line
-              x1={30}
-              y1={height - 25}
-              x2={width - 30}
-              y2={height - 25}
-              stroke="url(#timelineGradient)"
-              strokeWidth={2}
-              opacity={0.6}
-            />
-            
-            
-            {/* Enhanced time markers with better sizing */}
-            {commits.length > 1 && (
-              <>
-                <g>
-                  <circle cx={40} cy={height - 25} r="2" fill="#64748b" opacity="0.6"/>
-                  <text
-                    x={40}
-                    y={height - 8}
-                    fontSize="8"
-                    fill="#475569"
-                    textAnchor="start"
-                    fontWeight="500"
-                  >
-                    Start: {formatTimestamp(commits[0].timestamp)}
-                  </text>
-                </g>
-                <g>
-                  <circle cx={width - 40} cy={height - 25} r="2" fill="#64748b" opacity="0.6"/>
-                  <text
-                    x={width - 40}
-                    y={height - 8}
-                    fontSize="8"
-                    fill="#475569"
-                    textAnchor="end"
-                    fontWeight="500"
-                  >
-                    End: {formatTimestamp(commits[commits.length - 1].timestamp)}
-                  </text>
-                </g>
-              </>
-            )}
-          </svg>
-          
-          {/* Tooltip */}
-          {tooltip && tooltip.visible && (
-            <div
-              className="absolute z-10 bg-popover text-popover-foreground text-xs rounded-lg px-3 py-2 pointer-events-none max-w-xs border shadow-md"
-              style={{
-                left: Math.min(tooltip.x + 10, 600),
-                top: Math.max(tooltip.y - 10, 0),
-                transform: tooltip.y > 100 ? 'translateY(-100%)' : 'translateY(10px)'
-              }}
-            >
-              <div className="font-semibold capitalize">{tooltip.commit.type} Session</div>
-              <div>Keystrokes: {tooltip.commit.keystrokes}</div>
-              <div>Duration: {formatDuration(tooltip.commit.duration)}</div>
-              <div>Intensity: {tooltip.commit.intensity.toFixed(1)}</div>
-              <div>Time: {formatTimestamp(tooltip.commit.timestamp)}</div>
-            </div>
-          )}
-        </div>
-        
-        {/* Legend */}
-        <div className="mt-4 text-xs text-muted-foreground">
-          <div className="flex items-center justify-center gap-6 flex-wrap">
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              Active typing sessions
-            </span>
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              Correction bursts
-            </span>
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              Thinking pauses
-            </span>
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              Writing milestones
-            </span>
-          </div>
-        </div>
-      </CardContent>
+      <CardHeader className="pb-4">
+        <CardTitle>Writing Pattern Analysis</CardTitle>
+        <CardDescription>A visual signature of the writing process.</CardDescription>
+      </CardHeader>
+      <HeatmapView keystrokes={keystrokes} />
     </Card>
+  )
+}
+
+// --- Heatmap View Component --- //
+
+function HeatmapView({ keystrokes }: { keystrokes: Keystroke[] }) {
+  const [tooltip, setTooltip] = useState<{ visible: boolean, content: string, x: number, y: number } | null>(null)
+  const [containerWidth, setContainerWidth] = useState(800)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Detect container width for responsive sizing
+  useLayoutEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth - 32) // Account for padding
+      }
+    }
+    
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
+
+  const { bins, maxIntensity, colsPerRow, numRows, timeUnit, intervalMs, startTime } = useMemo(() => {
+    return calculateHeatmapGrid(keystrokes, containerWidth, false) // Use shared logic for main component
+  }, [keystrokes, containerWidth])
+
+  const getHeatmapColor = (intensity: number) => {
+    if (intensity === 0) return 'hsl(0 0% 98%)'; // Very light gray for empty cells
+    
+    // Use logarithmic scaling for better visual distribution
+    const ratio = Math.log(intensity + 1) / Math.log(maxIntensity + 1)
+    
+    // Monochrome grayscale palette (lighter to darker)
+    const lightness = Math.max(15, 95 - (ratio * 80)) // From 95% to 15% lightness
+    return `hsl(0 0% ${lightness}%)`;
+  }
+
+  // Calculate responsive cell dimensions - make strips instead of squares
+  const cellWidth = Math.floor(containerWidth / colsPerRow)
+  const cellHeight = Math.max(120, Math.min(40, cellWidth * 2)) // Taller strips, 2x width ratio
+  const svgHeight = cellHeight * numRows + 50 // More space for labels and padding
+  const svgWidth = cellWidth * colsPerRow
+
+  const handleMouseOver = (e: React.MouseEvent, index: number, intensity: number) => {
+    const col = index % colsPerRow
+    const row = Math.floor(index / colsPerRow)
+    const timestamp = startTime + (index * intervalMs)
+    const date = new Date(timestamp)
+    
+    let timeLabel: string
+    if (timeUnit === 'minute') {
+      timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    } else if (timeUnit === 'hour') {
+      timeLabel = `${date.getHours()}:00`
+    } else {
+      timeLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' })
+    }
+    
+    const rect = e.currentTarget.getBoundingClientRect()
+
+    setTooltip({
+      visible: true,
+      content: `${intensity} keystrokes at ${timeLabel}`,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+  }
+
+  return (
+    <CardContent className="p-4 sm:p-6 relative" ref={containerRef}>
+      <div className="relative w-full pb-6">
+        <svg 
+          width="100%"
+          height={svgHeight}
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          className="rounded-lg border border-border/50"
+          preserveAspectRatio="none"
+        >
+          <g onMouseLeave={() => setTooltip(null)}>
+            {/* Time labels on x-axis */}
+            {Array.from({ length: colsPerRow }, (_, i) => {
+              const x = (i * cellWidth) + (cellWidth / 2)
+              const labelInterval = Math.max(1, Math.floor(colsPerRow / 10)) // Show ~10 labels max
+              const shouldShowLabel = i % labelInterval === 0
+              
+              if (!shouldShowLabel) return null
+              
+              // Calculate actual time for this column
+              const timeAtColumn = startTime + (i * intervalMs)
+              const elapsed = timeAtColumn - startTime
+              
+              let label: string
+              if (intervalMs < 60000) { // Less than 1 minute intervals
+                const seconds = Math.floor(elapsed / 1000)
+                label = `${seconds}s`
+              } else { // Minute or larger intervals
+                const minutes = Math.floor(elapsed / 60000)
+                label = minutes === 0 ? '0m' : `${minutes}m`
+              }
+              
+              return (
+                <text
+                  key={`time-${i}`}
+                  x={x}
+                  y={svgHeight - 8}
+                  fontSize="9"
+                  fill="hsl(var(--muted-foreground))"
+                  textAnchor="middle"
+                >
+                  {label}
+                </text>
+              )
+            })}
+            
+            {/* Row labels on y-axis */}
+            {Array.from({ length: Math.min(numRows, 10) }, (_, i) => (
+              <text
+                key={`row-${i}`}
+                x="-8"
+                y={(i * cellHeight) + (cellHeight / 2) + 3}
+                fontSize="9"
+                fill="hsl(var(--muted-foreground))"
+                textAnchor="end"
+              >
+                {i}
+              </text>
+            ))}
+            
+            {/* Heatmap cells */}
+            {bins.map((intensity, index) => {
+              const col = index % colsPerRow
+              const row = Math.floor(index / colsPerRow)
+              const x = col * cellWidth
+              const y = row * cellHeight
+              return (
+                <rect
+                  key={index}
+                  x={x}
+                  y={y}
+                  width={cellWidth}
+                  height={cellHeight}
+                  fill={getHeatmapColor(intensity)}
+                  stroke="hsl(var(--border))"
+                  strokeWidth="0.25"
+                  className="transition-all hover:opacity-80 hover:stroke-foreground cursor-pointer"
+                  onMouseOver={(e) => handleMouseOver(e, index, intensity)}
+                />
+              )
+            })}
+          </g>
+        </svg>
+        {tooltip && tooltip.visible && (
+          <div
+            className="absolute z-10 bg-popover text-popover-foreground text-xs rounded-md px-2 py-1 pointer-events-none shadow-lg border"
+            style={{ left: tooltip.x + 15, top: tooltip.y + 15 }}
+          >
+            {tooltip.content}
+          </div>
+        )}
+      </div>
+      <HeatmapLegend />
+    </CardContent>
+  )
+}
+
+function HeatmapLegend() {
+  const legendColors = [
+    'hsl(0 0% 98%)', // Very light gray (empty)
+    'hsl(0 0% 80%)', // Light gray
+    'hsl(0 0% 60%)', // Medium gray
+    'hsl(0 0% 40%)', // Dark gray
+    'hsl(0 0% 20%)', // Very dark gray
+  ]
+
+  return (
+    <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
+      <span>Less</span>
+      <div className="flex gap-px border border-border rounded">
+        {legendColors.map((color, index) => (
+          <div
+            key={index}
+            className="w-3 h-3 border-r border-border last:border-r-0"
+            style={{ backgroundColor: color }}
+          />
+        ))}
+      </div>
+      <span>More</span>
+    </div>
   )
 }

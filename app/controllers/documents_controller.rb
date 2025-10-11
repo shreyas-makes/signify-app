@@ -35,7 +35,18 @@ class DocumentsController < InertiaController
 
   def edit
     render inertia: "documents/edit", props: {
-      document: document_json(@document)
+      document: document_json(@document),
+      keystrokes: @document.keystrokes.order(:sequence_number).map do |keystroke|
+        {
+          id: keystroke.id,
+          event_type: keystroke.event_type,
+          key_code: keystroke.key_code,
+          character: keystroke.character,
+          timestamp: keystroke.timestamp.iso8601,
+          sequence_number: keystroke.sequence_number,
+          cursor_position: keystroke.cursor_position
+        }
+      end
     }
   end
 
@@ -126,7 +137,70 @@ class DocumentsController < InertiaController
   end
 
   def document_params
-    params.require(:document).permit(:title, :content, :status)
+    permitted = params.require(:document).permit(:title, :content, :status)
+    
+    # Sanitize input parameters
+    permitted[:title] = sanitize_title(permitted[:title]) if permitted[:title]
+    permitted[:content] = sanitize_content(permitted[:content]) if permitted[:content]
+    permitted[:status] = sanitize_status(permitted[:status]) if permitted[:status]
+    
+    permitted
+  end
+
+  def sanitize_title(title)
+    # Strip dangerous characters and limit length
+    ActionController::Base.helpers.strip_tags(title.to_s)
+      .gsub(/[<>\"'&]/, '')
+      .strip
+      .truncate(255)
+  end
+
+  def sanitize_content(content)
+    # Allow basic formatting but strip dangerous tags
+    ActionController::Base.helpers.sanitize(content.to_s, 
+      tags: %w[p br strong b em i u ol ul li blockquote],
+      attributes: {}
+    )
+  end
+
+  def sanitize_status(status)
+    # Only allow valid status values
+    %w[draft ready_to_publish published].include?(status.to_s) ? status.to_s : 'draft'
+  end
+
+  def sanitize_keystroke_params(params)
+    # Validate required fields
+    return nil unless params[:sequence_number].present?
+    return nil unless params[:timestamp].present?
+    return nil unless params[:event_type].present?
+
+    # Validate event_type
+    valid_event_types = %w[keydown keyup]
+    return nil unless valid_event_types.include?(params[:event_type].to_s)
+
+    # Sanitize and validate parameters
+    {
+      sequence_number: params[:sequence_number].to_i,
+      timestamp: [params[:timestamp].to_f, 0].max, # Ensure non-negative
+      event_type: params[:event_type].to_s,
+      key_code: params[:key_code].to_s.strip.truncate(20),
+      character: sanitize_character(params[:character]),
+      cursor_position: [params[:cursor_position].to_i, 0].max
+    }
+  rescue => e
+    Rails.logger.warn "Invalid keystroke params: #{e.message}"
+    nil
+  end
+
+  def sanitize_character(character)
+    return nil if character.blank?
+    
+    # Only allow printable characters and common control characters
+    char = character.to_s.strip
+    return nil if char.length > 10 # Prevent abuse
+    
+    # Allow printable ASCII and some Unicode, but strip dangerous characters
+    char.gsub(/[<>\"'&]/, '')
   end
 
   def valid_for_publishing?
@@ -164,19 +238,26 @@ class DocumentsController < InertiaController
   def process_keystrokes(keystroke_data)
     return unless keystroke_data.is_a?(Array)
     
+    # Limit the number of keystrokes processed at once
+    keystroke_data = keystroke_data.first(1000) if keystroke_data.length > 1000
+    
     keystroke_data.each do |keystroke_params|
+      # Sanitize keystroke parameters
+      sanitized_params = sanitize_keystroke_params(keystroke_params)
+      next unless sanitized_params
+      
       # Only create new keystrokes - avoid duplicates by checking sequence number
-      unless @document.keystrokes.exists?(sequence_number: keystroke_params[:sequence_number])
+      unless @document.keystrokes.exists?(sequence_number: sanitized_params[:sequence_number])
         # Convert relative timestamp to absolute timestamp
-        absolute_timestamp = Time.current - (keystroke_params[:timestamp].to_f / 1000).seconds
+        absolute_timestamp = Time.current - (sanitized_params[:timestamp].to_f / 1000).seconds
         
         @document.keystrokes.create!(
-          event_type: keystroke_params[:event_type],
-          key_code: keystroke_params[:key_code].to_s,
-          character: keystroke_params[:character],
+          event_type: sanitized_params[:event_type],
+          key_code: sanitized_params[:key_code],
+          character: sanitized_params[:character],
           timestamp: absolute_timestamp,
-          sequence_number: keystroke_params[:sequence_number],
-          cursor_position: keystroke_params[:cursor_position] || 0
+          sequence_number: sanitized_params[:sequence_number],
+          cursor_position: sanitized_params[:cursor_position]
         )
       end
     end

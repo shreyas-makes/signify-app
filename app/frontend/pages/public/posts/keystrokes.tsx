@@ -5,9 +5,6 @@ import {
   BarChart3,
   Download,
   Loader2,
-  Pause, 
-  Play, 
-  RotateCcw, 
   Shield
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -17,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GitCommitGraph } from '@/components/ui/git-commit-graph'
+import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
 import type { Keystroke, TimelineEvent, TypingStatistics } from '@/types'
 
 interface Author {
@@ -69,10 +67,6 @@ interface Props {
 }
 
 export default function PublicPostKeystrokes({ post, keystrokes, meta, pagination }: Props) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentKeystroke, setCurrentKeystroke] = useState(0)
-  const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [replayText, setReplayText] = useState('')
   const [loadingMore, setLoadingMore] = useState(false)
   const [allKeystrokes, setAllKeystrokes] = useState<Keystroke[]>(keystrokes)
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800)
@@ -108,12 +102,6 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
     }
   }, [post.public_slug, pagination.current_page, pagination.has_more, loadingMore])
 
-  // Auto-load more keystrokes if we're getting close to the end during replay
-  useEffect(() => {
-    if (isPlaying && currentKeystroke > allKeystrokes.length - 100 && pagination.has_more && !loadingMore) {
-      void loadMoreKeystrokes()
-    }
-  }, [isPlaying, currentKeystroke, allKeystrokes.length, pagination.has_more, loadingMore, loadMoreKeystrokes])
 
   // Calculate typing statistics using all available keystrokes
   const statistics = useMemo((): TypingStatistics => {
@@ -208,57 +196,6 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
     return events
   }, [allKeystrokes])
 
-  // Replay functionality
-  useEffect(() => {
-    if (!isPlaying || currentKeystroke >= allKeystrokes.length) {
-      return
-    }
-
-    const baseDelay = 100 // Base delay between keystrokes in ms
-    const adjustedDelay = baseDelay / playbackSpeed
-
-    const timer = setTimeout(() => {
-      const keystroke = allKeystrokes[currentKeystroke]
-      
-      if (keystroke.event_type === 'keydown' && keystroke.character) {
-        if (keystroke.key_code === 8) {
-          // Backspace
-          setReplayText(prev => prev.slice(0, -1))
-        } else if (keystroke.character.length === 1) {
-          // Regular character
-          setReplayText(prev => prev + keystroke.character)
-        }
-      }
-      
-      setCurrentKeystroke(prev => prev + 1)
-    }, adjustedDelay)
-
-    return () => clearTimeout(timer)
-  }, [isPlaying, currentKeystroke, allKeystrokes, playbackSpeed])
-
-  // Stop playing when we reach the end
-  useEffect(() => {
-    if (currentKeystroke >= allKeystrokes.length && isPlaying) {
-      setIsPlaying(false)
-    }
-  }, [currentKeystroke, allKeystrokes.length, isPlaying])
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying)
-  }
-
-  const handleReset = () => {
-    setIsPlaying(false)
-    setCurrentKeystroke(0)
-    setReplayText('')
-  }
-
-  const handleSpeedChange = (speed: number) => {
-    setPlaybackSpeed(speed)
-  }
-
-
-  const progress = allKeystrokes.length > 0 ? (currentKeystroke / allKeystrokes.length) * 100 : 0
 
   // Download keystroke data as JSON
   const handleDownloadData = () => {
@@ -335,78 +272,52 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Replay Controls and Preview */}
+            {/* Enhanced Keystroke Replay */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Replay Controls */}
+              {/* Enhanced Keystroke Replay Component */}
+              <KeystrokeReplay 
+                keystrokes={allKeystrokes.map(k => ({
+                  id: k.id,
+                  event_type: k.event_type,
+                  key_code: k.key_code,
+                  character: k.character,
+                  timestamp: k.timestamp.toString(),
+                  sequence_number: k.sequence_number
+                }))}
+                title={post.title}
+                finalContent={post.content}
+                className="border-primary/20 bg-primary/5"
+              />
+
+              {/* Additional Download Controls */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Play className="h-5 w-5" />
-                    Keystroke Replay
+                    <Download className="h-5 w-5" />
+                    Export Data
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* Progress Bar */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                      <span>Progress: {currentKeystroke.toLocaleString()} / {allKeystrokes.length.toLocaleString()}</span>
-                      <span>{progress.toFixed(1)}%</span>
-                    </div>
-                    {pagination.has_more && (
-                      <div className="flex items-center gap-2 text-xs text-yellow-600 mb-1">
-                        {loadingMore && <Loader2 className="h-3 w-3 animate-spin" />}
-                        {loadingMore ? 'Loading additional keystrokes...' : `${pagination.total_keystrokes - allKeystrokes.length} more keystrokes available`}
-                      </div>
-                    )}
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-150"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Control Buttons */}
-                  <div className="flex items-center gap-4 mb-4">
-                    <Button onClick={handlePlayPause} size="sm">
-                      {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      {isPlaying ? 'Pause' : 'Play'}
-                    </Button>
-                    
-                    <Button onClick={handleReset} variant="outline" size="sm">
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                      Reset
-                    </Button>
-
+                  <div className="flex flex-wrap gap-3">
                     <Button onClick={handleDownloadData} variant="outline" size="sm">
                       <Download className="h-4 w-4 mr-2" />
-                      Download Data
+                      Download Complete Data (JSON)
                     </Button>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Speed:</span>
-                      {[1, 2, 5, 10].map(speed => (
-                        <Button
-                          key={speed}
-                          variant={playbackSpeed === speed ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handleSpeedChange(speed)}
-                          className="px-2"
-                        >
-                          {speed}x
-                        </Button>
-                      ))}
-                    </div>
+                    {pagination.has_more && (
+                      <Button 
+                        onClick={() => void loadMoreKeystrokes()} 
+                        variant="outline" 
+                        size="sm"
+                        disabled={loadingMore}
+                      >
+                        {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        Load All Keystrokes ({pagination.total_keystrokes - allKeystrokes.length} more)
+                      </Button>
+                    )}
                   </div>
-
-                  {/* Replay Text Area */}
-                  <div className="bg-card border-2 border-border rounded-lg p-4 min-h-[200px] font-mono text-sm leading-relaxed">
-                    <div className="text-muted-foreground mb-2 text-xs">Replay Output:</div>
-                    <div className="whitespace-pre-wrap">
-                      {replayText}
-                      <span className="animate-pulse bg-primary text-primary ml-0.5">|</span>
-                    </div>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Export includes complete keystroke timeline, statistics, and verification data
+                  </p>
                 </CardContent>
               </Card>
 
@@ -436,8 +347,8 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                         className="flex items-center gap-3 p-2 rounded-lg bg-muted border"
                       >
                         <div className={`w-3 h-3 rounded-full ${
-                          event.type === 'typing' ? 'bg-green-500' :
-                          event.type === 'pause' ? 'bg-yellow-500' : 'bg-red-500'
+                          event.type === 'typing' ? 'bg-primary' :
+                          event.type === 'pause' ? 'bg-secondary' : 'bg-destructive'
                         }`} />
                         <div className="flex-1 text-sm">
                           <span className="font-medium capitalize">{event.type}</span>
@@ -461,14 +372,14 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
 
             {/* Verification Info */}
             <div className="space-y-6">
-              <Card className="border-green-200 bg-green-50">
+              <Card className="border-primary/20 bg-primary/5">
                 <CardHeader>
-                  <CardTitle className="text-green-800 flex items-center gap-2">
+                  <CardTitle className="text-primary flex items-center gap-2">
                     <Shield className="h-5 w-5" />
                     Verification Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-green-700">
+                <CardContent className="text-primary/80">
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span>Document:</span>
@@ -490,7 +401,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                       <span>Total Keystrokes:</span>
                       <span className="font-medium">{post.keystroke_count.toLocaleString()}</span>
                     </div>
-                    <hr className="border-green-300" />
+                    <hr className="border-primary/30" />
                     <div className="text-xs">
                       ✓ Every keystroke captured in real-time<br />
                       ✓ No copy-paste operations detected<br />
@@ -510,30 +421,30 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                     <div>
                       <div className="flex justify-between mb-1">
                         <span>Typing Consistency</span>
-                        <span className="text-green-600 font-medium">Natural</span>
+                        <span className="text-primary font-medium">Natural</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }} />
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '85%' }} />
                       </div>
                     </div>
                     
                     <div>
                       <div className="flex justify-between mb-1">
                         <span>Pause Patterns</span>
-                        <span className="text-green-600 font-medium">Human-like</span>
+                        <span className="text-primary font-medium">Human-like</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }} />
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '92%' }} />
                       </div>
                     </div>
                     
                     <div>
                       <div className="flex justify-between mb-1">
                         <span>Correction Rate</span>
-                        <span className="text-green-600 font-medium">Typical</span>
+                        <span className="text-primary font-medium">Typical</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '78%' }} />
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '78%' }} />
                       </div>
                     </div>
 

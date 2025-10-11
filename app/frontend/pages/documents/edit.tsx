@@ -1,11 +1,13 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import { ArrowLeft, Eye, Loader2, RefreshCw, Save, Send } from "lucide-react"
+import { ArrowLeft, ChevronDown, ChevronRight, Eye, Loader2, Play, RefreshCw, Save, Send } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Input } from "@/components/ui/input"
+import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
@@ -14,8 +16,19 @@ import AppLayout from "@/layouts/app-layout"
 import { documentPath, documentsPath } from "@/routes"
 import type { BreadcrumbItem, Document } from "@/types"
 
+interface KeystrokeEvent {
+  id: number
+  event_type: 'keydown' | 'keyup'
+  key_code: number
+  character: string | null
+  timestamp: string
+  sequence_number: number
+  document_position?: number
+}
+
 interface DocumentsEditProps {
   document: Document
+  keystrokes?: KeystrokeEvent[]
 }
 
 const breadcrumbs = (document: Document): BreadcrumbItem[] => [
@@ -29,7 +42,7 @@ const breadcrumbs = (document: Document): BreadcrumbItem[] => [
   },
 ]
 
-export default function DocumentsEdit({ document }: DocumentsEditProps) {
+export default function DocumentsEdit({ document, keystrokes = [] }: DocumentsEditProps) {
   const { data, setData, errors } = useForm({
     document: {
       title: document.title,
@@ -40,6 +53,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
   const [isPublishing, setIsPublishing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   
@@ -166,7 +180,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
       const keystrokeData = getKeystrokesForTransmission()
       const pasteAttemptData = getPasteAttempts()
       
-      const success = await autoSave.save({
+      await autoSave.save({
         document: {
           title: data.document.title,
           content: data.document.content
@@ -175,9 +189,7 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
         paste_attempts: pasteAttemptData
       })
       
-      if (success) {
-        toast.success('Document saved successfully')
-      }
+      toast.success('Document saved successfully')
     } catch (error) {
       console.error('Manual save error:', error)
       toast.error('Failed to save document')
@@ -350,6 +362,36 @@ export default function DocumentsEdit({ document }: DocumentsEditProps) {
                 <p className="text-sm text-destructive mt-2 px-4 sm:px-6">{errors['document.content']}</p>
               )}
             </div>
+
+            {/* Keystroke Replay Section */}
+            {keystrokes.length > 0 && (
+              <div className="mt-8 border-t pt-8">
+                <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 text-left p-0 h-auto">
+                      {showKeystrokeReplay ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                      <Play className="h-4 w-4" />
+                      <span className="font-medium">Keystroke Replay</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({keystrokes.length} keystrokes recorded)
+                      </span>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4">
+                    <KeystrokeReplay
+                      keystrokes={keystrokes}
+                      title={data.document.title || "Untitled Document"}
+                      finalContent={data.document.content}
+                      className="max-w-none"
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            )}
           </div>
         </div>
       </div>
