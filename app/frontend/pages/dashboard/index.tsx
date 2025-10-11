@@ -346,7 +346,7 @@ export default function Dashboard({
                           checked={selectedDocuments.includes(document.id)}
                           onCheckedChange={() => toggleDocumentSelection(document.id)}
                         />
-                        <CardTitle className="text-xl font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+                        <CardTitle className="text-sm font-semibold line-clamp-2 group-hover:text-primary transition-colors">
                           {document.title || "Untitled Document"}
                         </CardTitle>
                       </div>

@@ -33,8 +33,12 @@ class DocumentsController < InertiaController
   end
 
   def edit
+    # Get all user documents for sidebar
+    documents = Current.user.documents.order(updated_at: :desc)
+    
     render inertia: "documents/edit", props: {
       document: document_json(@document),
+      documents: documents.map { |doc| document_json(doc) },
       keystrokes: @document.keystrokes.order(:sequence_number).map do |keystroke|
         {
           id: keystroke.id,

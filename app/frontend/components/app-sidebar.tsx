@@ -1,9 +1,13 @@
-import { Link } from "@inertiajs/react"
-import { BookOpen, Folder, LayoutGrid } from "lucide-react"
+import { Link, router } from "@inertiajs/react"
+import { BookOpen, Folder, LayoutGrid, FileText, Plus, Calendar, ChevronRight, ChevronDown } from "lucide-react"
+import { useState } from "react"
 
 import { NavFooter } from "@/components/nav-footer"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   Sidebar,
   SidebarContent,
@@ -12,9 +16,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarGroupAction,
 } from "@/components/ui/sidebar"
-import { dashboardPath } from "@/routes"
-import type { NavItem } from "@/types"
+import { dashboardPath, documentsPath, editDocumentPath, newDocumentPath } from "@/routes"
+import type { NavItem, Document } from "@/types"
 
 import AppLogo from "./app-logo"
 
@@ -39,7 +47,47 @@ const footerNavItems: NavItem[] = [
   },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  documents?: Document[]
+  currentDocumentId?: number
+}
+
+export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
+  const [documentsExpanded, setDocumentsExpanded] = useState(true)
+  
+  const handleNewDocument = () => {
+    router.post(newDocumentPath())
+  }
+
+  const handleDocumentClick = (document: Document) => {
+    if (currentDocumentId !== document.id) {
+      router.get(editDocumentPath({ id: document.id }))
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 1) return 'Today'
+    if (diffDays === 2) return 'Yesterday'
+    if (diffDays <= 7) return `${diffDays}d ago`
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'default'
+      case 'draft':
+        return 'secondary'
+      default:
+        return 'outline'
+    }
+  }
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
@@ -56,6 +104,86 @@ export function AppSidebar() {
 
       <SidebarContent>
         <NavMain items={mainNavItems} />
+        
+        {/* Documents Section */}
+        {documents && documents.length > 0 && (
+          <SidebarGroup>
+            <Collapsible open={documentsExpanded} onOpenChange={setDocumentsExpanded}>
+              <CollapsibleTrigger asChild>
+                <SidebarGroupLabel className="group/collapsible cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    {documentsExpanded ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3" />
+                    )}
+                    <Calendar className="h-4 w-4" />
+                    <span>Recent Documents</span>
+                  </div>
+                  <span className="ml-auto text-xs">{documents.length}</span>
+                </SidebarGroupLabel>
+              </CollapsibleTrigger>
+              <SidebarGroupAction asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleNewDocument}
+                  className="h-5 w-5 p-0"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </SidebarGroupAction>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {documents.slice(0, 10).map((document) => (
+                      <SidebarMenuItem key={document.id}>
+                        <SidebarMenuButton
+                          onClick={() => handleDocumentClick(document)}
+                          isActive={document.id === currentDocumentId}
+                          className="flex flex-col items-start gap-1 p-2 h-auto"
+                        >
+                          <div className="flex items-center gap-2 w-full">
+                            <FileText className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate text-sm font-medium">
+                              {document.title || "Untitled Document"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 w-full pl-5">
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(document.updated_at)}
+                            </span>
+                            <Badge 
+                              variant={getStatusBadgeVariant(document.status)}
+                              className="text-xs h-4 px-1"
+                            >
+                              {document.status}
+                            </Badge>
+                            {document.word_count > 0 && (
+                              <span className="text-xs text-muted-foreground ml-auto">
+                                {document.word_count} words
+                              </span>
+                            )}
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                  {documents.length > 10 && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href={documentsPath()}>
+                          <FileText className="h-4 w-4" />
+                          <span>View All Documents ({documents.length})</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

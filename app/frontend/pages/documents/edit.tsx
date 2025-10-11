@@ -12,7 +12,7 @@ import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-tex
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
-import AppLayout from "@/layouts/app-layout"
+import AppSidebarLayout from "@/layouts/app/app-sidebar-layout"
 import { documentPath, documentsPath } from "@/routes"
 import type { BreadcrumbItem, Document } from "@/types"
 
@@ -28,6 +28,7 @@ interface KeystrokeEvent {
 
 interface DocumentsEditProps {
   document: Document
+  documents: Document[]
   keystrokes?: KeystrokeEvent[]
 }
 
@@ -42,7 +43,7 @@ const breadcrumbs = (document: Document): BreadcrumbItem[] => [
   },
 ]
 
-export default function DocumentsEdit({ document, keystrokes = [] }: DocumentsEditProps) {
+export default function DocumentsEdit({ document, documents, keystrokes = [] }: DocumentsEditProps) {
   const { data, setData, errors } = useForm({
     document: {
       title: document.title,
@@ -247,20 +248,16 @@ export default function DocumentsEdit({ document, keystrokes = [] }: DocumentsEd
   }
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs(document)}>
+    <AppSidebarLayout 
+      breadcrumbs={breadcrumbs(document)}
+      documents={documents}
+      currentDocumentId={document.id}
+    >
       <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
-      <div className="h-screen flex flex-col">
+      <div className="h-full flex flex-col">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b bg-background gap-4">
-          <Button variant="ghost" size="sm" asChild className="self-start">
-            <a href={documentsPath()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Back to Documents</span>
-              <span className="sm:hidden">Back</span>
-            </a>
-          </Button>
-
           {/* Stats Row */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <div className="text-sm text-muted-foreground order-2 sm:order-1">
@@ -395,6 +392,6 @@ export default function DocumentsEdit({ document, keystrokes = [] }: DocumentsEd
           </div>
         </div>
       </div>
-    </AppLayout>
+    </AppSidebarLayout>
   )
 }
