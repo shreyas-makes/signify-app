@@ -13,9 +13,8 @@ class DocumentsController < InertiaController
 
   def new
     # Auto-create a blank document instead of showing a form
-    timestamp = Time.current.strftime("%Y%m%d_%H%M%S")
     @document = Current.user.documents.create!(
-      title: "Untitled Document #{timestamp}",
+      title: "",
       content: "",
       status: :draft
     )

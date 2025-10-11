@@ -37,7 +37,7 @@ const breadcrumbs = (document: Document): BreadcrumbItem[] => [
     href: documentsPath(),
   },
   {
-    title: document.title,
+    title: document.title || "Untitled Document",
     href: "#",
   },
 ]
@@ -248,7 +248,7 @@ export default function DocumentsEdit({ document, keystrokes = [] }: DocumentsEd
 
   return (
     <AppLayout breadcrumbs={breadcrumbs(document)}>
-      <Head title={`Edit: ${document.title}`} />
+      <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
       <div className="h-screen flex flex-col">
         {/* Header */}

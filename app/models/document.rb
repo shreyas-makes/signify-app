@@ -6,7 +6,7 @@ class Document < ApplicationRecord
 
   enum :status, {draft: 0, ready_to_publish: 1, published: 2}
 
-  validates :title, presence: true, length: {maximum: 255}
+  validates :title, length: {maximum: 255}
   validates :slug, presence: true, uniqueness: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :public_slug, uniqueness: true, allow_nil: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :status, presence: true
@@ -74,11 +74,15 @@ class Document < ApplicationRecord
   private
 
   def generate_slug
-    return unless title.present?
-
-    # Use parameterize but then clean up any remaining invalid characters
-    base_slug = title.parameterize.gsub('_', '-')
-    base_slug = 'untitled' if base_slug.blank?
+    # Generate a slug based on title or use a timestamp-based slug for untitled documents
+    if title.present?
+      base_slug = title.parameterize.gsub('_', '-')
+      base_slug = 'untitled' if base_slug.blank?
+    else
+      # For empty titles, use a timestamp-based slug
+      timestamp = Time.current.strftime("%Y%m%d%H%M%S")
+      base_slug = "untitled-#{timestamp}"
+    end
     
     slug_candidate = base_slug
     counter = 1

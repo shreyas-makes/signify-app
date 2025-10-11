@@ -73,6 +73,10 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
             leading-relaxed 
             resize-none 
             focus:outline-none 
+            focus:ring-0
+            focus:border-transparent
+            outline-none
+            ring-0
             placeholder:text-muted-foreground/50
             ${disabled ? 'opacity-50 pointer-events-none' : ''}
           `}
@@ -80,7 +84,10 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
             fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
             fontSize: '18px',
             lineHeight: '1.75',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            outline: 'none',
+            border: 'none',
+            boxShadow: 'none'
           }}
         />
       </div>
