@@ -23,7 +23,7 @@ export default function Appearance() {
         <div className="space-y-6">
           <HeadingSmall
             title="Appearance settings"
-            description="Update your account's appearance settings"
+            description="Signify now ships with a single refined light theme for clarity."
           />
           <AppearanceTabs />
         </div>

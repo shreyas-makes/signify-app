@@ -1,65 +1,17 @@
-import { useCallback, useEffect, useState } from "react"
-
-export type Appearance = "light" | "dark" | "system"
-
-const prefersDark = () => {
-  if (typeof window === "undefined") {
-    return false
-  }
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-}
-
-const applyTheme = (appearance: Appearance) => {
-  const isDark =
-    appearance === "dark" || (appearance === "system" && prefersDark())
-
-  document.documentElement.classList.toggle("dark", isDark)
-}
-
-const mediaQuery = () => {
-  if (typeof window === "undefined") {
-    return null
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)")
-}
-
-const handleSystemThemeChange = () => {
-  const currentAppearance = localStorage.getItem("appearance") as Appearance
-  applyTheme(currentAppearance ?? "system")
-}
+export type Appearance = "light"
 
 export function initializeTheme() {
-  const savedAppearance =
-    (localStorage.getItem("appearance") as Appearance) || "system"
+  if (typeof document === "undefined") {
+    return
+  }
 
-  applyTheme(savedAppearance)
-
-  mediaQuery()?.addEventListener("change", handleSystemThemeChange)
+  document.documentElement.classList.remove("dark")
 }
 
 export function useAppearance() {
-  const [appearance, setAppearance] = useState<Appearance>("system")
+  const updateAppearance = () => {
+    /* no-op: light mode is always active */
+  }
 
-  const updateAppearance = useCallback((mode: Appearance) => {
-    setAppearance(mode)
-    if (mode === "system") {
-      localStorage.removeItem("appearance")
-    } else {
-      localStorage.setItem("appearance", mode)
-    }
-    applyTheme(mode)
-  }, [])
-
-  useEffect(() => {
-    const savedAppearance = localStorage.getItem(
-      "appearance",
-    ) as Appearance | null
-    updateAppearance(savedAppearance ?? "system")
-
-    return () =>
-      mediaQuery()?.removeEventListener("change", handleSystemThemeChange)
-  }, [updateAppearance])
-
-  return { appearance, updateAppearance } as const
+  return { appearance: "light" as const, updateAppearance } as const
 }

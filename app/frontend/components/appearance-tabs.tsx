@@ -1,44 +1,37 @@
-import { type LucideIcon, Monitor, Moon, Sun } from "lucide-react"
+import { NotebookPen } from "lucide-react"
 import type { HTMLAttributes } from "react"
 
-import { type Appearance, useAppearance } from "@/hooks/use-appearance"
 import { cn } from "@/lib/utils"
 
-export default function AppearanceToggleTab({
+export default function AppearanceSettings({
   className = "",
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
-  const { appearance, updateAppearance } = useAppearance()
-
-  const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
-    { value: "light", icon: Sun, label: "Light" },
-    { value: "dark", icon: Moon, label: "Dark" },
-    { value: "system", icon: Monitor, label: "System" },
-  ]
-
   return (
     <div
       className={cn(
-        "inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800",
+        "bg-card text-muted-foreground flex flex-col gap-3 rounded-3xl border px-6 py-5 shadow-sm",
         className,
       )}
       {...props}
     >
-      {tabs.map(({ value, icon: Icon, label }) => (
-        <button
-          key={value}
-          onClick={() => updateAppearance(value)}
-          className={cn(
-            "flex items-center rounded-md px-3.5 py-1.5 transition-colors",
-            appearance === value
-              ? "bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100"
-              : "text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60",
-          )}
-        >
-          <Icon className="-ml-1 h-4 w-4" />
-          <span className="ml-1.5 text-sm">{label}</span>
-        </button>
-      ))}
+      <div className="flex items-center gap-3">
+        <span className="inline-flex size-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <NotebookPen className="h-5 w-5" />
+        </span>
+        <div>
+          <p className="text-sm font-medium text-foreground">Light mode only</p>
+          <p className="text-xs text-muted-foreground">
+            The interface stays bright to mirror iA Writer&apos;s focus on clean,
+            distraction-free reading and writing.
+          </p>
+        </div>
+      </div>
+      <p className="text-sm leading-6 text-muted-foreground">
+        Typography, spacing, and elevation now lean on a softer palette, generous
+        rounding, and Inter-based type to keep content front and center without
+        a theme switcher.
+      </p>
     </div>
   )
 }
