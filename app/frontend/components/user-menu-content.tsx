@@ -1,5 +1,5 @@
 import { Link, router } from "@inertiajs/react"
-import { LogOut, Settings } from "lucide-react"
+import { LogOut, Settings, Shield } from "lucide-react"
 
 import {
   DropdownMenuGroup,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { UserInfo } from "@/components/user-info"
 import { useMobileNavigation } from "@/hooks/use-mobile-navigation"
-import { sessionPath, settingsProfilePath } from "@/routes"
+import { adminDashboardPath, sessionPath, settingsProfilePath } from "@/routes"
 import type { User } from "@/types"
 
 interface UserMenuContentProps {
@@ -39,6 +39,21 @@ export function UserMenuContent({ auth }: UserMenuContentProps) {
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
+        {user.admin && (
+          <DropdownMenuItem asChild>
+            <Link
+              className="block w-full"
+              href={adminDashboardPath()}
+              as="button"
+              prefetch
+              onClick={cleanup}
+            >
+              <Shield className="mr-2" />
+              Admin Dashboard
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {user.admin && <DropdownMenuSeparator />}
         <DropdownMenuItem asChild>
           <Link
             className="block w-full"

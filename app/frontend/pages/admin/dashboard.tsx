@@ -1,6 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { 
   Users, 
   FileText, 
@@ -184,37 +185,71 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
             </CardContent>
           </Card>
 
-          {/* Recent Documents */}
+          {/* All Documents */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Recent Documents
+                All Documents
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {documents.slice(0, 10).map((document) => (
-                  <div key={document.id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex-1">
-                      <p className="font-medium truncate">{document.title}</p>
-                      <p className="text-sm text-muted-foreground">by {document.user.display_name}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Badge 
-                          variant={document.status === 'published' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {document.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p>{formatNumber(document.word_count)} words</p>
-                      <p className="text-muted-foreground">{formatDate(document.created_at)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No documents have been created yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Author</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Words</TableHead>
+                        <TableHead>Keystrokes</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Updated</TableHead>
+                        <TableHead className="text-right">Public Link</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {documents.map((document) => (
+                        <TableRow key={document.id}>
+                          <TableCell className="font-medium max-w-[220px] truncate">
+                            {document.title || "Untitled Document"}
+                          </TableCell>
+                          <TableCell>{document.user.display_name}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={document.status === "published" ? "default" : "secondary"}
+                              className="capitalize"
+                            >
+                              {document.status.replace(/_/g, " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{formatNumber(document.word_count)}</TableCell>
+                          <TableCell>{formatNumber(document.keystroke_count)}</TableCell>
+                          <TableCell>{formatDate(document.created_at)}</TableCell>
+                          <TableCell>{formatDate(document.updated_at)}</TableCell>
+                          <TableCell className="text-right">
+                            {document.public_slug ? (
+                              <a
+                                href={`/posts/${document.public_slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                View
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -3,7 +3,7 @@
 class Admin::DashboardController < Admin::BaseController
   def index
     @users = User.includes(:documents, :sessions).order(created_at: :desc).limit(50)
-    @documents = Document.includes(:user).order(created_at: :desc).limit(50)
+    @documents = Document.includes(:user).order(updated_at: :desc)
     @recent_posts = Document.published.includes(:user).order(published_at: :desc).limit(20)
     
     @stats = {
