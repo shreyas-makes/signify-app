@@ -209,18 +209,14 @@ RSpec.describe Document, type: :model do
         expect(document.errors[:public_slug]).to include("can't be blank")
       end
 
-      it "prevents editing published documents" do
+      it "allows editing published documents" do
         document = create(:document, :published, title: "Original", content: "Original content")
-        document.title = "Changed"
-        expect(document).not_to be_valid
-        expect(document.errors[:base]).to include("Published documents cannot be edited")
-      end
 
-      it "prevents editing content of published documents" do
-        document = create(:document, :published, title: "Original", content: "Original content")
-        document.content = "Changed content"
-        expect(document).not_to be_valid
-        expect(document.errors[:base]).to include("Published documents cannot be edited")
+        document.update!(title: "Changed", content: "<p>Changed content</p>")
+        document.reload
+
+        expect(document.title).to eq("Changed")
+        expect(document.content).to eq("<p>Changed content</p>")
       end
     end
 
@@ -241,26 +237,6 @@ RSpec.describe Document, type: :model do
         document = build(:document, keystroke_count: -1)
         expect(document).not_to be_valid
         expect(document.errors[:keystroke_count]).to include("must be greater than or equal to 0")
-      end
-    end
-  end
-
-  describe "convenience methods" do
-    let(:draft_doc) { build(:document, status: :draft) }
-    let(:ready_doc) { build(:document, status: :ready_to_publish) }
-    let(:published_doc) { build(:document, status: :published) }
-
-    describe "#can_edit?" do
-      it "returns true for draft documents" do
-        expect(draft_doc.can_edit?).to be true
-      end
-
-      it "returns true for ready_to_publish documents" do
-        expect(ready_doc.can_edit?).to be true
-      end
-
-      it "returns false for published documents" do
-        expect(published_doc.can_edit?).to be false
       end
     end
   end

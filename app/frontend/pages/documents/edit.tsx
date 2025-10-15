@@ -175,7 +175,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     setData('document.content', content)
   }
 
-  const handleManualSave = async () => {
+  const handleManualSave = async ({ showSuccessToast = true }: { showSuccessToast?: boolean } = {}) => {
     setIsSaving(true)
     try {
       const keystrokeData = getKeystrokesForTransmission()
@@ -189,8 +189,9 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
         keystrokes: keystrokeData,
         paste_attempts: pasteAttemptData
       })
-      
-      toast.success('Document saved successfully')
+      if (showSuccessToast) {
+        toast.success('Document saved successfully')
+      }
     } catch (error) {
       console.error('Manual save error:', error)
       toast.error('Failed to save document')
@@ -214,21 +215,28 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     setIsPublishing(true)
     try {
       // Save first, then publish
-      toast.loading('Saving document before publishing...')
-      await handleManualSave()
+      const savingToastId = toast.loading('Saving document before publishing...')
+      try {
+        await handleManualSave({ showSuccessToast: false })
+      } finally {
+        toast.dismiss(savingToastId)
+      }
       
-      toast.loading('Publishing document...')
+      const publishingToastId = toast.loading('Publishing document...')
       router.post(`/documents/${document.id}/publish`, {}, {
         onSuccess: () => {
+          toast.dismiss(publishingToastId)
           toast.success('Document published successfully!')
           // Will be redirected by the controller
         },
         onError: (errors) => {
           console.error('Publishing failed:', errors)
+          toast.dismiss(publishingToastId)
           toast.error('Failed to publish document. Please try again.')
           setIsPublishing(false)
         },
         onFinish: () => {
+          toast.dismiss(publishingToastId)
           setIsPublishing(false)
         }
       })
@@ -255,74 +263,71 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     >
       <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col bg-white">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b bg-background gap-4">
-          {/* Stats Row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-            <div className="text-sm text-muted-foreground order-2 sm:order-1">
-              <span className="inline-block">{wordCount} words</span>
-              <span className="hidden sm:inline"> • </span>
-              <span className="block sm:inline">{keystrokeCount} keystrokes</span>
-              {pasteAttemptCount > 0 && (
-                <span className="text-amber-600 font-medium block sm:inline">
-                  <span className="hidden sm:inline"> • </span>
-                  {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
-                </span>
-              )}
-            </div>
-            
-            {/* Actions Row */}
-            <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto justify-end">
-              <Badge variant={autoSave.getSaveStatusColor()} className="text-xs">
-                {autoSave.getSaveStatusText()}
-              </Badge>
-              {autoSave.saveStatus === 'error' && (
-                <Button
-                  onClick={() => void autoSave.retry()}
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:flex"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Retry
-                </Button>
-              )}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 border-b bg-white">
+          <div className="text-sm text-muted-foreground">
+            <span className="inline-block">{wordCount} words</span>
+            <span className="hidden sm:inline"> • </span>
+            <span className="block sm:inline">{keystrokeCount} keystrokes</span>
+            {pasteAttemptCount > 0 && (
+              <span className="text-amber-600 font-medium block sm:inline">
+                <span className="hidden sm:inline"> • </span>
+                {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
+              </span>
+            )}
+          </div>
+
+          {/* Actions Row */}
+          <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+            <Badge variant={autoSave.getSaveStatusColor()} className="text-xs">
+              {autoSave.getSaveStatusText()}
+            </Badge>
+            {autoSave.saveStatus === 'error' && (
               <Button
-                onClick={() => void handleManualSave()}
-                disabled={isSaving || autoSave.saveStatus === 'saving' || (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)}
-                size="sm"
+                onClick={() => void autoSave.retry()}
                 variant="outline"
+                size="sm"
+                className="hidden sm:flex"
               >
-                {isSaving ? (
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            )}
+            <Button
+              onClick={() => void handleManualSave()}
+              disabled={isSaving || autoSave.saveStatus === 'saving' || (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)}
+              size="sm"
+              variant="outline"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 sm:mr-2" />
+              )}
+              <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save'}</span>
+            </Button>
+            
+            {document.status === 'published' ? (
+              <Button size="sm" disabled variant="default">
+                <Eye className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Published</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => void handlePublish()}
+                disabled={!canPublish() || autoSave.saveStatus === 'saving' || isPublishing}
+                size="sm"
+                variant={canPublish() ? "default" : "outline"}
+              >
+                {isPublishing ? (
                   <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 sm:mr-2" />
+                  <Send className="h-4 w-4 sm:mr-2" />
                 )}
-                <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save'}</span>
+                <span className="hidden sm:inline">{isPublishing ? 'Publishing...' : getPublishButtonText()}</span>
               </Button>
-              
-              {document.status === 'published' ? (
-                <Button size="sm" disabled variant="default">
-                  <Eye className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Published</span>
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => void handlePublish()}
-                  disabled={!canPublish() || autoSave.saveStatus === 'saving' || isPublishing}
-                  size="sm"
-                  variant={canPublish() ? "default" : "outline"}
-                >
-                  {isPublishing ? (
-                    <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4 sm:mr-2" />
-                  )}
-                  <span className="hidden sm:inline">{isPublishing ? 'Publishing...' : getPublishButtonText()}</span>
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
@@ -339,7 +344,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 value={data.document.title}
                 onChange={(e) => setData('document.title', e.target.value)}
                 placeholder="Untitled Document"
-                className="text-2xl sm:text-4xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation"
+                className="text-3xl sm:text-5xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation"
               />
               {errors['document.title'] && (
                 <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
@@ -347,7 +352,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
             </div>
 
             {/* Content */}
-            <div className="flex-1 border border-input rounded-lg overflow-hidden bg-background shadow-sm min-h-0">
+            <div className="flex-1 border border-input rounded-lg overflow-hidden bg-white shadow-sm min-h-0">
               <RichTextEditor
                 ref={editorRef}
                 value={data.document.content}

@@ -15,8 +15,6 @@ class Document < ApplicationRecord
   # Workflow validations  
   validates :published_at, presence: true, if: -> { published? && !status_changed?(to: 'published') }
   validates :public_slug, presence: true, if: -> { published? && !status_changed?(to: 'published') }
-  validate :prevent_editing_published_documents, if: -> { published? && persisted? }
-
   before_validation :generate_slug, if: -> { slug.blank? }
   before_validation :set_default_status, if: -> { status.blank? }
   before_validation :set_default_counts, if: :new_record?
@@ -39,10 +37,6 @@ class Document < ApplicationRecord
 
   def published?
     status == 'published'
-  end
-
-  def can_edit?
-    !published?
   end
 
   # Content analysis methods
@@ -130,9 +124,4 @@ class Document < ApplicationRecord
     self.keystroke_count = calculate_keystroke_count
   end
 
-  def prevent_editing_published_documents
-    if content_changed? || title_changed?
-      errors.add(:base, "Published documents cannot be edited")
-    end
-  end
 end

@@ -83,7 +83,7 @@ class DocumentsController < InertiaController
   end
 
   def publish
-    unless @document.can_edit?
+    if @document.published?
       redirect_to edit_document_path(@document), alert: "Document is already published."
       return
     end
