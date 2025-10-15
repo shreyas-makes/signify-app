@@ -203,7 +203,7 @@ export default function PublicPostShow({ post, meta }: Props) {
             {post.verification.keystroke_verified && (
               <Card className=" border-green-200 bg-green-50">
                 <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1">
                       <div className="flex-1">
                         <p className="text-sm text-green-700 mb-3">
@@ -243,12 +243,12 @@ export default function PublicPostShow({ post, meta }: Props) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
+                    <div className="flex w-full justify-start lg:w-auto lg:justify-end lg:flex-shrink-0">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={handleViewKeystrokeTimeline}
-                        className="border-green-300 text-green-700 hover:bg-green-100"
+                        className="border-green-300 text-green-700 hover:bg-green-100 w-full lg:w-auto"
                       >
                         <Play className="h-4 w-4 mr-2" />
                         View Full Timeline
