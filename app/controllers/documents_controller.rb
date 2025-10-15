@@ -14,7 +14,7 @@ class DocumentsController < InertiaController
   def new
     # Auto-create a blank document instead of showing a form
     @document = Current.user.documents.create!(
-      title: "",
+      title: "Untitled Document",
       content: "",
       status: :draft
     )
