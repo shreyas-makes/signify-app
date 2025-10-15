@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import { ArrowLeft, ChevronDown, ChevronRight, Eye, Loader2, Play, RefreshCw, Save, Send } from "lucide-react"
+import { ChevronDown, ChevronRight, ExternalLink, Eye, Loader2, Play, RefreshCw, Save, Send, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -55,9 +55,27 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const [isPublishing, setIsPublishing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
+  const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
+
+  // Check if this is a new document (just created)
+  const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
   
+  // Show welcome message for new documents
+  useEffect(() => {
+    if (isNewDocument) {
+      setShowWelcome(true)
+      // Auto-focus title after a short delay
+      const timer = setTimeout(() => {
+        titleInputRef.current?.focus()
+        titleInputRef.current?.select()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isNewDocument])
+
   // Keystroke capture
   const { attachToElement, getKeystrokesForTransmission, keystrokeCount } = useKeystrokeCapture({
     enabled: true
@@ -169,7 +187,18 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     const textContent = data.document.content.replace(/<[^>]*>/g, '').trim()
     const words = textContent ? textContent.split(/\s+/).length : 0
     setWordCount(words)
-  }, [data.document.content])
+    
+    // Hide welcome message once user starts typing
+    if (isNewDocument && words > 0) {
+      setShowWelcome(false)
+      // Show a success toast for first words
+      if (words === 1) {
+        toast.success("Great! Your keystrokes are being verified in real-time. ✨", {
+          duration: 4000,
+        })
+      }
+    }
+  }, [data.document.content, isNewDocument])
 
   const handleContentChange = (content: string) => {
     setData('document.content', content)
@@ -213,36 +242,34 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     if (!canPublish() || isPublishing) return
     
     setIsPublishing(true)
+    
+    // Use a single toast that updates its message
+    const publishToastId = toast.loading('Saving document before publishing...')
+    
     try {
       // Save first, then publish
-      const savingToastId = toast.loading('Saving document before publishing...')
-      try {
-        await handleManualSave({ showSuccessToast: false })
-      } finally {
-        toast.dismiss(savingToastId)
-      }
+      await handleManualSave({ showSuccessToast: false })
       
-      const publishingToastId = toast.loading('Publishing document...')
+      // Update toast message for publishing step
+      toast.loading('Publishing document...', { id: publishToastId })
+      
       router.post(`/documents/${document.id}/publish`, {}, {
         onSuccess: () => {
-          toast.dismiss(publishingToastId)
-          toast.success('Document published successfully!')
+          toast.success('Document published successfully!', { id: publishToastId })
           // Will be redirected by the controller
         },
         onError: (errors) => {
           console.error('Publishing failed:', errors)
-          toast.dismiss(publishingToastId)
-          toast.error('Failed to publish document. Please try again.')
+          toast.error('Failed to publish document. Please try again.', { id: publishToastId })
           setIsPublishing(false)
         },
         onFinish: () => {
-          toast.dismiss(publishingToastId)
           setIsPublishing(false)
         }
       })
     } catch (error) {
       console.error('Publish error:', error)
-      toast.error('Failed to publish document')
+      toast.error('Failed to publish document', { id: publishToastId })
       setIsPublishing(false)
     }
   }
@@ -265,7 +292,9 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
       <div className="h-full flex flex-col bg-white">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 border-b bg-white">
+        <div className={`flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 border-b transition-all duration-300 ${
+          isNewDocument ? 'bg-gradient-to-r from-primary/5 to-transparent border-primary/20' : 'bg-white border-border'
+        }`}>
           <div className="text-sm text-muted-foreground">
             <span className="inline-block">{wordCount} words</span>
             <span className="hidden sm:inline"> • </span>
@@ -307,6 +336,25 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
               )}
               <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save'}</span>
             </Button>
+            {publicPostUrl && (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="touch-manipulation min-h-[44px] min-w-[44px]"
+              >
+                <a
+                  href={publicPostUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View published post"
+                >
+                  <ExternalLink className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">View Published Post</span>
+                  <span className="sm:hidden">View Post</span>
+                </a>
+              </Button>
+            )}
             
             {document.status === 'published' ? (
               <Button size="sm" disabled variant="default">
@@ -344,12 +392,56 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 value={data.document.title}
                 onChange={(e) => setData('document.title', e.target.value)}
                 placeholder="Untitled Document"
-                className="text-3xl sm:text-5xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation"
+                className={`text-3xl sm:text-5xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation transition-all duration-300 ${
+                  isNewDocument && data.document.title === 'Untitled Document' 
+                    ? 'bg-gradient-to-r from-primary/10 to-transparent rounded-md px-2 -mx-2' 
+                    : ''
+                }`}
               />
               {errors['document.title'] && (
                 <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
               )}
             </div>
+
+            {/* Welcome Message for New Documents */}
+            {showWelcome && isNewDocument && (
+              <div className="mb-6 p-6 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 border border-primary/20 rounded-lg relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Welcome to Signify!</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
+                    and stored for verification, proving this content was written by a human.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                    <div className="flex items-center gap-2 text-primary">
+                      <div className="w-2 h-2 bg-primary rounded-full" />
+                      <span>Start with a title above</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-primary">
+                      <div className="w-2 h-2 bg-primary rounded-full" />
+                      <span>Write naturally - no copy/paste</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-primary">
+                      <div className="w-2 h-2 bg-primary rounded-full" />
+                      <span>Auto-save keeps your work safe</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowWelcome(false)}
+                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Dismiss welcome message"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Content */}
             <div className="flex-1 border border-input rounded-lg overflow-hidden bg-white shadow-sm min-h-0">
@@ -357,7 +449,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 ref={editorRef}
                 value={data.document.content}
                 onChange={handleContentChange}
-                placeholder="Start writing your document..."
+                placeholder={isNewDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
                 className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
               />
               {errors['document.content'] && (
