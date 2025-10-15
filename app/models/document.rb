@@ -6,7 +6,7 @@ class Document < ApplicationRecord
 
   enum :status, {draft: 0, ready_to_publish: 1, published: 2}
 
-  validates :title, length: {maximum: 255}
+  validates :title, presence: true, length: {maximum: 255}
   validates :slug, presence: true, uniqueness: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :public_slug, uniqueness: true, allow_nil: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :status, presence: true
@@ -15,7 +15,7 @@ class Document < ApplicationRecord
   # Workflow validations  
   validates :published_at, presence: true, if: -> { published? && !status_changed?(to: 'published') }
   validates :public_slug, presence: true, if: -> { published? && !status_changed?(to: 'published') }
-  before_validation :generate_slug, if: -> { slug.blank? }
+  before_validation :generate_slug, if: -> { slug.blank? && title.present? }
   before_validation :set_default_status, if: -> { status.blank? }
   before_validation :set_default_counts, if: :new_record?
   before_validation :generate_public_slug, if: -> { status_changed?(to: 'published') }
