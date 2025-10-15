@@ -217,8 +217,8 @@ export default function PublicPostShow({ post, meta }: Props) {
                           <div className="w-full flex justify-center">
                             <MiniGitGraph 
                               keystrokes={post.sample_keystrokes} 
-                              width={480} 
-                              height={100}
+                              width={600} 
+                              height={80}
                               className="w-full max-w-full"
                             />
                           </div>

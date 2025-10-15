@@ -2,18 +2,16 @@ import { useMemo } from 'react'
 
 import type { Keystroke } from '@/types'
 
-// Shared heatmap calculation logic (DRY principle)
-function calculateHeatmapGrid(
+// Barcode calculation logic for keystroke visualization
+function calculateBarcodeData(
   keystrokes: Keystroke[], 
-  containerWidth: number, 
-  isMini: boolean = false
+  containerWidth: number
 ) {
   if (keystrokes.length === 0) {
     return { 
-      bins: [], 
+      bars: [], 
       maxIntensity: 1, 
-      colsPerRow: isMini ? 20 : 40, 
-      numRows: isMini ? 2 : 4, 
+      totalBars: 60,
       timeUnit: 'second',
       intervalMs: 1000,
       startTime: Date.now()
@@ -26,56 +24,54 @@ function calculateHeatmapGrid(
   const endTime = new Date(sortedKeystrokes[sortedKeystrokes.length - 1].timestamp).getTime()
   const totalDuration = endTime - startTime
   
-  // Calculate optimal grid to fill the available space
-  const minCellSize = isMini ? 6 : 8 // Smaller minimum for mini view
-  const targetCols = Math.floor(containerWidth / minCellSize)
-  const targetRows = isMini ? 4 : 6 // Responsive rows for both mini and main
-  const totalCells = targetCols * targetRows
+  // Calculate optimal number of bars for barcode appearance (60-120 bars)
+  const minBarWidth = 2 // Minimum bar width in pixels
+  const maxBarWidth = 8 // Maximum bar width in pixels
+  const barSpacing = 1 // Space between bars
+  const maxBars = Math.floor(containerWidth / (minBarWidth + barSpacing))
+  const targetBars = Math.max(60, Math.min(120, maxBars))
   
-  // Calculate interval that will distribute keystrokes across all cells
-  let intervalMs = Math.max(1000, Math.ceil(totalDuration / totalCells)) // At least 1 second intervals
+  // Calculate time interval per bar
+  let intervalMs = Math.max(500, Math.ceil(totalDuration / targetBars)) // At least 500ms intervals
   
   // Adjust interval to create meaningful time units
   let timeUnit: string
-  if (intervalMs < 5000) { // < 5 seconds
-    intervalMs = Math.max(1000, Math.ceil(intervalMs / 1000) * 1000) // Round to nearest second
-    timeUnit = 'second'
+  if (intervalMs < 2000) { // < 2 seconds
+    intervalMs = Math.max(500, Math.ceil(intervalMs / 500) * 500) // Round to nearest 500ms
+    timeUnit = intervalMs === 1000 ? 'second' : `${intervalMs}ms`
+  } else if (intervalMs < 10000) { // < 10 seconds
+    intervalMs = Math.ceil(intervalMs / 1000) * 1000 // Round to nearest second
+    timeUnit = intervalMs === 1000 ? 'second' : `${intervalMs/1000}sec`
   } else if (intervalMs < 60000) { // < 1 minute  
     intervalMs = Math.ceil(intervalMs / 5000) * 5000 // Round to nearest 5 seconds
-    timeUnit = intervalMs === 5000 ? '5sec' : `${intervalMs/1000}sec`
-  } else if (intervalMs < 300000) { // < 5 minutes
+    timeUnit = `${intervalMs/1000}sec`
+  } else { // >= 1 minute
     intervalMs = Math.ceil(intervalMs / 15000) * 15000 // Round to nearest 15 seconds
     timeUnit = `${intervalMs/1000}sec`
-  } else { // >= 5 minutes
-    intervalMs = Math.ceil(intervalMs / 60000) * 60000 // Round to nearest minute
-    timeUnit = intervalMs === 60000 ? 'minute' : `${intervalMs/60000}min`
   }
   
-  // Recalculate grid based on actual interval
-  const actualTotalIntervals = Math.ceil(totalDuration / intervalMs)
-  const colsPerRow = Math.min(targetCols, Math.max(isMini ? 10 : 20, actualTotalIntervals))
-  const numRows = Math.max(1, Math.ceil(actualTotalIntervals / colsPerRow))
-  const totalBins = colsPerRow * numRows
+  // Calculate actual number of bars based on interval
+  const actualTotalBars = Math.ceil(totalDuration / intervalMs)
+  const finalBars = Math.min(actualTotalBars, targetBars)
   
-  // Create bins for the calculated grid
-  const intensityBins = new Array(totalBins).fill(0)
+  // Create intensity array for bars
+  const intensityBars = new Array(finalBars).fill(0)
   
   // Group keystrokes into time intervals
   for (const ks of sortedKeystrokes) {
     const keystrokeTime = new Date(ks.timestamp).getTime()
     const intervalsSinceStart = Math.floor((keystrokeTime - startTime) / intervalMs)
-    const binIndex = Math.min(intervalsSinceStart, totalBins - 1)
+    const barIndex = Math.min(intervalsSinceStart, finalBars - 1)
     
-    if (binIndex >= 0 && binIndex < totalBins) {
-      intensityBins[binIndex]++
+    if (barIndex >= 0 && barIndex < finalBars) {
+      intensityBars[barIndex]++
     }
   }
 
   return {
-    bins: intensityBins,
-    maxIntensity: Math.max(...intensityBins, 1),
-    colsPerRow,
-    numRows,
+    bars: intensityBars,
+    maxIntensity: Math.max(...intensityBars, 1),
+    totalBars: finalBars,
     timeUnit,
     intervalMs,
     startTime,
@@ -92,19 +88,30 @@ interface MiniGitGraphProps {
 export function MiniGitGraph({ 
   keystrokes, 
   width = 320,
-  height = 80,
+  height = 160,
   className = ""
 }: MiniGitGraphProps) {
-  const { bins, maxIntensity, colsPerRow, numRows } = useMemo(() => {
-    return calculateHeatmapGrid(keystrokes, width, true) // Use shared logic with mini flag
+  const { bars, maxIntensity, totalBars } = useMemo(() => {
+    return calculateBarcodeData(keystrokes, width)
   }, [keystrokes, width])
 
-  const getHeatmapColor = (intensity: number) => {
-    if (intensity === 0) return 'hsl(0 0% 96%)'
+  const getBarcodeColor = (intensity: number) => {
+    if (intensity === 0) return '#ffffff' // White for no activity
     
+    // High contrast black/gray scheme for barcode appearance
     const ratio = Math.log(intensity + 1) / Math.log(maxIntensity + 1)
-    const lightness = Math.max(20, 85 - (ratio * 65))
-    return `hsl(0 0% ${lightness}%)`
+    if (ratio > 0.7) return '#000000'      // Black for high intensity
+    if (ratio > 0.4) return '#333333'      // Dark gray for medium-high
+    if (ratio > 0.2) return '#666666'      // Medium gray for medium
+    return '#999999'                       // Light gray for low intensity
+  }
+
+  const getBarWidth = (intensity: number) => {
+    if (intensity === 0) return 1 // Minimum width for empty periods
+    
+    // Variable width based on intensity (2-8px range)
+    const ratio = Math.log(intensity + 1) / Math.log(maxIntensity + 1)
+    return Math.max(2, Math.min(8, Math.ceil(2 + (ratio * 6))))
   }
 
   if (keystrokes.length === 0) {
@@ -118,37 +125,40 @@ export function MiniGitGraph({
     )
   }
 
-  // Calculate responsive cell dimensions - same as main heatmap with multiple rows
-  const cellWidth = Math.floor(width / colsPerRow)
-  const cellHeight = Math.max(12, Math.min(20, Math.floor((height - 12) / numRows))) // Responsive height based on rows
-  const svgHeight = cellHeight * numRows + 12 // Account for margins
-  const svgWidth = cellWidth * colsPerRow
+  // Calculate barcode dimensions
+  const barSpacing = 1
+  const barHeight = height - 16 // Leave margins top/bottom
+  const barY = 8 // Top margin
+  
+  // Calculate total width needed and scale if necessary
+  const totalWidthNeeded = bars.reduce((acc, intensity) => acc + getBarWidth(intensity) + barSpacing, 0)
+  const scaleX = totalWidthNeeded > width ? width / totalWidthNeeded : 1
 
   return (
     <div className={`inline-block ${className}`}>
       <svg 
         width={width} 
-        height={svgHeight}
-        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="block rounded-md border border-border/30"
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        className="block rounded border border-border/20"
+        style={{ background: '#fafafa' }} // Light background for contrast
       >
-        {/* Heatmap cells - same logic as main component */}
-        {bins.map((intensity, index) => {
-          const col = index % colsPerRow
-          const row = Math.floor(index / colsPerRow)
-          const x = col * cellWidth
-          const y = row * cellHeight + 6 // Top margin
+        {/* Barcode bars */}
+        {bars.map((intensity, index) => {
+          const barWidth = getBarWidth(intensity) * scaleX
+          const x = bars.slice(0, index).reduce((acc, prevIntensity) => 
+            acc + (getBarWidth(prevIntensity) * scaleX) + (barSpacing * scaleX), 0
+          )
           
           return (
             <rect
               key={index}
               x={x}
-              y={y}
-              width={cellWidth}
-              height={cellHeight}
-              fill={getHeatmapColor(intensity)}
-              stroke="hsl(var(--border))"
-              strokeWidth="0.25"
+              y={barY}
+              width={Math.max(0.5, barWidth - (barSpacing * scaleX))} // Ensure minimum visibility
+              height={barHeight}
+              fill={getBarcodeColor(intensity)}
+              rx={0} // Sharp corners for barcode appearance
             />
           )
         })}
