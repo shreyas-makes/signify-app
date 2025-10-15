@@ -2,8 +2,11 @@
 
 class DashboardController < InertiaController
   def index
+    user = Current.user
+    user_documents = Document.where(user_id: user.id)
+
     # Search and filtering
-    documents_scope = Current.user.documents
+    documents_scope = user_documents
     
     if params[:search].present?
       search_term = "%#{params[:search].strip}%"
@@ -43,9 +46,9 @@ class DashboardController < InertiaController
     total_pages = (total_documents.to_f / per_page).ceil
     
     # Statistics
-    all_documents = Current.user.documents
+    all_documents = user_documents
     # Get real-time keystroke count from keystrokes table
-    total_keystrokes = Current.user.documents.joins(:keystrokes).count
+    total_keystrokes = all_documents.joins(:keystrokes).count
     statistics = {
       total_documents: all_documents.count,
       draft_count: all_documents.drafts.count,
