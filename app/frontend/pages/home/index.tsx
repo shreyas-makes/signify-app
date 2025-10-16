@@ -1,7 +1,10 @@
 import { Head, Link, usePage } from "@inertiajs/react"
+import { Check, Eye, Shield, Zap, Play, Github } from "lucide-react"
 
-import AppLogoIcon from "@/components/app-logo-icon"
-import { dashboardPath, signInPath } from "@/routes"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { dashboardPath, signInPath, signUpPath, publicPostsPath } from "@/routes"
 import type { SharedData } from "@/types"
 
 export default function Welcome() {
@@ -10,115 +13,285 @@ export default function Welcome() {
 
   return (
     <>
-      <Head title="Welcome">
-        <link rel="preconnect" href="https://fonts.bunny.net" />
+      <Head title="Signify - Prove Your Words">
+        <meta name="description" content="The writing platform that proves human authorship through keystroke verification. Write, publish, and share with complete authenticity." />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
+          href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </Head>
 
-      <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
-        <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-          <nav className="flex items-center justify-end gap-4">
-            {auth.user ? (
-              <Link
-                href={dashboardPath()}
-                className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        {/* Navigation */}
+        <header className="relative z-50 w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-900/80">
+          <div className="container mx-auto px-4 py-4">
+            <nav className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">S</span>
+                </div>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">Signify</span>
+              </div>
+              
+              <div className="flex items-center space-x-4">
                 <Link
-                  href={signInPath()}
-                  className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
+                  href={publicPostsPath()}
+                  className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
                 >
-                  Log in
+                  Explore
                 </Link>
-              </>
-            )}
-          </nav>
+                {auth.user ? (
+                  <Button asChild size="sm">
+                    <Link href={dashboardPath()}>Dashboard</Link>
+                  </Button>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={signInPath()}>Sign In</Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link href={signUpPath()}>Get Started</Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </nav>
+          </div>
         </header>
 
-        <div className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
-          <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
-            <div className="flex-1 rounded-br-lg rounded-bl-lg bg-white p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
-              <h1 className="mb-1 font-medium">Signify</h1>
-              <p className="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
-                Rails + Inertia.js + React + shadcn/ui
-                <br />
-                Here are some resources to begin:
+        {/* Hero Section */}
+        <section className="relative overflow-hidden px-4 py-20 lg:py-32">
+          <div className="container mx-auto text-center">
+            <Badge variant="secondary" className="mb-6 px-4 py-1">
+              🔒 Keystroke-Verified Writing Platform
+            </Badge>
+            
+            <h1 className="font-['Crimson_Text','Crimson_Text_Fallback'] font-normal text-[128px] leading-[128px] text-[rgb(20,20,20)] dark:text-white">
+              Prove Your
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Words</span>
+            </h1>
+            
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+              The only writing platform that captures every keystroke, proving human authorship 
+              and authentic creativity. Write, publish, and share with complete transparency.
+            </p>
+
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              {auth.user ? (
+                <Button size="lg" asChild className="px-8 py-3 text-lg">
+                  <Link href={dashboardPath()}>
+                    Go to Dashboard
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="lg" asChild className="px-8 py-3 text-lg">
+                  <Link href={signUpPath()}>
+                    Start Writing
+                  </Link>
+                </Button>
+              )}
+              
+              <Button variant="outline" size="lg" asChild className="px-8 py-3 text-lg">
+                <Link href={publicPostsPath()}>
+                  <Play className="mr-2 h-5 w-5" />
+                  See Demo
+                </Link>
+              </Button>
+            </div>
+
+            {/* Demo Placeholder */}
+            <div className="mt-16">
+              <Card className="mx-auto max-w-4xl overflow-hidden shadow-2xl">
+                <CardContent className="p-0">
+                  <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4">
+                        <Play className="h-12 w-12 text-white" />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400">Interactive Keystroke Demo</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-500">Watch how every keystroke is captured and verified</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20 bg-white dark:bg-slate-900">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="font-['Crimson_Text'] text-4xl font-bold text-slate-900 dark:text-white sm:text-5xl">
+                Why Signify?
+              </h2>
+              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+                The future of authentic writing is here
               </p>
-
-              <ul className="mb-4 flex flex-col lg:mb-6">
-                {[
-                  {
-                    text: "Inertia Rails Docs",
-                    href: "https://inertia-rails.dev",
-                  },
-                  {
-                    text: "shadcn/ui Components",
-                    href: "https://ui.shadcn.com",
-                  },
-                  {
-                    text: "React Docs",
-                    href: "https://react.dev",
-                  },
-                  {
-                    text: "Rails Guides",
-                    href: "https://guides.rubyonrails.org",
-                  },
-                ].map((resource, index) => (
-                  <ResourceItem key={index} {...resource} />
-                ))}
-              </ul>
-
-              <ul className="flex gap-3 text-sm leading-normal">
-                <li>
-                  <a
-                    href="https://inertia-rails.dev"
-                    target="_blank"
-                    className="inline-block rounded-sm border border-black bg-[#1b1b18] px-5 py-1.5 text-sm leading-normal text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
-                    rel="noreferrer"
-                  >
-                    Learn More
-                  </a>
-                </li>
-              </ul>
             </div>
 
-            <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#D30001] p-10 text-white lg:mb-0 lg:-ml-px lg:aspect-auto lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg">
-              <AppLogoIcon className="h-full w-full" />
+            <div className="grid gap-8 lg:grid-cols-3">
+              <FeatureCard
+                icon={<Shield className="h-8 w-8 text-blue-600" />}
+                title="Keystroke Verification"
+                description="Every character typed is captured with millisecond precision, creating an unalterable proof of human authorship."
+              />
+              
+              <FeatureCard
+                icon={<Eye className="h-8 w-8 text-purple-600" />}
+                title="Writing Replay"
+                description="Watch your writing process unfold character by character. Share your creative journey with readers."
+              />
+              
+              <FeatureCard
+                icon={<Zap className="h-8 w-8 text-green-600" />}
+                title="Instant Publishing"
+                description="Publish your verified content instantly with shareable links and embedded proof of authenticity."
+              />
             </div>
-          </main>
-        </div>
+          </div>
+        </section>
+
+        {/* Social Proof Section */}
+        <section className="py-20 bg-slate-50 dark:bg-slate-800">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="font-['Crimson_Text'] text-4xl font-bold text-slate-900 dark:text-white sm:text-5xl">
+                Trusted by Writers
+              </h2>
+              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+                Join creators who value authenticity
+              </p>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-2">
+              <TestimonialCard
+                quote="Signify brings transparency to writing that I've never seen before. The keystroke verification is fascinating."
+                author="Alex Chen"
+                role="Tech Writer"
+                avatar="AC"
+              />
+              
+              <TestimonialCard
+                quote="As a publisher, being able to verify the authenticity of submissions changes everything. This is the future."
+                author="Sarah Johnson"
+                role="Editorial Director"
+                avatar="SJ"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="font-['Crimson_Text'] text-4xl font-bold text-slate-900 dark:text-white sm:text-5xl">
+              Ready to prove your words?
+            </h2>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+              Join the writing platform that values authenticity above all else.
+            </p>
+            
+            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              {!auth.user && (
+                <Button size="lg" asChild className="px-8 py-3 text-lg">
+                  <Link href={signUpPath()}>
+                    Start Writing for Free
+                  </Link>
+                </Button>
+              )}
+              
+              <Button variant="outline" size="lg" asChild className="px-8 py-3 text-lg">
+                <a href="https://github.com/placeholder/signify" target="_blank" rel="noopener noreferrer">
+                  <Github className="mr-2 h-5 w-5" />
+                  View on GitHub
+                </a>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
+              <div className="flex items-center space-x-2">
+                <div className="h-6 w-6 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">S</span>
+                </div>
+                <span className="font-semibold text-slate-900 dark:text-white">Signify</span>
+              </div>
+              
+              <div className="flex items-center space-x-6 text-sm text-slate-600 dark:text-slate-400">
+                <Link href={publicPostsPath()} className="hover:text-slate-900 dark:hover:text-white">
+                  Explore
+                </Link>
+                <a href="/legal/privacy" className="hover:text-slate-900 dark:hover:text-white">
+                  Privacy
+                </a>
+                <a href="/legal/terms" className="hover:text-slate-900 dark:hover:text-white">
+                  Terms
+                </a>
+                <a href="/support/contact" className="hover:text-slate-900 dark:hover:text-white">
+                  Contact
+                </a>
+              </div>
+            </div>
+            
+            <div className="mt-4 text-center text-sm text-slate-500">
+              © 2024 Signify. Proving authenticity, one keystroke at a time.
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   )
 }
 
-function ResourceItem({ text, href }: { text: string; href: string }) {
+function FeatureCard({ icon, title, description }: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
   return (
-    <li className="relative flex items-center gap-4 py-2">
-      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] dark:border-[#3E3E3A] dark:bg-[#161615]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A]" />
-      </span>
-      <a
-        href={href}
-        target="_blank"
-        className="inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
-        rel="noreferrer"
-      >
-        <span>{text}</span>
-        <svg width={10} height={11} viewBox="0 0 10 11" className="h-2.5 w-2.5">
-          <path
-            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-            stroke="currentColor"
-            strokeLinecap="square"
-          />
-        </svg>
-      </a>
-    </li>
+    <Card className="border-slate-200 bg-white hover:shadow-lg transition-shadow dark:border-slate-700 dark:bg-slate-800">
+      <CardContent className="p-6">
+        <div className="mb-4">{icon}</div>
+        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+          {title}
+        </h3>
+        <p className="text-slate-600 dark:text-slate-300">
+          {description}
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function TestimonialCard({ quote, author, role, avatar }: {
+  quote: string
+  author: string
+  role: string
+  avatar: string
+}) {
+  return (
+    <Card className="border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+      <CardContent className="p-6">
+        <p className="text-slate-700 dark:text-slate-300 mb-4 italic">
+          "{quote}"
+        </p>
+        <div className="flex items-center space-x-3">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span className="text-white font-semibold text-sm">{avatar}</span>
+          </div>
+          <div>
+            <div className="font-semibold text-slate-900 dark:text-white">{author}</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">{role}</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

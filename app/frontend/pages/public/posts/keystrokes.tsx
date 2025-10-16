@@ -284,180 +284,88 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Enhanced Keystroke Replay */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Enhanced Keystroke Replay Component */}
-              <KeystrokeReplay 
-                keystrokes={allKeystrokes.map(k => ({
-                  id: k.id,
-                  event_type: k.event_type,
-                  key_code: k.key_code,
-                  character: k.character,
-                  timestamp: k.timestamp.toString(),
-                  sequence_number: k.sequence_number
-                }))}
-                title={post.title}
-                finalContent={post.content}
-                className="border-primary/20 bg-primary/5"
-              />
+          <div className="space-y-6">
+            <KeystrokeReplay 
+              keystrokes={allKeystrokes.map(k => ({
+                id: k.id,
+                event_type: k.event_type,
+                key_code: k.key_code,
+                character: k.character,
+                timestamp: k.timestamp,
+                sequence_number: k.sequence_number,
+                cursor_position: k.cursor_position
+              }))}
+              title={post.title}
+              finalContent={post.content}
+            />
 
-              {/* Additional Download Controls */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Download className="h-5 w-5" />
-                    Export Data
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    <Button onClick={handleDownloadData} variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Complete Data (JSON)
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5" />
+                  Export Data
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button onClick={handleDownloadData} variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Complete Data (JSON)
+                  </Button>
+                  {pagination.has_more && (
+                    <Button 
+                      onClick={() => void loadMoreKeystrokes()} 
+                      variant="outline" 
+                      size="sm"
+                      disabled={loadingMore}
+                    >
+                      {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Load All Keystrokes ({pagination.total_keystrokes - allKeystrokes.length} more)
                     </Button>
-                    {pagination.has_more && (
-                      <Button 
-                        onClick={() => void loadMoreKeystrokes()} 
-                        variant="outline" 
-                        size="sm"
-                        disabled={loadingMore}
-                      >
-                        {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        Load All Keystrokes ({pagination.total_keystrokes - allKeystrokes.length} more)
-                      </Button>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Export includes complete keystroke timeline, statistics, and verification data
-                  </p>
-                </CardContent>
-              </Card>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Export includes complete keystroke timeline, statistics, and verification data
+                </p>
+              </CardContent>
+            </Card>
 
-              {/* Legacy Timeline Events (for reference) */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Event Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {timelineEvents.slice(0, 10).map((event, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center gap-3 p-2 rounded-lg bg-muted border"
-                      >
-                        <div className={`w-3 h-3 rounded-full ${
-                          event.type === 'typing' ? 'bg-primary' :
-                          event.type === 'pause' ? 'bg-secondary' : 'bg-destructive'
-                        }`} />
-                        <div className="flex-1 text-sm">
-                          <span className="font-medium capitalize">{event.type}</span>
-                          {event.keystrokes && <span className="text-muted-foreground ml-2">({event.keystrokes} keys)</span>}
-                          {event.duration && <span className="text-muted-foreground ml-2">({(event.duration/1000).toFixed(1)}s)</span>}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(event.timestamp).toLocaleTimeString()}
-                        </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Event Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {timelineEvents.slice(0, 10).map((event, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-center gap-3 rounded-lg border bg-muted p-2"
+                    >
+                      <div className={`h-3 w-3 rounded-full ${
+                        event.type === 'typing' ? 'bg-primary' :
+                        event.type === 'pause' ? 'bg-secondary' : 'bg-destructive'
+                      }`} />
+                      <div className="flex-1 text-sm">
+                        <span className="font-medium capitalize">{event.type}</span>
+                        {event.keystrokes && <span className="ml-2 text-muted-foreground">({event.keystrokes} keys)</span>}
+                        {event.duration && <span className="ml-2 text-muted-foreground">({(event.duration/1000).toFixed(1)}s)</span>}
                       </div>
-                    ))}
-                    {timelineEvents.length > 10 && (
-                      <div className="text-center text-sm text-muted-foreground py-2">
-                        ... and {timelineEvents.length - 10} more events
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Verification Info */}
-            <div className="space-y-6">
-              <Card className="border-primary/20 bg-primary/5">
-                <CardHeader>
-                  <CardTitle className="text-primary flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Verification Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-primary/80">
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span>Document:</span>
-                      <span className="font-medium">{post.title}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Author:</span>
-                      <span className="font-medium">{post.author.display_name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Published:</span>
-                      <span className="font-medium">{post.published_at}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Word Count:</span>
-                      <span className="font-medium">{post.word_count.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total Keystrokes:</span>
-                      <span className="font-medium">{post.keystroke_count.toLocaleString()}</span>
-                    </div>
-                    <hr className="border-primary/30" />
-                    <div className="text-xs">
-                      ✓ Every keystroke captured in real-time<br />
-                      ✓ No copy-paste operations detected<br />
-                      ✓ Authentic human typing patterns<br />
-                      ✓ Tamper-proof verification
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pattern Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Typing Consistency</span>
-                        <span className="text-primary font-medium">Natural</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-primary h-2 rounded-full" style={{ width: '85%' }} />
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(event.timestamp).toLocaleTimeString()}
                       </div>
                     </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Pause Patterns</span>
-                        <span className="text-primary font-medium">Human-like</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-primary h-2 rounded-full" style={{ width: '92%' }} />
-                      </div>
+                  ))}
+                  {timelineEvents.length > 10 && (
+                    <div className="py-2 text-center text-sm text-muted-foreground">
+                      ... and {timelineEvents.length - 10} more events
                     </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Correction Rate</span>
-                        <span className="text-primary font-medium">Typical</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-primary h-2 rounded-full" style={{ width: '78%' }} />
-                      </div>
-                    </div>
-
-                    <div className="pt-2 text-xs text-muted-foreground">
-                      Analysis shows natural human typing patterns with realistic pauses, corrections, and rhythm variations.
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
