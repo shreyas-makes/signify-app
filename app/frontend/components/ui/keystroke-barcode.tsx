@@ -42,34 +42,41 @@ function calculateMinimalBarcode(keystrokes: Keystroke[], maxBars = 40) {
   }
 }
 
-function MinimalBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
-  const { bars, maxIntensity } = calculateMinimalBarcode(keystrokes, 32)
+
+function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
+  const { bars, maxIntensity } = calculateMinimalBarcode(keystrokes, 120) // More bars for wider space
   
   if (keystrokes.length === 0) {
     return (
-      <div className="inline-flex h-5 w-24 items-center justify-center rounded border border-border/30 bg-muted/20 text-xs text-muted-foreground">
-        No data
+      <div className="flex h-8 items-center justify-center rounded border border-border/20 bg-muted/10 text-sm text-muted-foreground">
+        No keystroke data available
       </div>
     )
   }
 
   return (
-    <div className="inline-flex h-5 items-center gap-0.5 rounded border border-border/30 bg-card px-2">
-      {bars.map((intensity, index) => {
-        const height = intensity === 0 ? 2 : Math.max(2, Math.min(16, (intensity / maxIntensity) * 16))
-        const opacity = intensity === 0 ? 0.1 : Math.max(0.3, Math.min(1, intensity / maxIntensity))
-        
-        return (
-          <div
-            key={index}
-            className="w-0.5 bg-foreground"
-            style={{
-              height: `${height}px`,
-              opacity
-            }}
-          />
-        )
-      })}
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs text-green-600">
+        <span className="font-medium">{keystrokes.length.toLocaleString()} verified keystrokes</span>
+        <span className="text-green-500">Human-authored content</span>
+      </div>
+      <div className="flex h-8 items-center gap-0.5 rounded border border-green-300/30 bg-white/60 px-3 py-1">
+        {bars.map((intensity, index) => {
+          const height = intensity === 0 ? 2 : Math.max(2, Math.min(24, (intensity / maxIntensity) * 24))
+          const opacity = intensity === 0 ? 0.1 : Math.max(0.4, Math.min(1, intensity / maxIntensity))
+          
+          return (
+            <div
+              key={index}
+              className="w-0.5 bg-green-700"
+              style={{
+                height: `${height}px`,
+                opacity
+              }}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -122,13 +129,9 @@ export function KeystrokeBarcode({ keystrokes, keystrokeUrl, className = "" }: K
   return (
     <div className={`not-prose ${className}`}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <div className="inline-flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm">
-          <div className="flex items-center gap-2">
-            <MinimalBarcode keystrokes={keystrokes} />
-            <span className="text-green-700">
-              This content was written with <strong>{keystrokes.length.toLocaleString()} verified keystrokes</strong>, 
-              ensuring authentic human authorship without AI assistance.
-            </span>
+        <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 px-6 py-4">
+          <div className="flex-1">
+            <EnhancedBarcode keystrokes={keystrokes} />
           </div>
           
           <div className="flex items-center gap-2">
