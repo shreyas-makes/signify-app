@@ -44,7 +44,7 @@ function calculateMinimalBarcode(keystrokes: Keystroke[], maxBars = 40) {
 
 
 function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
-  const { bars, maxIntensity } = calculateMinimalBarcode(keystrokes, 120) // More bars for wider space
+  const { bars, maxIntensity } = calculateMinimalBarcode(keystrokes, 80) // Adjusted bar count
   
   if (keystrokes.length === 0) {
     return (
@@ -55,27 +55,30 @@ function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="w-full space-y-2">
       <div className="flex items-center justify-between text-xs text-green-600">
-        <span className="font-medium">{keystrokes.length.toLocaleString()} verified keystrokes</span>
-        <span className="text-green-500">Human-authored content</span>
+        <span className="truncate font-medium">{keystrokes.length.toLocaleString()} verified keystrokes</span>
+        <span className="ml-2 flex-shrink-0 text-green-500">Human-authored content</span>
       </div>
-      <div className="flex h-8 items-center gap-0.5 rounded border border-green-300/30 bg-white/60 px-3 py-1">
-        {bars.map((intensity, index) => {
-          const height = intensity === 0 ? 2 : Math.max(2, Math.min(24, (intensity / maxIntensity) * 24))
-          const opacity = intensity === 0 ? 0.1 : Math.max(0.4, Math.min(1, intensity / maxIntensity))
-          
-          return (
-            <div
-              key={index}
-              className="w-0.5 bg-green-700"
-              style={{
-                height: `${height}px`,
-                opacity
-              }}
-            />
-          )
-        })}
+      <div className="flex h-8 w-full items-center overflow-hidden rounded border border-green-300/30 bg-white/60 px-2 py-1">
+        <div className="flex h-full w-full items-center gap-px">
+          {bars.map((intensity, index) => {
+            const height = intensity === 0 ? 2 : Math.max(2, Math.min(24, (intensity / maxIntensity) * 24))
+            const opacity = intensity === 0 ? 0.1 : Math.max(0.4, Math.min(1, intensity / maxIntensity))
+            
+            return (
+              <div
+                key={index}
+                className="flex-1 min-w-0 bg-green-700"
+                style={{
+                  height: `${height}px`,
+                  opacity,
+                  maxWidth: '3px'
+                }}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -127,47 +130,52 @@ export function KeystrokeBarcode({ keystrokes, keystrokeUrl, className = "" }: K
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <div className={`not-prose ${className}`}>
+    <div className={`not-prose w-full ${className}`}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 px-6 py-4">
-          <div className="flex-1">
-            <EnhancedBarcode keystrokes={keystrokes} />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="h-8 px-3 text-green-600 hover:bg-green-100 hover:text-green-700"
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronDown className="mr-1 h-3 w-3" />
-                    Hide Details
-                  </>
-                ) : (
-                  <>
-                    <ChevronRight className="mr-1 h-3 w-3" />
-                    View Pattern
-                  </>
-                )}
-              </Button>
-            </CollapsibleTrigger>
+        <div className="w-full overflow-hidden rounded-lg border border-green-200 bg-green-50">
+          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-6">
+            <div className="min-w-0 flex-1">
+              <EnhancedBarcode keystrokes={keystrokes} />
+            </div>
             
-            {keystrokeUrl && (
-              <Button 
-                asChild
-                variant="ghost" 
-                size="sm"
-                className="h-8 px-3 text-green-600 hover:bg-green-100 hover:text-green-700"
-              >
-                <a href={keystrokeUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-1 h-3 w-3" />
-                  Full Timeline
-                </a>
-              </Button>
-            )}
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-8 whitespace-nowrap px-3 text-green-600 hover:bg-green-100 hover:text-green-700"
+                >
+                  {isExpanded ? (
+                    <>
+                      <ChevronDown className="mr-1 h-3 w-3" />
+                      <span className="hidden sm:inline">Hide Details</span>
+                      <span className="sm:hidden">Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronRight className="mr-1 h-3 w-3" />
+                      <span className="hidden sm:inline">View Pattern</span>
+                      <span className="sm:hidden">View</span>
+                    </>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              
+              {keystrokeUrl && (
+                <Button 
+                  asChild
+                  variant="ghost" 
+                  size="sm"
+                  className="h-8 whitespace-nowrap px-3 text-green-600 hover:bg-green-100 hover:text-green-700"
+                >
+                  <a href={keystrokeUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="mr-1 h-3 w-3" />
+                    <span className="hidden sm:inline">Full Timeline</span>
+                    <span className="sm:hidden">Timeline</span>
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
