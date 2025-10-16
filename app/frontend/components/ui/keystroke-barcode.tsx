@@ -21,7 +21,7 @@ function calculateEnhancedBarcode(keystrokes: Keystroke[], maxBars = 120) {
   const totalDuration = endTime - startTime
 
   const intervalMs = Math.max(500, totalDuration / maxBars) // Smaller intervals for more detail
-  const bars = new Array(maxBars).fill(0)
+  const bars = Array.from({ length: maxBars }, () => 0)
 
   for (const keystroke of sorted) {
     const intervalIndex = Math.floor((keystroke.timestamp - startTime) / intervalMs)
@@ -33,7 +33,7 @@ function calculateEnhancedBarcode(keystrokes: Keystroke[], maxBars = 120) {
 
   return {
     bars,
-    maxIntensity: Math.max(...bars, 1),
+    maxIntensity: bars.length > 0 ? Math.max(1, ...bars) : 1,
     totalDuration,
     startTime
   }
@@ -41,7 +41,7 @@ function calculateEnhancedBarcode(keystrokes: Keystroke[], maxBars = 120) {
 
 
 function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
-  const { bars, maxIntensity, totalDuration } = calculateEnhancedBarcode(keystrokes, 120)
+  const { bars, maxIntensity } = calculateEnhancedBarcode(keystrokes, 120)
   
   if (keystrokes.length === 0) {
     return (

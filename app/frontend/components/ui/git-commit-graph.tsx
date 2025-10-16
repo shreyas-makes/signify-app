@@ -255,6 +255,92 @@ function TimelineGraph({
   const safeHeight = Math.max(height, 220)
   const baselineY = safeHeight - 60
 
+  const {
+    correctionIntensityByCommit,
+    pacePoints,
+    pacePath,
+    paceAreaPath,
+    maxPace,
+    pauseMarkers,
+  } = useMemo(() => {
+    const correctionMap = new Map<string, number>()
+    for (const branch of branches) {
+      if (branch.type !== 'correction') continue
+      const existing = correctionMap.get(branch.toCommit) ?? 0
+      correctionMap.set(branch.toCommit, Math.max(existing, branch.intensity))
+    }
+
+    const paceBase = Math.max(60, baselineY - 52)
+    const paceAmplitude = Math.min(48, Math.max(24, baselineY * 0.18))
+    const paceValues = commits.map((commit) => {
+      const pace = commit.duration > 0 ? (commit.keystrokes / commit.duration) * 60000 : 0
+      return { id: commit.id, x: commit.position.x, pace }
+    })
+    const maxPaceValue = paceValues.reduce((max, value) => Math.max(max, value.pace), 0)
+    const pacePointsComputed = paceValues.map((value) => ({
+      ...value,
+      y:
+        paceBase -
+        (maxPaceValue > 0 ? (value.pace / maxPaceValue) * paceAmplitude : 0),
+    }))
+    const pacePathValue = pacePointsComputed.length
+      ? pacePointsComputed
+          .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+          .join(' ')
+      : ''
+    const paceAreaValue =
+      pacePointsComputed.length > 1
+        ? [
+            `M ${pacePointsComputed[0].x} ${paceBase}`,
+            ...pacePointsComputed.map((point) => `L ${point.x} ${point.y}`),
+            `L ${pacePointsComputed[pacePointsComputed.length - 1].x} ${paceBase}`,
+            'Z',
+          ].join(' ')
+        : ''
+
+    const pauseMarkersList: {
+      id: string
+      x: number
+      height: number
+      radius: number
+      pause: number
+      fromId: string
+      toId: string
+      opacity: number
+    }[] = []
+
+    commits.forEach((commit, index) => {
+      if (index === 0) return
+      const prev = commits[index - 1]
+      const prevEnd = prev.timestamp + prev.duration
+      const pause = Math.max(0, commit.timestamp - prevEnd)
+      if (pause <= 0) return
+      const midX = (prev.position.x + commit.position.x) / 2
+      const height = Math.min(36, 8 + Math.log1p(pause / 800) * 12)
+      const radius = Math.min(6, 2.5 + pause / 4000)
+      const opacity = Math.min(0.85, 0.35 + pause / 15000)
+      pauseMarkersList.push({
+        id: `pause-${prev.id}-${commit.id}`,
+        x: midX,
+        height,
+        radius,
+        pause,
+        fromId: prev.id,
+        toId: commit.id,
+        opacity,
+      })
+    })
+
+    return {
+      correctionIntensityByCommit: correctionMap,
+      pacePoints: pacePointsComputed,
+      pacePath: pacePathValue,
+      paceAreaPath: paceAreaValue,
+      maxPace: maxPaceValue,
+      pauseMarkers: pauseMarkersList,
+    }
+  }, [branches, commits, baselineY])
+
   const getCommitColor = (commit: GitCommit) => {
     if (commit.type === 'correction') return 'hsl(var(--destructive))'
     if (commit.type === 'milestone') return 'hsl(var(--secondary))'
@@ -270,6 +356,27 @@ function TimelineGraph({
     if (!interactive) return
     setActiveCommit(commits[0] ?? null)
   }
+
+  const activeCommitIndex = activeCommit ? commits.findIndex((commit) => commit.id === activeCommit.id) : -1
+  const previousCommit = activeCommitIndex > 0 ? commits[activeCommitIndex - 1] : null
+  const pauseBeforeActive =
+    activeCommit && previousCommit
+      ? Math.max(0, activeCommit.timestamp - (previousCommit.timestamp + previousCommit.duration))
+      : 0
+  const activePace =
+    activeCommit && activeCommit.duration > 0
+      ? (activeCommit.keystrokes / activeCommit.duration) * 60000
+      : 0
+  const activeCorrectionRatio =
+    activeCommit && correctionIntensityByCommit.has(activeCommit.id)
+      ? correctionIntensityByCommit.get(activeCommit.id) ?? 0
+      : activeCommit && activeCommit.type === 'correction'
+        ? Math.min(0.36 + activeCommit.intensity * 0.4, 0.82)
+        : 0
+  const estimatedBackspaces =
+    activeCommit && activeCorrectionRatio > 0
+      ? Math.max(1, Math.round(activeCommit.keystrokes * activeCorrectionRatio))
+      : 0
 
   return (
     <div className="space-y-4">
@@ -326,9 +433,76 @@ function TimelineGraph({
             )
           })}
 
+          {maxPace > 0 && paceAreaPath && (
+            <path
+              d={paceAreaPath}
+              fill="hsl(var(--secondary))"
+              opacity={0.08}
+            />
+          )}
+
+          {maxPace > 0 && pacePath && (
+            <path
+              d={pacePath}
+              fill="none"
+              stroke="hsl(var(--secondary))"
+              strokeWidth={1.4}
+              strokeDasharray="4 3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeOpacity={0.65}
+            />
+          )}
+
+          {maxPace > 0 &&
+            pacePoints.map((point) => {
+              const isActive = activeCommit?.id === point.id
+              return (
+                <circle
+                  key={`pace-${point.id}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r={isActive ? 3.5 : 2}
+                  fill="hsl(var(--secondary))"
+                  opacity={isActive ? 0.9 : 0.5}
+                />
+              )
+            })}
+
+          {pauseMarkers.map((marker) => {
+            const isActivePause = activeCommit?.id === marker.toId
+            const strokeOpacity = isActivePause ? Math.min(1, marker.opacity + 0.2) : marker.opacity
+            return (
+              <g key={marker.id} className="pointer-events-none">
+                <line
+                  x1={marker.x}
+                  x2={marker.x}
+                  y1={baselineY}
+                  y2={baselineY + marker.height}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeWidth={1.1}
+                  strokeDasharray="2 3"
+                  strokeOpacity={strokeOpacity}
+                />
+                <circle
+                  cx={marker.x}
+                  cy={baselineY + marker.height}
+                  r={marker.radius}
+                  fill="hsl(var(--muted-foreground))"
+                  opacity={strokeOpacity}
+                />
+              </g>
+            )
+          })}
+
           {commits.map((commit, index) => {
             const radius = 6 + commit.intensity * 6
             const color = getCommitColor(commit)
+            const isActive = activeCommit?.id === commit.id
+            const correctionLevel =
+              correctionIntensityByCommit.get(commit.id) ??
+              (commit.type === 'correction' ? Math.min(0.36 + commit.intensity * 0.4, 0.82) : 0)
+            const correctionRadius = radius + 4 + correctionLevel * 6
             return (
               <g
                 key={commit.id}
@@ -336,6 +510,17 @@ function TimelineGraph({
                 onMouseLeave={handleLeave}
                 className={interactive ? 'cursor-pointer' : undefined}
               >
+                {correctionLevel > 0 && (
+                  <circle
+                    cx={commit.position.x}
+                    cy={commit.position.y}
+                    r={correctionRadius}
+                    fill="none"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth={1 + correctionLevel * 2}
+                    strokeOpacity={isActive ? 0.85 : 0.5}
+                  />
+                )}
                 <line
                   x1={commit.position.x}
                   y1={commit.position.y}
@@ -344,14 +529,14 @@ function TimelineGraph({
                   stroke={color}
                   strokeWidth={1}
                   strokeDasharray="2 4"
-                  opacity={0.55}
+                  opacity={isActive ? 0.85 : 0.55}
                 />
                 <circle
                   cx={commit.position.x}
                   cy={commit.position.y}
                   r={radius}
                   fill={color}
-                  opacity={activeCommit?.id === commit.id ? 0.95 : 0.75}
+                  opacity={isActive ? 1 : 0.75}
                   stroke="hsl(var(--background))"
                   strokeWidth={2}
                 />
@@ -377,6 +562,12 @@ function TimelineGraph({
             </span>
             <span>{activeCommit.keystrokes} keystrokes</span>
             <span>{formatDuration(activeCommit.duration)}</span>
+            <span>{Math.round(activePace || 0)} wpm pace</span>
+            <span>Pause {formatDuration(pauseBeforeActive)}</span>
+            <span>
+              {Math.round(activeCorrectionRatio * 100)}% corrections
+              {estimatedBackspaces > 0 ? ` (~${estimatedBackspaces})` : ''}
+            </span>
             <span>
               {new Date(activeCommit.timestamp).toLocaleTimeString([], {
                 hour: '2-digit',

@@ -83,7 +83,7 @@ export default function Contact() {
               <CardHeader>
                 <CardTitle>Send a Message</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  We'll get back to you as soon as possible
+                  We&rsquo;ll get back to you as soon as possible
                 </p>
               </CardHeader>
               <CardContent>

@@ -127,7 +127,7 @@ export default function Privacy() {
                 <h2 className="text-xl font-semibold mb-3">9. Changes to This Policy</h2>
                 <p>
                   We may update this privacy policy from time to time. We will notify users of any 
-                  material changes by posting the new policy on this page with an updated "Last updated" date.
+                  material changes by posting the new policy on this page with an updated &ldquo;Last updated&rdquo; date.
                 </p>
               </section>
 

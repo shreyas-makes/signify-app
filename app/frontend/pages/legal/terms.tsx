@@ -87,7 +87,7 @@ export default function Terms() {
               <section>
                 <h2 className="text-xl font-semibold mb-3">8. Limitation of Liability</h2>
                 <p>
-                  Signify is provided "as is" without warranties. We are not liable for any damages 
+                  Signify is provided &ldquo;as is&rdquo; without warranties. We are not liable for any damages 
                   arising from your use of the service.
                 </p>
               </section>

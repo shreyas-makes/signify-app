@@ -40,13 +40,13 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
     return document.public_slug ? `/posts/${document.public_slug}` : null
   }
 
-  const handleCreateDocument = async () => {
+  const handleCreateDocument = () => {
     setIsCreating(true)
     toast.info("Creating new document...")
     
     // Add a small delay for better UX feedback
-    setTimeout(() => {
-      router.visit(newDocumentPath(), {
+    window.setTimeout(() => {
+      void router.visit(newDocumentPath(), {
         onFinish: () => setIsCreating(false),
         onError: () => {
           setIsCreating(false)
@@ -183,7 +183,7 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                             className="touch-manipulation min-h-[44px] min-w-[44px]"
                             onClick={() => {
                               if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
-                                router.delete(documentPath({ id: document.id }))
+                                void router.delete(documentPath({ id: document.id }))
                               }
                             }}
                           >

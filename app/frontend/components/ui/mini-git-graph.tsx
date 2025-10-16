@@ -2,11 +2,20 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Keystroke } from '@/types'
 
+interface BarcodeData {
+  bars: number[]
+  maxIntensity: number
+  totalBars: number
+  timeUnit: string
+  intervalMs: number
+  startTime: number
+}
+
 // Barcode calculation logic for keystroke visualization
 function calculateBarcodeData(
   keystrokes: Keystroke[], 
   containerWidth: number
-) {
+): BarcodeData {
   if (keystrokes.length === 0) {
     return { 
       bars: [], 
@@ -26,7 +35,6 @@ function calculateBarcodeData(
   
   // Calculate optimal number of bars for barcode appearance (60-120 bars)
   const minBarWidth = 2 // Minimum bar width in pixels
-  const maxBarWidth = 8 // Maximum bar width in pixels
   const barSpacing = 1 // Space between bars
   const maxBars = Math.floor(containerWidth / (minBarWidth + barSpacing))
   const targetBars = Math.max(60, Math.min(120, maxBars))
@@ -55,7 +63,7 @@ function calculateBarcodeData(
   const finalBars = Math.min(actualTotalBars, targetBars)
   
   // Create intensity array for bars
-  const intensityBars = new Array(finalBars).fill(0)
+  const intensityBars = Array.from({ length: finalBars }, () => 0)
   
   // Group keystrokes into time intervals
   for (const ks of sortedKeystrokes) {
@@ -70,7 +78,7 @@ function calculateBarcodeData(
 
   return {
     bars: intensityBars,
-    maxIntensity: Math.max(...intensityBars, 1),
+    maxIntensity: intensityBars.length > 0 ? Math.max(1, ...intensityBars) : 1,
     totalBars: finalBars,
     timeUnit,
     intervalMs,
@@ -111,8 +119,8 @@ export function MiniGitGraph({
 
     updateWidth(element.clientWidth)
 
-    if ('ResizeObserver' in window) {
-      const observer = new ResizeObserver((entries) => {
+    if ('ResizeObserver' in window && typeof window.ResizeObserver === 'function') {
+      const observer = new window.ResizeObserver((entries) => {
         for (const entry of entries) {
           updateWidth(entry.contentRect.width)
         }
@@ -129,7 +137,7 @@ export function MiniGitGraph({
 
   const resolvedWidth = containerWidth
 
-  const { bars, maxIntensity } = useMemo(() => {
+  const { bars, maxIntensity } = useMemo<BarcodeData>(() => {
     return calculateBarcodeData(keystrokes, resolvedWidth)
   }, [keystrokes, resolvedWidth])
 
