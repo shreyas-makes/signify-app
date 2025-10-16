@@ -1,5 +1,7 @@
 import { Head, Link, router } from "@inertiajs/react"
-import { Calendar, Edit, ExternalLink, Eye, FileText, Plus, Trash2 } from "lucide-react"
+import { Calendar, Edit, ExternalLink, Eye, FileText, Loader2, Plus, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -20,6 +22,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
+  const [isCreating, setIsCreating] = useState(false)
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -36,6 +40,22 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
     return document.public_slug ? `/posts/${document.public_slug}` : null
   }
 
+  const handleCreateDocument = async () => {
+    setIsCreating(true)
+    toast.info("Creating new document...")
+    
+    // Add a small delay for better UX feedback
+    setTimeout(() => {
+      router.visit(newDocumentPath(), {
+        onFinish: () => setIsCreating(false),
+        onError: () => {
+          setIsCreating(false)
+          toast.error("Failed to create document. Please try again.")
+        }
+      })
+    }, 300)
+  }
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Documents" />
@@ -50,11 +70,23 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                 Simple document listing
               </p>
             </div>
-            <Button asChild size="lg" className="shrink-0">
-              <Link href={newDocumentPath()}>
-                <Plus className="mr-2 h-4 w-4" />
-                New Document
-              </Link>
+            <Button 
+              size="lg" 
+              className="shrink-0 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={handleCreateDocument}
+              disabled={isCreating}
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Document
+                </>
+              )}
             </Button>
           </div>
 
@@ -69,11 +101,23 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
                 <p className="mt-2 text-muted-foreground text-center max-w-sm">
                   Start writing your first verified document to get started with keystroke-verified authorship.
                 </p>
-                <Button asChild className="mt-6" size="lg">
-                  <Link href={newDocumentPath()}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create your first document
-                  </Link>
+                <Button 
+                  className="mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200" 
+                  size="lg"
+                  onClick={handleCreateDocument}
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating your first document...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create your first document
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>

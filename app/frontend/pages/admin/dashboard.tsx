@@ -1,17 +1,18 @@
+import {
+  Calendar,
+  Eye, 
+  FileText, 
+  Globe, 
+  Keyboard,
+  Shield, 
+  TrendingUp, 
+  Users
+} from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { 
-  Users, 
-  FileText, 
-  Globe, 
-  Keyboard, 
-  TrendingUp,
-  Shield,
-  Eye,
-  Calendar
-} from "lucide-react"
 
 interface User {
   id: number
@@ -276,7 +277,7 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
                   </div>
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline" asChild>
-                      <a href={`/posts/${post.public_slug}`} target="_blank">
+                      <a href={`/posts/${post.public_slug}`} target="_blank" rel="noreferrer">
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </a>

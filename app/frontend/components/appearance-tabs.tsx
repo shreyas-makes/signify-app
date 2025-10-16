@@ -29,7 +29,7 @@ export default function AppearanceSettings({
       </div>
       <p className="text-sm leading-6 text-muted-foreground">
         Typography, spacing, and elevation now lean on a softer palette, generous
-        rounding, and Inter-based type to keep content front and center without
+        rounding, and Spectral plus Source Sans Pro to keep content front and center without
         a theme switcher.
       </p>
     </div>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200..900;1,200..900&family=Spectral:ital,wght@0,200..800;1,200..800&display=swap");
 
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
@@ -38,8 +39,8 @@
   --sidebar-accent-foreground: oklch(0.45 0.015 110);
   --sidebar-border: oklch(0.9 0.008 110);
   --sidebar-ring: var(--primary);
-  --font-sans: "Inter", "SF Pro Text", "Segoe UI", "Helvetica Neue", sans-serif;
-  --font-serif: "Iowan Old Style", "Georgia", "Times New Roman", serif;
+  --font-sans: "Source Sans Pro", "SF Pro Text", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-serif: "Spectral", "Iowan Old Style", "Georgia", "Times New Roman", serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", "ui-monospace", monospace;
   --shadow-color: #0f172a;
   --shadow-opacity: 0.12;

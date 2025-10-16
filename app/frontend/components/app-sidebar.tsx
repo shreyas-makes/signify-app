@@ -1,5 +1,5 @@
 import { Link, router } from "@inertiajs/react"
-import { BookOpen, Folder, LayoutGrid, FileText, Plus, Calendar, ChevronRight, ChevronDown } from "lucide-react"
+import { BookOpen, Calendar, ChevronDown, ChevronRight, FileText, Folder, LayoutGrid, Plus } from "lucide-react"
 import { useState } from "react"
 
 import { NavFooter } from "@/components/nav-footer"
@@ -12,17 +12,17 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarGroupAction,
 } from "@/components/ui/sidebar"
 import { dashboardPath, documentsPath, editDocumentPath, newDocumentPath } from "@/routes"
-import type { NavItem, Document } from "@/types"
+import type { Document, NavItem } from "@/types"
 
 import AppLogo from "./app-logo"
 

@@ -70,6 +70,8 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
   const [loadingMore, setLoadingMore] = useState(false)
   const [allKeystrokes, setAllKeystrokes] = useState<Keystroke[]>(keystrokes)
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800)
+  const heatmapWidth = windowWidth > 1024 ? 920 : Math.max(360, windowWidth - 80)
+  const heatmapHeight = windowWidth > 768 ? 360 : 260
 
   // Handle window resize for responsive git graph
   useEffect(() => {
@@ -271,6 +273,17 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
             
           </div>
 
+          <div className="mb-10">
+            <GitCommitGraph
+              keystrokes={allKeystrokes}
+              width={heatmapWidth}
+              height={heatmapHeight}
+              interactive={true}
+              showStats={true}
+              className="shadow-sm ring-1 ring-border/40"
+            />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Enhanced Keystroke Replay */}
             <div className="lg:col-span-2 space-y-6">
@@ -320,16 +333,6 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                   </p>
                 </CardContent>
               </Card>
-
-              {/* Git-Style Timeline Visualization */}
-              <GitCommitGraph 
-                keystrokes={allKeystrokes}
-                width={windowWidth > 768 ? 800 : Math.max(400, windowWidth - 100)}
-                height={windowWidth > 768 ? 350 : 250}
-                interactive={true}
-                showStats={true}
-                className="mb-6"
-              />
 
               {/* Legacy Timeline Events (for reference) */}
               <Card>

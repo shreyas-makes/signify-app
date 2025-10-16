@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Keystroke } from '@/types'
 
@@ -91,9 +91,47 @@ export function MiniGitGraph({
   height = 160,
   className = ""
 }: MiniGitGraphProps) {
-  const { bars, maxIntensity, totalBars } = useMemo(() => {
-    return calculateBarcodeData(keystrokes, width)
-  }, [keystrokes, width])
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [containerWidth, setContainerWidth] = useState(width)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const element = containerRef.current
+    if (!element) {
+      return
+    }
+
+    const updateWidth = (nextWidth: number) => {
+      const normalizedWidth = Math.max(1, Math.floor(nextWidth || width))
+      setContainerWidth((prev) => (Math.abs(prev - normalizedWidth) > 1 ? normalizedWidth : prev))
+    }
+
+    updateWidth(element.clientWidth)
+
+    if ('ResizeObserver' in window) {
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          updateWidth(entry.contentRect.width)
+        }
+      })
+
+      observer.observe(element)
+      return () => observer.disconnect()
+    }
+
+    const handleResize = () => updateWidth(element.clientWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [width])
+
+  const resolvedWidth = containerWidth
+
+  const { bars, maxIntensity } = useMemo(() => {
+    return calculateBarcodeData(keystrokes, resolvedWidth)
+  }, [keystrokes, resolvedWidth])
 
   const getBarcodeColor = (intensity: number) => {
     if (intensity === 0) return '#ffffff' // White for no activity
@@ -114,17 +152,6 @@ export function MiniGitGraph({
     return Math.max(2, Math.min(8, Math.ceil(2 + (ratio * 6))))
   }
 
-  if (keystrokes.length === 0) {
-    return (
-      <div 
-        className={`inline-flex items-center justify-center text-xs text-muted-foreground bg-muted/30 rounded ${className}`}
-        style={{ width, height }}
-      >
-        No data
-      </div>
-    )
-  }
-
   // Calculate barcode dimensions
   const barSpacing = 1
   const barHeight = height - 16 // Leave margins top/bottom
@@ -132,37 +159,49 @@ export function MiniGitGraph({
   
   // Calculate total width needed and scale if necessary
   const totalWidthNeeded = bars.reduce((acc, intensity) => acc + getBarWidth(intensity) + barSpacing, 0)
-  const scaleX = totalWidthNeeded > width ? width / totalWidthNeeded : 1
+  const scaleX = totalWidthNeeded > resolvedWidth ? resolvedWidth / totalWidthNeeded : 1
 
   return (
-    <div className={`inline-block ${className}`}>
-      <svg 
-        width={width} 
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        className="block rounded border border-border/20"
-        style={{ background: '#fafafa' }} // Light background for contrast
-      >
-        {/* Barcode bars */}
-        {bars.map((intensity, index) => {
-          const barWidth = getBarWidth(intensity) * scaleX
-          const x = bars.slice(0, index).reduce((acc, prevIntensity) => 
-            acc + (getBarWidth(prevIntensity) * scaleX) + (barSpacing * scaleX), 0
-          )
-          
-          return (
-            <rect
-              key={index}
-              x={x}
-              y={barY}
-              width={Math.max(0.5, barWidth - (barSpacing * scaleX))} // Ensure minimum visibility
-              height={barHeight}
-              fill={getBarcodeColor(intensity)}
-              rx={0} // Sharp corners for barcode appearance
-            />
-          )
-        })}
-      </svg>
+    <div ref={containerRef} className={`block w-full ${className}`}>
+      {keystrokes.length === 0 ? (
+        <div 
+          className="flex h-full w-full items-center justify-center rounded border border-border/20 bg-muted/30 text-xs text-muted-foreground"
+          style={{ minHeight: height }}
+        >
+          No data
+        </div>
+      ) : (
+        <svg 
+          width="100%" 
+          height={height}
+          viewBox={`0 0 ${resolvedWidth} ${height}`}
+          preserveAspectRatio="none"
+          className="block w-full rounded border border-border/20"
+          style={{ background: '#fafafa' }} // Light background for contrast
+        >
+          {/* Barcode bars */}
+          {(() => {
+            let currentX = 0
+            return bars.map((intensity, index) => {
+              const barWidth = getBarWidth(intensity) * scaleX
+              const x = currentX
+              currentX += barWidth + (barSpacing * scaleX)
+              
+              return (
+                <rect
+                  key={index}
+                  x={x}
+                  y={barY}
+                  width={Math.max(0.5, barWidth - (barSpacing * scaleX))} // Ensure minimum visibility
+                  height={barHeight}
+                  fill={getBarcodeColor(intensity)}
+                  rx={0} // Sharp corners for barcode appearance
+                />
+              )
+            })
+          })()}
+        </svg>
+      )}
     </div>
   )
 }

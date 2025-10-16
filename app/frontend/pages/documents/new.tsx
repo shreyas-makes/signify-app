@@ -1,8 +1,10 @@
 import { Head, useForm } from "@inertiajs/react"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Loader2, Save, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import AppLayout from "@/layouts/app-layout"
@@ -45,6 +47,11 @@ export default function DocumentsNew() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!data.document.title.trim()) {
+      toast.error("Please add a title for your document")
+      return
+    }
+    toast.loading("Creating your document...")
     post(documentsPath())
   }
 
