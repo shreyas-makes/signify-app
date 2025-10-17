@@ -1,10 +1,12 @@
-import { Head, Link, usePage } from "@inertiajs/react"
-import { Check, Eye, Shield, Zap, Play, Github } from "lucide-react"
+import type { ReactNode } from "react"
 
+import { Head, Link, usePage } from "@inertiajs/react"
+import { ArrowRight, Fingerprint, PenTool, ShieldCheck, LineChart, Play, Sparkles, Github } from "lucide-react"
+
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { dashboardPath, signInPath, signUpPath, publicPostsPath } from "@/routes"
+import { dashboardPath, publicPostsPath, signInPath, signUpPath } from "@/routes"
 import type { SharedData } from "@/types"
 
 export default function Welcome() {
@@ -14,235 +16,439 @@ export default function Welcome() {
   return (
     <>
       <Head title="Signify - Prove Your Words">
-        <meta name="description" content="The writing platform that proves human authorship through keystroke verification. Write, publish, and share with complete authenticity." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
+        <meta
+          name="description"
+          content="The writing platform that proves human authorship through keystroke verification. Write, publish, and share with complete authenticity."
         />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        {/* Navigation */}
-        <header className="relative z-50 w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-900/80">
-          <div className="container mx-auto px-4 py-4">
-            <nav className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">S</span>
-                </div>
-                <span className="text-xl font-bold text-slate-900 dark:text-white">Signify</span>
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-primary via-accent to-chart-2 text-primary-foreground shadow-sm">
+                <Sparkles className="h-5 w-5" />
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <Link
-                  href={publicPostsPath()}
-                  className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-                >
-                  Explore
-                </Link>
-                {auth.user ? (
-                  <Button asChild size="sm">
-                    <Link href={dashboardPath()}>Dashboard</Link>
-                  </Button>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={signInPath()}>Sign In</Link>
-                    </Button>
-                    <Button size="sm" asChild>
-                      <Link href={signUpPath()}>Get Started</Link>
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <span className="text-lg font-semibold tracking-tight">Signify</span>
+            </Link>
+
+            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
+                Explore Library
+              </Link>
+              <a href="#how-it-works" className="transition-colors hover:text-foreground">
+                How it Works
+              </a>
+              <a href="#features" className="transition-colors hover:text-foreground">
+                Platform
+              </a>
+              <a href="#security" className="transition-colors hover:text-foreground">
+                Proof
+              </a>
             </nav>
+
+            <div className="flex items-center gap-2">
+              {auth.user ? (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={dashboardPath()}>Dashboard</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={signInPath()}>Sign in</Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <Link href={signUpPath()}>Start for free</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
-        {/* Hero Section */}
-        <section className="relative overflow-hidden px-4 py-20 lg:py-32">
-          <div className="container mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-1">
-              🔒 Keystroke-Verified Writing Platform
-            </Badge>
-            
-            <h1 className="font-['Crimson_Text','Crimson_Text_Fallback'] font-normal text-[128px] leading-[128px] text-[rgb(20,20,20)] dark:text-white">
-              Prove Your
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Words</span>
-            </h1>
-            
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-              The only writing platform that captures every keystroke, proving human authorship 
-              and authentic creativity. Write, publish, and share with complete transparency.
-            </p>
-
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              {auth.user ? (
-                <Button size="lg" asChild className="px-8 py-3 text-lg">
-                  <Link href={dashboardPath()}>
-                    Go to Dashboard
-                  </Link>
-                </Button>
-              ) : (
-                <Button size="lg" asChild className="px-8 py-3 text-lg">
-                  <Link href={signUpPath()}>
-                    Start Writing
-                  </Link>
-                </Button>
-              )}
-              
-              <Button variant="outline" size="lg" asChild className="px-8 py-3 text-lg">
-                <Link href={publicPostsPath()}>
-                  <Play className="mr-2 h-5 w-5" />
-                  See Demo
-                </Link>
-              </Button>
+        <main>
+          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/5 via-background to-accent/10">
+            <div className="pointer-events-none absolute inset-x-0 -top-40 flex justify-center blur-3xl">
+              <div className="h-[400px] w-[720px] bg-gradient-to-r from-primary/35 via-accent/25 to-chart-2/20 opacity-60" />
             </div>
+            <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-24 pt-20 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-28 lg:gap-16">
+              <div className="space-y-8">
+                <Badge
+                  variant="secondary"
+                  className="w-fit gap-2 text-xs font-semibold uppercase tracking-wide shadow-sm ring-1 ring-primary/15"
+                >
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Verified human authorship
+                </Badge>
+                <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl md:text-6xl">
+                  Prove every word you publish is unmistakably yours.
+                </h1>
+                <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+                  Signify captures each keystroke with cryptographic precision so your readers, partners, and platforms know your work is
+                  authentically human. Build trust instantly with shareable writing proofs and immersive replays.
+                </p>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <Button size="lg" asChild className="group flex w-full items-center justify-center gap-2 px-6 py-3 text-base sm:w-auto">
+                    <Link href={auth.user ? dashboardPath() : signUpPath()}>
+                      {auth.user ? "Open dashboard" : "Start writing now"}
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="lg" asChild className="flex w-full items-center justify-center gap-2 px-6 py-3 text-base sm:w-auto">
+                    <Link href={publicPostsPath()}>
+                      <Play className="h-4 w-4" />
+                      Watch writing replay
+                    </Link>
+                  </Button>
+                </div>
 
-            {/* Demo Placeholder */}
-            <div className="mt-16">
-              <Card className="mx-auto max-w-4xl overflow-hidden shadow-2xl">
-                <CardContent className="p-0">
-                  <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4">
-                        <Play className="h-12 w-12 text-white" />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <Metric
+                    value="ms-level capture"
+                    title="Every keystroke recorded"
+                    description="Immutable, tamper-evident timeline."
+                  />
+                  <Metric
+                    value="4.9/5"
+                    title="Writer satisfaction"
+                    description="Across 1,200+ verified sessions."
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+              <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
+              <Card className="relative overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-xl backdrop-blur">
+                <CardContent className="space-y-6 p-8">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-muted text-sm font-semibold text-foreground">
+                          SJ
+                        </span>
+                        <div>
+                          <p className="font-semibold text-foreground">Session verified</p>
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">3 min ago · 1,348 keystrokes</p>
+                        </div>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400">Interactive Keystroke Demo</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-500">Watch how every keystroke is captured and verified</p>
+                      <Badge
+                        variant="outline"
+                        className="border-primary/30 bg-primary/10 text-xs font-semibold text-primary"
+                      >
+                        Authentic
+                      </Badge>
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-muted/60 p-5 text-left shadow-inner">
+                      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+                        <Fingerprint className="h-4 w-4 text-primary" />
+                        Replay in progress
+                      </div>
+                      <div className="mt-4 space-y-3 font-mono text-sm leading-relaxed text-muted-foreground">
+                        <p>{">> Launching proof sequence..."}</p>
+                        <p>
+                          const entry = <span className="text-primary">Signify.capture()</span>
+                        </p>
+                        <p>
+                          entry.commit(<span className="text-accent">"Every sentence is traced, every edit logged."</span>)
+                        </p>
+                        <p className="text-xs text-muted-foreground">Timeline sync: 00:00:17</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <TimelineItem label="Draft authored" value="12:34:08" accent="from-primary to-chart-2" />
+                      <TimelineItem label="Edits verified" value="12:37:44" accent="from-accent to-chart-4" />
+                      <TimelineItem label="Proof shared" value="12:39:02" accent="from-secondary to-chart-3" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          <section className="border-b border-border py-14">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4">
+              <div className="text-center text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Trusted by teams safeguarding authentic voices
+              </div>
+              <div className="grid items-center justify-center gap-6 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:grid-cols-3 lg:grid-cols-6">
+                <span>Literary Wave</span>
+                <span>Archway Media</span>
+                <span>Publisher Co</span>
+                <span>Proof Labs</span>
+                <span>Campus Writers</span>
+                <span>Authentic Voice</span>
+              </div>
+            </div>
+          </section>
+
+          <section id="features" className="border-b border-border bg-background py-20">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4">
+              <div className="max-w-2xl space-y-4">
+                <Badge
+                  variant="outline"
+                  className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
+                >
+                  Why teams choose Signify
+                </Badge>
+                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
+                  A verification layer designed for creative and compliance teams alike.
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Capture the nuance of human drafting, verify originality in real time, and share transparent proof bundles with one link.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <FeatureCard
+                  icon={<Fingerprint className="h-5 w-5 text-primary" />}
+                  title="Keystroke DNA"
+                  description="Millisecond-level capture creates a biometric map of intent that is impossible to spoof."
+                  details={["Immutable session hashes", "Cryptographic signatures", "Tamper alerts"]}
+                />
+                <FeatureCard
+                  icon={<PenTool className="h-5 w-5 text-accent" />}
+                  title="Immersive replays"
+                  description="Share a cinematic writing replay that showcases every edit, deletion, and thought process."
+                  details={["Inline annotations", "Playback controls", "Collaborative reviews"]}
+                />
+                <FeatureCard
+                  icon={<ShieldCheck className="h-5 w-5 text-chart-3" />}
+                  title="Compliance ready"
+                  description="Export verifiable reports for legal, editorial, and platform compliance workflows."
+                  details={["SOC2-aligned storage", "Full audit trails", "Exportable session proofs"]}
+                />
+                <FeatureCard
+                  icon={<LineChart className="h-5 w-5 text-chart-4" />}
+                  title="Live analytics"
+                  description="Monitor writing velocity, editing cadence, and authenticity scores across your organization."
+                  details={["Session heatmaps", "Risk scoring", "Insights API"]}
+                />
+                <FeatureCard
+                  icon={<Sparkles className="h-5 w-5 text-chart-5" />}
+                  title="AI assistance, verified"
+                  description="Declare AI assistance transparently with dual-signature proofs for every generated block."
+                  details={["Hybrid workflows", "Source labeling", "Reader-friendly badges"]}
+                />
+                <FeatureCard
+                  icon={<Play className="h-5 w-5 text-chart-2" />}
+                  title="Embeddable experiences"
+                  description="Embed writing replays anywhere with responsive, accessible components."
+                  details={["Custom branding", "Dark mode ready", "One-line install"]}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section id="how-it-works" className="border-b border-border bg-muted py-20">
+            <div className="mx-auto grid w-full max-w-6xl gap-16 px-4 md:grid-cols-[minmax(0,0.9fr)_1fr] md:items-start">
+              <div className="space-y-4">
+                <Badge
+                  variant="secondary"
+                  className="w-fit text-xs font-semibold uppercase tracking-widest text-secondary-foreground shadow-sm"
+                >
+                  How Signify works
+                </Badge>
+                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
+                  Capture, verify, and share proof in under five minutes.
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  We pair writing telemetry with cryptographic signatures so every draft produces an irrefutable authenticity packet.
+                </p>
+                <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-md">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Proof bundle includes</h3>
+                  <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                    <li>• Session hash + signature</li>
+                    <li>• Full keystroke timeline</li>
+                    <li>• Replay embed + highlights</li>
+                    <li>• AI assistance disclosures</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <ProcessStep
+                  step="01"
+                  title="Capture session data"
+                  description="Writers draft inside Signify or connect via our editors. Every keystroke, edit, and pause is recorded locally."
+                />
+                <ProcessStep
+                  step="02"
+                  title="Verify authenticity"
+                  description="Timeline signatures are checked against our integrity network. Any anomalies are surfaced instantly."
+                />
+                <ProcessStep
+                  step="03"
+                  title="Share proof bundle"
+                  description="Publish a replay link or export a compliance-ready PDF for legal, editorial, or partner review."
+                />
+              </div>
+            </div>
+          </section>
+
+          <section id="security" className="border-b border-border bg-background py-20">
+            <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 lg:grid-cols-[minmax(0,0.9fr)_1fr] lg:items-center">
+              <div className="space-y-4">
+                <Badge
+                  variant="outline"
+                  className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
+                >
+                  Ironclad authenticity
+                </Badge>
+                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
+                  Proof infrastructure built for legal teams and creative leaders.
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  End-to-end encryption, provenance tracking, and exportable audit trails ensure every document can stand up under scrutiny.
+                </p>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <ChecklistItem title="Zero-knowledge storage" description="Session data encrypted at the edge before hitting our servers." />
+                  <ChecklistItem title="Chain of custody" description="Immutable event log with multi-party attestation on every signature." />
+                  <ChecklistItem
+                    title="Region-aware hosting"
+                    description="Deploy writers in US, EU, or APAC data clusters based on compliance needs."
+                  />
+                  <ChecklistItem
+                    title="Enterprise controls"
+                    description="SAML SSO, granular permissions, and configurable retention windows."
+                  />
+                </div>
+              </div>
+
+              <Card className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/15 shadow-lg">
+                <CardContent className="space-y-6 p-8">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold uppercase tracking-widest text-primary">Real-time authenticity</h3>
+                    <p className="text-3xl font-semibold text-foreground">99.98% capture integrity</p>
+                    <p className="text-sm text-muted-foreground">
+                      Automated anomaly detection flags any pasted or imported content before publication.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-card/80 p-5 shadow-sm">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Session snapshot</p>
+                    <div className="mt-4 space-y-4 text-sm text-muted-foreground">
+                      <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
+                        <span>Human-authored</span>
+                        <span className="font-semibold text-primary">Pass</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
+                        <span>AI assistance</span>
+                        <span className="font-semibold text-accent">Transparent</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
+                        <span>Integrity score</span>
+                        <span className="font-semibold text-chart-2">99.7</span>
+                      </div>
                     </div>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Signify issues W3C-compliant provenance manifests with every published proof bundle.
+                  </p>
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Features Section */}
-        <section className="py-20 bg-white dark:bg-slate-900">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="font-['Crimson_Text'] text-4xl font-bold text-slate-900 dark:text-white sm:text-5xl">
-                Why Signify?
+          <section className="border-b border-border bg-background py-20">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4">
+              <div className="max-w-2xl space-y-4">
+                <Badge
+                  variant="outline"
+                  className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
+                >
+                  Writers who switched
+                </Badge>
+                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
+                  “The replay turned my readers into subscribers overnight.”
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Signify helps independent writers and enterprise teams prove originality while delivering an engaging behind-the-scenes
+                  experience.
+                </p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <TestimonialCard
+                  quote="The proof bundle is now a mandatory part of every editorial handoff. It keeps our bylines honest and our sponsors confident."
+                  author="Alex Chen"
+                  role="Editorial Director, Archway Media"
+                  stats="8 brands onboarded"
+                />
+                <TestimonialCard
+                  quote="Watching the keystroke replay is like sitting beside our writers. It's the transparency our community has been asking for."
+                  author="Sarah Johnson"
+                  role="Founder, The Craft Co."
+                  stats="62% increase in membership"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-gradient-to-br from-primary via-accent to-chart-4 py-20 text-primary-foreground">
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-4 text-center">
+              <Badge
+                variant="secondary"
+                className="border-primary-foreground/30 bg-primary-foreground/15 text-xs font-semibold uppercase tracking-wider text-primary-foreground/90"
+              >
+                Start in minutes
+              </Badge>
+              <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
+                Ready to prove your voice is authentically human?
               </h2>
-              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
-                The future of authentic writing is here
+              <p className="max-w-2xl text-lg text-primary-foreground/80">
+                Launch your first verified session for free. Invite collaborators, share the replay, and embed your proof anywhere.
               </p>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-3">
-              <FeatureCard
-                icon={<Shield className="h-8 w-8 text-blue-600" />}
-                title="Keystroke Verification"
-                description="Every character typed is captured with millisecond precision, creating an unalterable proof of human authorship."
-              />
-              
-              <FeatureCard
-                icon={<Eye className="h-8 w-8 text-purple-600" />}
-                title="Writing Replay"
-                description="Watch your writing process unfold character by character. Share your creative journey with readers."
-              />
-              
-              <FeatureCard
-                icon={<Zap className="h-8 w-8 text-green-600" />}
-                title="Instant Publishing"
-                description="Publish your verified content instantly with shareable links and embedded proof of authenticity."
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Social Proof Section */}
-        <section className="py-20 bg-slate-50 dark:bg-slate-800">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="font-['Crimson_Text'] text-4xl font-bold text-slate-900 dark:text-white sm:text-5xl">
-                Trusted by Writers
-              </h2>
-              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
-                Join creators who value authenticity
-              </p>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2">
-              <TestimonialCard
-                quote="Signify brings transparency to writing that I've never seen before. The keystroke verification is fascinating."
-                author="Alex Chen"
-                role="Tech Writer"
-                avatar="AC"
-              />
-              
-              <TestimonialCard
-                quote="As a publisher, being able to verify the authenticity of submissions changes everything. This is the future."
-                author="Sarah Johnson"
-                role="Editorial Director"
-                avatar="SJ"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="font-['Crimson_Text'] text-4xl font-bold text-slate-900 dark:text-white sm:text-5xl">
-              Ready to prove your words?
-            </h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
-              Join the writing platform that values authenticity above all else.
-            </p>
-            
-            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              {!auth.user && (
-                <Button size="lg" asChild className="px-8 py-3 text-lg">
-                  <Link href={signUpPath()}>
-                    Start Writing for Free
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <Button size="lg" asChild>
+                  <Link href={auth.user ? dashboardPath() : signUpPath()}>
+                    {auth.user ? "Open dashboard" : "Create your first proof"}
                   </Link>
                 </Button>
-              )}
-              
-              <Button variant="outline" size="lg" asChild className="px-8 py-3 text-lg">
-                <a href="https://github.com/placeholder/signify" target="_blank" rel="noopener noreferrer">
-                  <Github className="mr-2 h-5 w-5" />
-                  View on GitHub
-                </a>
-              </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  asChild
+                  className="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  <a href="https://github.com/placeholder/signify" target="_blank" rel="noopener noreferrer">
+                    <Github className="mr-2 h-4 w-4" />
+                    View product roadmap
+                  </a>
+                </Button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </main>
 
-        {/* Footer */}
-        <footer className="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
-              <div className="flex items-center space-x-2">
-                <div className="h-6 w-6 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">S</span>
-                </div>
-                <span className="font-semibold text-slate-900 dark:text-white">Signify</span>
+        <footer className="border-t border-border bg-background py-12 text-sm text-muted-foreground">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                S
               </div>
-              
-              <div className="flex items-center space-x-6 text-sm text-slate-600 dark:text-slate-400">
-                <Link href={publicPostsPath()} className="hover:text-slate-900 dark:hover:text-white">
-                  Explore
-                </Link>
-                <a href="/legal/privacy" className="hover:text-slate-900 dark:hover:text-white">
-                  Privacy
-                </a>
-                <a href="/legal/terms" className="hover:text-slate-900 dark:hover:text-white">
-                  Terms
-                </a>
-                <a href="/support/contact" className="hover:text-slate-900 dark:hover:text-white">
-                  Contact
-                </a>
+              <div>
+                <p className="text-base font-semibold text-foreground">Signify</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Authenticity for writers</p>
               </div>
             </div>
-            
-            <div className="mt-4 text-center text-sm text-slate-500">
-              © 2024 Signify. Proving authenticity, one keystroke at a time.
+
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
+                Explore
+              </Link>
+              <a href="/legal/privacy" className="transition-colors hover:text-foreground">
+                Privacy
+              </a>
+              <a href="/legal/terms" className="transition-colors hover:text-foreground">
+                Terms
+              </a>
+              <a href="/support/contact" className="transition-colors hover:text-foreground">
+                Contact
+              </a>
             </div>
+
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} Signify. Proof that every story is human.
+            </p>
           </div>
         </footer>
       </div>
@@ -250,46 +456,90 @@ export default function Welcome() {
   )
 }
 
-function FeatureCard({ icon, title, description }: {
-  icon: React.ReactNode
+function Metric({ value, title, description }: { value: string; title: string; description: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card/80 p-5 shadow-sm backdrop-blur">
+      <p className="text-sm font-semibold uppercase tracking-wide text-primary">{value}</p>
+      <p className="mt-3 text-lg font-semibold text-foreground">{title}</p>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  )
+}
+
+function TimelineItem({ label, value, accent }: { label: string; value: string; accent: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-sm">
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${accent}`} />
+        <span>{label}</span>
+      </div>
+      <span className="font-semibold text-foreground">{value}</span>
+    </div>
+  )
+}
+
+function FeatureCard({ icon, title, description, details }: {
+  icon: ReactNode
   title: string
   description: string
+  details: string[]
 }) {
   return (
-    <Card className="border-slate-200 bg-white hover:shadow-lg transition-shadow dark:border-slate-700 dark:bg-slate-800">
-      <CardContent className="p-6">
-        <div className="mb-4">{icon}</div>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-          {title}
-        </h3>
-        <p className="text-slate-600 dark:text-slate-300">
-          {description}
-        </p>
+    <Card className="group h-full overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-sm transition-all hover:-translate-y-1 hover:border-border hover:shadow-xl">
+      <CardContent className="flex h-full flex-col gap-4 p-6">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+          {icon}
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+        </div>
+        <ul className="mt-auto space-y-2 text-sm text-muted-foreground">
+          {details.map((item) => (
+            <li key={item}>• {item}</li>
+          ))}
+        </ul>
       </CardContent>
     </Card>
   )
 }
 
-function TestimonialCard({ quote, author, role, avatar }: {
+function ProcessStep({ step, title, description }: { step: string; title: string; description: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-transform hover:-translate-x-1">
+      <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary to-accent" />
+      <div className="ml-4 space-y-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{step}</span>
+        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+        <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+function ChecklistItem({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="space-y-1 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <p className="text-base font-semibold text-foreground">{title}</p>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  )
+}
+
+function TestimonialCard({ quote, author, role, stats }: {
   quote: string
   author: string
   role: string
-  avatar: string
+  stats: string
 }) {
   return (
-    <Card className="border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-      <CardContent className="p-6">
-        <p className="text-slate-700 dark:text-slate-300 mb-4 italic">
-          "{quote}"
-        </p>
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">{avatar}</span>
-          </div>
-          <div>
-            <div className="font-semibold text-slate-900 dark:text-white">{author}</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">{role}</div>
-          </div>
+    <Card className="h-full rounded-3xl border border-border bg-card/80 p-8 shadow-lg backdrop-blur">
+      <CardContent className="flex h-full flex-col gap-6 p-0">
+        <p className="text-lg italic leading-relaxed text-muted-foreground">“{quote}”</p>
+        <div className="mt-auto space-y-2">
+          <p className="text-base font-semibold text-foreground">{author}</p>
+          <p className="text-sm text-muted-foreground">{role}</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">{stats}</p>
         </div>
       </CardContent>
     </Card>

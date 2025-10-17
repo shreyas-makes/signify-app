@@ -126,6 +126,7 @@ export interface GitCommit {
   type: 'typing' | 'pause' | 'correction' | 'milestone'
   keystrokes: number
   duration: number
+  displayDuration?: number
   position: { x: number; y: number }
   branches: string[]
   intensity: number

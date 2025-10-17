@@ -40,7 +40,11 @@ class Public::PostsController < ApplicationController
 
   def keystrokes
     unless @post
-      render inertia: "errors/not_found", status: :not_found
+      if request.xhr?
+        render json: { error: "Post not found" }, status: :not_found
+      else
+        render inertia: "errors/not_found", status: :not_found
+      end
       return
     end
 
@@ -55,17 +59,31 @@ class Public::PostsController < ApplicationController
     total_keystrokes = @post.keystrokes.count
     has_more = (page * per_page) < total_keystrokes
     
-    render inertia: "public/posts/keystrokes", props: {
-      post: detailed_post_json(@post),
-      keystrokes: keystrokes_json(keystrokes),
-      meta: keystroke_meta_tags(@post),
-      pagination: {
-        current_page: page,
-        has_more: has_more,
-        total_keystrokes: total_keystrokes,
-        per_page: per_page
+    if request.xhr?
+      # Handle AJAX requests for pagination
+      render json: {
+        keystrokes: keystrokes_json(keystrokes),
+        pagination: {
+          current_page: page,
+          has_more: has_more,
+          total_keystrokes: total_keystrokes,
+          per_page: per_page
+        }
       }
-    }
+    else
+      # Handle initial page load with Inertia
+      render inertia: "public/posts/keystrokes", props: {
+        post: detailed_post_json(@post),
+        keystrokes: keystrokes_json(keystrokes),
+        meta: keystroke_meta_tags(@post),
+        pagination: {
+          current_page: page,
+          has_more: has_more,
+          total_keystrokes: total_keystrokes,
+          per_page: per_page
+        }
+      }
+    end
   end
 
   private

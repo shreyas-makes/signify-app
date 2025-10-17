@@ -11,6 +11,6 @@ class Keystroke < ApplicationRecord
   validates :cursor_position, presence: true
   validates :sequence_number, presence: true, uniqueness: {scope: :document_id}
 
-  scope :ordered, -> { order(:sequence_number) }
+  scope :ordered, -> { order(:sequence_number, :timestamp) }
   scope :for_document, ->(document) { where(document: document) }
 end

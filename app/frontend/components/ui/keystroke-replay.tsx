@@ -48,21 +48,73 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
   const efficiency = totalKeystrokes > 0 ? Math.round((finalContent.length / totalKeystrokes) * 100) : 0
   const keysPerWord = finalWordCount > 0 ? Math.round(totalKeystrokes / finalWordCount) : totalKeystrokes
 
-  const findCursorPosition = useCallback((keystroke: KeystrokeEvent, contentLength: number) => {
+  const hasValidCursorData = useMemo(() => {
+    // Check if keystroke data has meaningful cursor positioning
+    // If most keystrokes have position 0, likely test/legacy data
+    const positions = playableKeystrokes.map(k => k.cursor_position ?? k.cursorPosition ?? k.document_position ?? 0)
+    const nonZeroPositions = positions.filter(p => p > 0).length
+    return nonZeroPositions > positions.length * 0.1 // At least 10% should have non-zero positions
+  }, [playableKeystrokes])
+
+  const findCursorPosition = useCallback((keystroke: KeystrokeEvent, contentLength: number, currentIndex: number) => {
     const rawPosition =
       keystroke.cursor_position ??
       keystroke.cursorPosition ??
       keystroke.document_position
 
     if (typeof rawPosition !== "number" || Number.isNaN(rawPosition)) {
+      return contentLength // Append by default
+    }
+
+    // If we don't have valid cursor data, use append-only behavior for text construction
+    if (!hasValidCursorData) {
       return contentLength
     }
 
     return Math.max(0, Math.min(rawPosition, contentLength))
+  }, [hasValidCursorData])
+
+  const normalizeCharacter = useCallback((keystroke: KeystrokeEvent): string => {
+    const directChar = keystroke.character ?? ''
+    if (directChar.length === 1) {
+      if (directChar === '\r') return '\n'
+      return directChar
+    }
+
+    const descriptiveChar = directChar.trim().toLowerCase()
+    if (descriptiveChar) {
+      if (descriptiveChar === 'space' || descriptiveChar === 'spacebar' || descriptiveChar === ' ') {
+        return ' '
+      }
+      if (descriptiveChar === 'tab') {
+        return '\t'
+      }
+      if (
+        descriptiveChar === 'enter' ||
+        descriptiveChar === 'return' ||
+        descriptiveChar === 'newline'
+      ) {
+        return '\n'
+      }
+    }
+
+    // Handle key codes (could be string or number)
+    const keyCode = typeof keystroke.key_code === 'string' ? parseInt(keystroke.key_code) : keystroke.key_code
+    
+    switch (keyCode) {
+      case 13:
+        return '\n'
+      case 9:
+        return '\t'
+      case 32:
+        return ' '
+      default:
+        return directChar.length === 1 ? directChar : ''
+    }
   }, [])
 
-  const applyKeystroke = useCallback((content: string, keystroke: KeystrokeEvent) => {
-    const position = findCursorPosition(keystroke, content.length)
+  const applyKeystroke = useCallback((content: string, keystroke: KeystrokeEvent, currentIndex: number = 0) => {
+    const position = findCursorPosition(keystroke, content.length, currentIndex)
 
     if (keystroke.key_code === 8 || keystroke.character === "\b") {
       // Backspace removes the character before the cursor
@@ -76,17 +128,18 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
       return content.slice(0, position) + content.slice(position + 1)
     }
 
-    if (!keystroke.character) {
+    const normalizedCharacter = normalizeCharacter(keystroke)
+    if (!normalizedCharacter) {
       return content
     }
 
-    return content.slice(0, position) + keystroke.character + content.slice(position)
-  }, [findCursorPosition])
+    return content.slice(0, position) + normalizedCharacter + content.slice(position)
+  }, [findCursorPosition, normalizeCharacter])
 
   const rebuildContent = useCallback((limit: number) => {
     let content = ""
     for (let i = 0; i < limit && i < playableKeystrokes.length; i++) {
-      content = applyKeystroke(content, playableKeystrokes[i])
+      content = applyKeystroke(content, playableKeystrokes[i], i)
     }
     return content
   }, [applyKeystroke, playableKeystrokes])
@@ -98,7 +151,7 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
       const delay = baseDelay / playbackSpeed
 
       intervalRef.current = setTimeout(() => {
-        setDisplayContent(prev => applyKeystroke(prev, keystroke))
+        setDisplayContent(prev => applyKeystroke(prev, keystroke, currentIndex))
         setCurrentIndex(prev => prev + 1)
       }, delay)
     } else if (currentIndex >= totalKeystrokes) {
@@ -169,17 +222,17 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
   }
 
   return (
-    <Card className={cn("shadow-sm ring-1 ring-border/50 bg-primary/5", className)}>
+    <Card className={cn("shadow-sm ring-1 ring-border/40 ", className)}>
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-xl font-semibold text-primary">
+            <CardTitle className="text-xl font-semibold text-foreground">
               Live Keystroke Replay
             </CardTitle>
-            <p className="text-sm text-primary/70">Rebuilding “{title}” keystroke-by-keystroke</p>
+            <p className="text-sm text-muted-foreground">Rebuilding "{title}" keystroke-by-keystroke</p>
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-primary/80">
-            <span className="font-medium">{currentIndex.toLocaleString()} / {totalKeystrokes.toLocaleString()} keys</span>
+          <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{currentIndex.toLocaleString()} / {totalKeystrokes.toLocaleString()} keys</span>
             <span>{formatTime(currentIndex)} elapsed</span>
             <span>{playbackSpeed}× speed</span>
           </div>
@@ -187,13 +240,13 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs uppercase tracking-wide text-primary/70">
+          <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
             <span>Replay Progress</span>
             <span>{Math.round(getProgress())}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-primary/20">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
+              className="h-full rounded-full bg-foreground transition-all duration-300 ease-out"
               style={{ width: `${getProgress()}%` }}
             />
           </div>
@@ -201,28 +254,34 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
             onClick={handleSkipBack}
             disabled={currentIndex === 0}
+            className="bg-muted text-foreground hover:bg-muted/80"
           >
             <SkipBack className="h-4 w-4" />
           </Button>
           
           <Button
-            variant={isPlaying ? "secondary" : "default"}
+            variant="outline"
             size="sm"
             onClick={handlePlayPause}
             disabled={currentIndex >= totalKeystrokes}
+            className={cn(
+              "bg-muted text-foreground hover:bg-muted/80",
+              isPlaying && "ring-1 ring-foreground"
+            )}
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
           
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
             onClick={handleSkipForward}
             disabled={currentIndex >= totalKeystrokes}
+            className="bg-muted text-foreground hover:bg-muted/80"
           >
             <SkipForward className="h-4 w-4" />
           </Button>
@@ -231,21 +290,25 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
             variant="outline"
             size="sm"
             onClick={handleReset}
+            className="bg-background text-foreground hover:bg-muted"
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Speed Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-primary/80">
+        <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
           <span>Speed:</span>
           {[0.5, 1, 2, 4, 8].map(speed => (
             <Button
               key={speed}
-              variant={playbackSpeed === speed ? "default" : "secondary"}
+              variant="outline"
               size="sm"
               onClick={() => setPlaybackSpeed(speed)}
-              className="text-xs px-2"
+              className={cn(
+                "text-xs px-2 bg-background text-foreground hover:bg-muted",
+                playbackSpeed === speed && "bg-muted text-foreground font-medium"
+              )}
             >
               {speed}x
             </Button>
@@ -257,14 +320,14 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
         {/* Content Display */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-primary">Real-time Content</h4>
-            <span className="text-xs text-primary/70">
+            <h4 className="text-sm font-medium text-foreground">Real-time Content</h4>
+            <span className="text-xs text-muted-foreground">
               {displayContent.length} characters
             </span>
           </div>
           <div 
             ref={contentRef}
-            className="rounded-lg border border-primary/20 bg-background p-4 font-mono text-sm shadow-sm whitespace-pre-wrap min-h-[220px] max-h-[320px] overflow-y-auto"
+            className="rounded-lg border border-border bg-white p-4 font-mono text-sm shadow-sm whitespace-pre-wrap min-h-[220px] max-h-[320px] overflow-y-auto"
           >
             {displayContent || <span className="text-muted-foreground italic">Start playback to see content...</span>}
             {isPlaying && <span className="animate-pulse">|</span>}
@@ -273,29 +336,29 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
 
         {/* Stats */}
         <div className="grid gap-4 text-center sm:grid-cols-4">
-          <div className="rounded-lg border border-primary/10 bg-primary/10 p-3">
-            <p className="text-sm font-semibold text-primary">
+          <div className="rounded-lg border border-border bg-muted p-3">
+            <p className="text-sm font-semibold text-foreground">
               {totalKeystrokes.toLocaleString()}
             </p>
-            <p className="text-xs text-primary/70">Total Keystrokes</p>
+            <p className="text-xs text-muted-foreground">Total Keystrokes</p>
           </div>
-          <div className="rounded-lg border border-primary/10 bg-primary/10 p-3">
-            <p className="text-sm font-semibold text-primary">
+          <div className="rounded-lg border border-border bg-muted p-3">
+            <p className="text-sm font-semibold text-foreground">
               {finalContent.length.toLocaleString()}
             </p>
-            <p className="text-xs text-primary/70">Final Characters</p>
+            <p className="text-xs text-muted-foreground">Final Characters</p>
           </div>
-          <div className="rounded-lg border border-primary/10 bg-primary/10 p-3">
-            <p className="text-sm font-semibold text-primary">
+          <div className="rounded-lg border border-border bg-muted p-3">
+            <p className="text-sm font-semibold text-foreground">
               {efficiency}%
             </p>
-            <p className="text-xs text-primary/70">Efficiency</p>
+            <p className="text-xs text-muted-foreground">Efficiency</p>
           </div>
-          <div className="rounded-lg border border-primary/10 bg-primary/10 p-3">
-            <p className="text-sm font-semibold text-primary">
+          <div className="rounded-lg border border-border bg-muted p-3">
+            <p className="text-sm font-semibold text-foreground">
               {keysPerWord.toLocaleString()}
             </p>
-            <p className="text-xs text-primary/70">Keys/Word</p>
+            <p className="text-xs text-muted-foreground">Keys/Word</p>
           </div>
         </div>
       </CardContent>

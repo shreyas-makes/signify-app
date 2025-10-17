@@ -241,9 +241,9 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           {/* Navigation */}
           <div className="mb-6">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               onClick={() => router.visit(`/posts/${post.public_slug}`)}
-              className="mb-4"
+              className="mb-4 border-border bg-background text-foreground hover:bg-muted"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Post
@@ -253,11 +253,17 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-start gap-3 mb-4">
-              <Badge variant="secondary">
+              <Badge 
+                variant="outline"
+                className="border-border bg-muted text-foreground hover:bg-muted"
+              >
                 <Shield className="h-3 w-3 mr-1" />
                 Keystroke Verified
               </Badge>
-              <Badge variant="outline">
+              <Badge 
+                variant="outline"
+                className="border-border bg-background text-muted-foreground hover:bg-muted"
+              >
                 <Activity className="h-3 w-3 mr-1" />
                 Live Replay
               </Badge>
@@ -308,7 +314,12 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3">
-                  <Button onClick={handleDownloadData} variant="outline" size="sm">
+                  <Button 
+                    onClick={handleDownloadData} 
+                    variant="outline" 
+                    size="sm"
+                    className="border-border bg-background text-foreground hover:bg-muted"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download Complete Data (JSON)
                   </Button>
@@ -318,6 +329,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                       variant="outline" 
                       size="sm"
                       disabled={loadingMore}
+                      className="border-border bg-background text-foreground hover:bg-muted disabled:opacity-50"
                     >
                       {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                       Load All Keystrokes ({pagination.total_keystrokes - allKeystrokes.length} more)
@@ -345,8 +357,8 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                       className="flex items-center gap-3 rounded-lg border bg-muted p-2"
                     >
                       <div className={`h-3 w-3 rounded-full ${
-                        event.type === 'typing' ? 'bg-primary' :
-                        event.type === 'pause' ? 'bg-secondary' : 'bg-destructive'
+                        event.type === 'typing' ? 'bg-foreground' :
+                        event.type === 'pause' ? 'bg-foreground/60' : 'bg-border'
                       }`} />
                       <div className="flex-1 text-sm">
                         <span className="font-medium capitalize">{event.type}</span>

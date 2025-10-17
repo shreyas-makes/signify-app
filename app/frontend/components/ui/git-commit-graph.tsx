@@ -77,6 +77,20 @@ function calculateHeatmapGrid(
   }
 }
 
+function getDisplayDuration(duration: number, keystrokes: number) {
+  if (!Number.isFinite(duration) || duration < 0) return 0
+  const perKeyFloor = keystrokes > 0 ? keystrokes * 140 : 0
+  const minimum = Math.max(600, Math.min(4000, perKeyFloor || 900))
+  return Math.max(duration, minimum)
+}
+
+function computePaceWpm(duration: number, keystrokes: number) {
+  const effectiveDuration = getDisplayDuration(duration, keystrokes)
+  if (effectiveDuration <= 0) return 0
+  const words = keystrokes / 5
+  return (words / effectiveDuration) * 60000
+}
+
 export function GitCommitGraph({
   keystrokes,
   width = 780,
@@ -149,6 +163,7 @@ interface TypingSegment {
   start: number
   end: number
   duration: number
+  displayDuration: number
   keystrokes: number
   backspaces: number
   correctionRatio: number
@@ -225,7 +240,7 @@ function PatternInsights({ insights }: { insights: string[] }) {
       <div className="mt-3 space-y-2 text-sm text-muted-foreground">
         {insights.map((insight, index) => (
           <div key={index} className="flex gap-2">
-            <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary/60" />
+            <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-muted-foreground" />
             <span>{insight}</span>
           </div>
         ))}
@@ -311,8 +326,12 @@ function TimelineGraph({
     const paceBase = Math.max(60, baselineY - 52)
     const paceAmplitude = Math.min(40, Math.max(22, baselineY * 0.16))
     const paceValues = commits.map((commit) => {
-      const pace = commit.duration > 0 ? (commit.keystrokes / commit.duration) * 60000 : 0
-      return { id: commit.id, x: commit.position.x, pace }
+      const pace = computePaceWpm(commit.duration, commit.keystrokes)
+      return {
+        id: commit.id,
+        x: commit.position.x,
+        pace,
+      }
     })
     const maxPaceValue = paceValues.reduce((max, value) => Math.max(max, value.pace), 0)
     const pacePointsComputed = paceValues.map((value) => ({
@@ -406,9 +425,9 @@ function TimelineGraph({
   }, [branches, commits, baselineY])
 
   const getCommitColor = (commit: GitCommit) => {
-    if (commit.type === 'correction') return 'hsl(var(--destructive))'
-    if (commit.type === 'milestone') return 'hsl(var(--secondary))'
-    return 'hsl(var(--primary))'
+    if (commit.type === 'correction') return 'hsl(var(--foreground))'
+    if (commit.type === 'milestone') return 'hsl(var(--foreground) / 0.6)'
+    return 'hsl(var(--foreground) / 0.45)'
   }
 
   const handleEnter = (commit: GitCommit) => {
@@ -447,9 +466,7 @@ function TimelineGraph({
       ? Math.max(0, activeCommit.timestamp - (previousCommit.timestamp + previousCommit.duration))
       : 0
   const activePace =
-    activeCommit && activeCommit.duration > 0
-      ? (activeCommit.keystrokes / activeCommit.duration) * 60000
-      : 0
+    activeCommit ? computePaceWpm(activeCommit.duration, activeCommit.keystrokes) : 0
   const activeCorrectionRatio =
     activeCommit && correctionIntensityByCommit.has(activeCommit.id)
       ? correctionIntensityByCommit.get(activeCommit.id) ?? 0
@@ -461,9 +478,7 @@ function TimelineGraph({
       ? Math.max(1, Math.round(activeCommit.keystrokes * activeCorrectionRatio))
       : 0
   const activePauseResumePace =
-    activePause && activePause.to.duration > 0
-      ? (activePause.to.keystrokes / activePause.to.duration) * 60000
-      : 0
+    activePause ? computePaceWpm(activePause.to.duration, activePause.to.keystrokes) : 0
   const activeBurstLabel = activeCommitIndex >= 0 ? `#${activeCommitIndex + 1}` : '—'
 
   const axisTicks = useMemo(() => {
@@ -493,9 +508,9 @@ function TimelineGraph({
         >
           <defs>
             <linearGradient id={paceGradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--secondary))" stopOpacity="0.22" />
-              <stop offset="70%" stopColor="hsl(var(--secondary))" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="hsl(var(--secondary))" stopOpacity="0" />
+              <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.22" />
+              <stop offset="70%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0" />
             </linearGradient>
           </defs>
           <line
@@ -530,16 +545,6 @@ function TimelineGraph({
                 strokeWidth={1}
                 strokeOpacity={0.5}
               />
-              <text
-                x={tick.x}
-                y={trackY + 16}
-                fontSize="9"
-                textAnchor="middle"
-                fill="hsl(var(--muted-foreground))"
-                opacity={0.7}
-              >
-                {tick.label}
-              </text>
             </g>
           ))}
 
@@ -555,16 +560,6 @@ function TimelineGraph({
                   strokeDasharray="4 6"
                   strokeOpacity={0.28}
                 />
-                <text
-                  x={Math.min(width - 4, maxCommitX + 40)}
-                  y={tick.y - 3}
-                  fontSize="9"
-                  textAnchor="end"
-                  fill="hsl(var(--muted-foreground))"
-                  opacity={0.75}
-                >
-                  {tick.value} wpm
-                </text>
               </g>
             ))}
 
@@ -592,7 +587,9 @@ function TimelineGraph({
             const controlX = (fromCommit.position.x + toCommit.position.x) / 2
             const controlY = branch.type === 'correction' ? baselineY - 44 : baselineY - 28
             const strokeColor =
-              branch.type === 'correction' ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'
+              branch.type === 'correction'
+                ? 'hsl(var(--foreground) / 0.65)'
+                : 'hsl(var(--muted-foreground))'
 
             return (
               <path
@@ -620,7 +617,7 @@ function TimelineGraph({
             <path
               d={pacePath}
               fill="none"
-              stroke="hsl(var(--secondary))"
+              stroke="hsl(var(--muted-foreground))"
               strokeWidth={1.4}
               strokeDasharray="4 3"
               strokeLinecap="round"
@@ -656,7 +653,7 @@ function TimelineGraph({
                     cx={point.x}
                     cy={point.y}
                     r={isActive ? 3.5 : 2.4}
-                    fill="hsl(var(--secondary))"
+                    fill="hsl(var(--muted-foreground))"
                     opacity={isActive ? 0.95 : isLinkedToPause ? 0.75 : 0.5}
                     pointerEvents="none"
                   />
@@ -672,7 +669,12 @@ function TimelineGraph({
               activePause?.from?.id === fromCommit.id && activePause?.to?.id === toCommit.id
             const rectHeight = 4
             const rectY = trackY - rectHeight / 2
-            const rectOpacityBase = 0.18 + band.intensity * 0.22
+            const highlightWidth = Math.min(
+              Math.max(28, Math.log1p(band.pause / 800) * 26),
+              Math.max(48, width * 0.22),
+            )
+            const rectX = Math.max(16, Math.min(band.centerX - highlightWidth / 2, width - highlightWidth - 16))
+            const rectOpacityBase = 0.16 + band.intensity * 0.2
             const rectOpacity = isActivePause ? Math.min(0.85, rectOpacityBase + 0.2) : rectOpacityBase
             const connectorOpacity = isActivePause ? 0.5 : 0.25
             const labelOpacity = isActivePause ? 0.85 : 0.55
@@ -695,25 +697,36 @@ function TimelineGraph({
                   strokeOpacity={connectorOpacity}
                 />
                 <rect
-                  x={band.x}
+                  x={rectX}
                   y={rectY}
-                  width={Math.max(12, band.width)}
+                  width={highlightWidth}
                   height={rectHeight}
                   rx={4}
                   ry={4}
                   fill="hsl(var(--muted-foreground))"
                   opacity={rectOpacity}
                 />
-                <text
-                  x={band.centerX}
-                  y={trackY - 8}
-                  fontSize="10"
-                  textAnchor="middle"
-                  fill="hsl(var(--muted-foreground))"
-                  opacity={labelOpacity}
-                >
-                  {formatDuration(band.pause)}
-                </text>
+                <circle
+                  cx={band.centerX}
+                  cy={trackY}
+                  r={isActivePause ? 4 : 3}
+                  fill="hsl(var(--background))"
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeWidth={isActivePause ? 1.4 : 1}
+                  opacity={isActivePause ? 0.9 : 0.45}
+                />
+                {isActivePause && (
+                  <text
+                    x={band.centerX}
+                    y={trackY - 10}
+                    fontSize="9"
+                    textAnchor="middle"
+                    fill="hsl(var(--muted-foreground))"
+                    opacity={labelOpacity}
+                  >
+                    {formatDuration(band.pause)}
+                  </text>
+                )}
               </g>
             )
           })}
@@ -746,7 +759,7 @@ function TimelineGraph({
                 {pacePoint && isActive && (
                   <path
                     d={`M ${commit.position.x} ${commit.position.y} L ${pacePoint.x} ${pacePoint.y}`}
-                    stroke="hsl(var(--secondary))"
+                    stroke="hsl(var(--muted-foreground))"
                     strokeWidth={1.2}
                     strokeDasharray="2 3"
                     strokeOpacity={0.85}
@@ -759,7 +772,7 @@ function TimelineGraph({
                     cy={commit.position.y}
                     r={correctionRadius}
                     fill="none"
-                    stroke="hsl(var(--destructive))"
+                    stroke="hsl(var(--foreground))"
                     strokeWidth={1 + correctionLevel * 2}
                     strokeOpacity={isActive ? 0.85 : pauseLinked ? 0.65 : 0.5}
                     strokeDasharray={ringDasharray}
@@ -806,21 +819,15 @@ function TimelineGraph({
         </svg>
         <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-wide text-muted-foreground">
           <span className="flex items-center gap-2">
-            <span
-              className="h-2 w-6 rounded-full"
-              style={{
-                background:
-                  'linear-gradient(90deg, hsl(var(--secondary)) 0%, hsl(var(--secondary) / 0.35) 60%, hsl(var(--secondary) / 0) 100%)',
-              }}
-            />
+            <span className="h-[3px] w-6 rounded-full bg-gradient-to-r from-muted-foreground/60 via-muted-foreground/30 to-muted-foreground/0" />
             Pace Line
           </span>
           <span className="flex items-center gap-2">
-            <span className="h-2 w-6 rounded-full bg-muted-foreground/30" />
+            <span className="h-2 w-6 rounded-full border border-muted-foreground/30 bg-muted-foreground/10" />
             Pause Span
           </span>
           <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary/80" />
+            <span className="h-2 w-2 rounded-full bg-foreground" />
             Burst
           </span>
         </div>
@@ -858,7 +865,8 @@ function TimelineGraph({
                   Next Burst Load
                 </span>
                 <span className="text-sm font-semibold text-foreground">
-                  {activePause.to.keystrokes} keys · {formatDuration(activePause.to.duration)}
+                  {activePause.to.keystrokes} keys ·{' '}
+                  {formatDuration(getDisplayDuration(activePause.to.duration, activePause.to.keystrokes))}
                 </span>
               </div>
               <div className="flex flex-col">
@@ -894,7 +902,7 @@ function TimelineGraph({
                   Active Time
                 </span>
                 <span className="text-sm font-semibold text-foreground">
-                  {formatDuration(activeCommit.duration)}
+                  {formatDuration(getDisplayDuration(activeCommit.duration, activeCommit.keystrokes))}
                 </span>
               </div>
               <div className="flex flex-col">
@@ -962,6 +970,7 @@ function analyzeKeystrokes(keystrokes: Keystroke[], graphWidth: number, graphHei
     start,
     end: start,
     duration: 0,
+    displayDuration: 0,
     keystrokes: 0,
     backspaces: 0,
     correctionRatio: 0,
@@ -996,12 +1005,17 @@ function analyzeKeystrokes(keystrokes: Keystroke[], graphWidth: number, graphHei
   currentSegment.duration = Math.max(currentSegment.end - currentSegment.start, 0)
   segments.push(currentSegment)
 
-  const activeDurationMs = segments.reduce((total, segment) => total + segment.duration, 0)
+  segments.forEach((segment) => {
+    segment.displayDuration = getDisplayDuration(segment.duration, segment.keystrokes)
+  })
+
+  const activeDurationMs = segments.reduce((total, segment) => total + segment.displayDuration, 0)
   const longestPauseMs = pauseDurations.length ? Math.max(...pauseDurations) : 0
+  const effectiveDurationMs = Math.max(activeDurationMs, totalDurationMs || 0)
   const averageKeystrokesPerMin =
-    totalDurationMs > 0 ? (totalKeystrokes / totalDurationMs) * 60000 : totalKeystrokes
+    effectiveDurationMs > 0 ? (totalKeystrokes / effectiveDurationMs) * 60000 : totalKeystrokes
   const averageWpm =
-    totalDurationMs > 0 ? (totalKeystrokes / 5 / totalDurationMs) * 60000 : totalKeystrokes / 5
+    effectiveDurationMs > 0 ? (totalKeystrokes / 5 / effectiveDurationMs) * 60000 : totalKeystrokes / 5
   const correctionRatio = totalKeystrokes > 0 ? backspaceCount / totalKeystrokes : 0
 
   const maxSegmentKeystrokes = Math.max(...segments.map((segment) => segment.keystrokes), 1)
@@ -1024,14 +1038,21 @@ function analyzeKeystrokes(keystrokes: Keystroke[], graphWidth: number, graphHei
     const type: GitCommit['type'] =
       index === 0 ? 'milestone' : segment.correctionRatio > 0.18 ? 'correction' : 'typing'
     const segmentMidpoint =
-      segment.start + (segment.duration > 0 ? segment.duration / 2 : 0)
-    const relativePosition = isSingleSegment
+      segment.start + (segment.displayDuration > 0 ? segment.displayDuration / 2 : 0)
+    const timeRatio = isSingleSegment
       ? 0.5
       : timelineSpan > 0
         ? (segmentMidpoint - timelineStart) / timelineSpan
         : 0.5
-    const clampedPosition = Number.isFinite(relativePosition)
-      ? Math.min(1, Math.max(0, relativePosition))
+    const indexRatio =
+      segments.length > 1 ? index / (segments.length - 1) : 0.5
+    const spacingBias = Math.min(0.45, Math.max(0.22, 0.18 + segments.length * 0.02))
+    const blendedPosition =
+      isSingleSegment
+        ? 0.5
+        : (1 - spacingBias) * timeRatio + spacingBias * indexRatio
+    const clampedPosition = Number.isFinite(blendedPosition)
+      ? Math.min(1, Math.max(0, blendedPosition))
       : 0.5
 
     return {
@@ -1040,6 +1061,7 @@ function analyzeKeystrokes(keystrokes: Keystroke[], graphWidth: number, graphHei
       type,
       keystrokes: segment.keystrokes,
       duration: segment.duration,
+      displayDuration: segment.displayDuration,
       position: {
         x: timelinePadding + clampedPosition * timelineWidth,
         y: Math.max(32, baselineY - segment.intensity * amplitude),
@@ -1071,6 +1093,7 @@ function analyzeKeystrokes(keystrokes: Keystroke[], graphWidth: number, graphHei
     correctionRatio,
     backspaceCount,
     totalDurationMs,
+    effectiveDurationMs,
   })
 
   return {
@@ -1129,6 +1152,7 @@ interface InsightParams {
   correctionRatio: number
   backspaceCount: number
   totalDurationMs: number
+  effectiveDurationMs: number
 }
 
 function generateInsights({
@@ -1138,6 +1162,7 @@ function generateInsights({
   correctionRatio,
   backspaceCount,
   totalDurationMs,
+  effectiveDurationMs,
 }: InsightParams) {
   const insights: string[] = []
 
@@ -1148,7 +1173,7 @@ function generateInsights({
     )
 
     insights.push(
-      `Burst ${peakSegment.index + 1} packed ${peakSegment.keystrokes} keys in ${formatDuration(peakSegment.duration)}.`,
+      `Burst ${peakSegment.index + 1} packed ${peakSegment.keystrokes} keys in ${formatDuration(peakSegment.displayDuration)}.`,
     )
   }
 
@@ -1182,7 +1207,7 @@ function generateInsights({
 
   if (insights.length < 3 && segments.length > 0) {
     insights.push(
-      `Session spanned ${segments.length} burst${segments.length === 1 ? '' : 's'} over ${formatDuration(totalDurationMs)}.`,
+      `Session spanned ${segments.length} burst${segments.length === 1 ? '' : 's'} over ${formatDuration(Math.max(totalDurationMs, effectiveDurationMs))}.`,
     )
   }
 
