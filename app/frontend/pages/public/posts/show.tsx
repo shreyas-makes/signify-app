@@ -1,15 +1,14 @@
-import { Head, router } from '@inertiajs/react'
-import { ArrowLeft, BookOpen, CheckCircle, Clock, Facebook, Keyboard, LinkIcon, Linkedin, Shield, Twitter } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Head, Link } from '@inertiajs/react'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { KeystrokeBarcode } from '@/components/ui/keystroke-barcode'
+import { MiniGitGraph } from '@/components/ui/mini-git-graph'
 import type { Keystroke } from '@/types'
 
 
 interface Author {
+  id: number
   display_name: string
+  bio?: string | null
+  profile_url: string
 }
 
 interface Verification {
@@ -50,52 +49,10 @@ interface Props {
 }
 
 export default function PublicPostShow({ post, meta }: Props) {
-  const [readingProgress, setReadingProgress] = useState(0)
-  const [copyLinkText, setCopyLinkText] = useState('Copy Link')
-  const shareUrl = meta.og_url
-  const shareText = `Check out "${post.title}" by ${post.author.display_name} on Signify`
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight
-      const progress = Math.min((scrollTop / docHeight) * 100, 100)
-      setReadingProgress(progress)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  const handleShare = async (platform: string) => {
-    let url = ''
-    
-    switch (platform) {
-      case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
-        break
-      case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
-        break
-      case 'linkedin':
-        url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
-        break
-      case 'copy':
-        try {
-          await navigator.clipboard.writeText(shareUrl)
-          setCopyLinkText('Copied!')
-          setTimeout(() => setCopyLinkText('Copy Link'), 2000)
-        } catch (err) {
-          console.error('Failed to copy link:', err)
-        }
-        return
-    }
-    
-    if (url) {
-      window.open(url, '_blank', 'width=600,height=400')
-    }
-  }
-
+  const keystrokeUrl = `/posts/${post.public_slug}/keystrokes`
+  const authorDescription = post.author.bio?.trim()
+    ? post.author.bio
+    : "The author has not added a description yet."
 
   return (
     <>
@@ -148,173 +105,48 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-background">
-        {/* Reading Progress Bar */}
-        <div 
-          className="fixed top-0 left-0 h-1 bg-primary z-50 transition-all duration-150 no-print"
-          style={{ width: `${readingProgress}%` }}
-        />
-        
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          {/* Navigation */}
-          <div className="mb-8 no-print">
-            <Button 
-              variant="ghost" 
-              onClick={() => router.visit('/posts')}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Posts
-            </Button>
-          </div>
+      <div className="min-h-screen bg-[#f4f1e8] py-20">
+        <div className="mx-auto w-full max-w-5xl px-5 sm:px-12 lg:px-16">
+          <article className="rounded-[40px] bg-[#fdfaf2] px-9 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-16 sm:py-20">
+            <header className="mb-12">
+              <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
+                {post.title}
+              </h1>
+              <p className="mt-3 text-sm font-medium uppercase tracking-[0.35em] text-muted-foreground/70">
+                {post.reading_time_minutes} mins read
+              </p>
 
-          {/* Article Header */}
-          <header className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4 leading-tight">
-              {post.title}
-            </h1>
-            
-            <div className="flex flex-wrap items-center gap-4 text-muted-foreground mb-3">
-              <span className="text-lg">By {post.author.display_name}</span>
-              <span>•</span>
-              <span>{post.published_at}</span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <BookOpen className="h-4 w-4" />
-                {post.word_count.toLocaleString()} words
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                {post.reading_time_minutes} min read
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Keyboard className="h-4 w-4" />
-                {post.keystroke_count.toLocaleString()} keystrokes
-              </div>
-            </div>
-
-            {/* Keystroke Verification */}
-            {post.verification.keystroke_verified && (
-              <div className="mb-6">
-                <KeystrokeBarcode 
+              {post.verification.keystroke_verified && (
+                <MiniGitGraph 
                   keystrokes={post.sample_keystrokes}
-                  keystrokeUrl={`/posts/${post.public_slug}/keystrokes`}
+                  height={52}
+                  className="mt-8 w-full max-w-xl cursor-pointer rounded-[24px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab]"
+                  graphClassName="rounded-[14px] border border-[#eadfce] bg-[#fffdf6]"
+                  keystrokeUrl={keystrokeUrl}
+                  ariaLabel="View keystroke timeline"
                 />
-              </div>
-            )}
-          </header>
+              )}
+            </header>
 
-          {/* Article Content */}
-          <article 
-            className="prose prose-lg max-w-none mb-12 print:text-black"
-            role="main"
-            aria-label="Article content"
-          >
             <div 
-              className="text-foreground leading-relaxed font-serif text-lg sm:text-xl print:text-base"
-              style={{ 
-                lineHeight: '1.7',
-                letterSpacing: '0.01em'
-              }}
+              className="prose prose-lg max-w-none text-[#3f3422]
+                prose-headings:font-semibold prose-headings:text-foreground
+                prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422]
+                prose-strong:text-[#2d2518]"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
+            <footer className="mt-16 border-t border-[#eadcc6] pt-9">
+              <Link
+                href={post.author.profile_url}
+                className="text-lg font-semibold text-[#322718] transition-colors hover:text-[#8a6d44]"
+              >
+                {post.author.display_name}
+              </Link>
+              <p className="mt-3 text-sm leading-relaxed text-[#5c4d35]">
+                {authorDescription}
+              </p>
+            </footer>
           </article>
-
-          {/* Enhanced Share Section */}
-          <div className="border-t pt-8 no-print">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Share this verified content</h3>
-            <div className="flex flex-wrap gap-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => void handleShare('twitter')}
-                className="flex items-center gap-2"
-              >
-                <Twitter className="h-4 w-4 text-blue-500" />
-                Twitter
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => void handleShare('linkedin')}
-                className="flex items-center gap-2"
-              >
-                <Linkedin className="h-4 w-4 text-blue-600" />
-                LinkedIn
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => void handleShare('facebook')}
-                className="flex items-center gap-2"
-              >
-                <Facebook className="h-4 w-4 text-blue-600" />
-                Facebook
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => void handleShare('copy')}
-                className="flex items-center gap-2"
-              >
-                <LinkIcon className="h-4 w-4" />
-                {copyLinkText}
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground mt-3">
-              Help others discover authentic, human-generated content verified by keystroke tracking.
-            </p>
-          </div>
-
-          {/* Enhanced Author Section */}
-          <div className="border-t pt-4 mt-8">
-            <div className="bg-gradient-to-r from-muted/50 to-primary/10 rounded-lg p-3 border border-border">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-semibold text-lg">
-                      {post.author.display_name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-foreground">{post.author.display_name}</h3>
-                    <Badge variant="secondary">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified Writer
-                    </Badge>
-                  </div>
-                  <p className="text-foreground/80 mb-3">
-                    A verified writer on Signify, committed to creating authentic human-generated content 
-                    without AI assistance. Every keystroke is tracked and verified for content authenticity.
-                  </p>
-                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Shield className="h-4 w-4 text-green-600" />
-                      <span>Human-verified content</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Keyboard className="h-4 w-4 text-primary" />
-                      <span>Keystroke authenticated</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Footer */}
-          <div className="text-center mt-12 pt-8 border-t no-print">
-            <Button 
-              onClick={() => router.visit('/posts')}
-              className="px-6"
-            >
-              Explore More Posts
-            </Button>
-          </div>
         </div>
       </div>
     </>

@@ -21,6 +21,6 @@ class Settings::ProfilesController < InertiaController
   end
 
   def user_params
-    params.permit(:name)
+    params.permit(:name, :display_name, :avatar_url, :bio)
   end
 end

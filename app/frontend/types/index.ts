@@ -40,6 +40,7 @@ export interface User {
   email: string
   avatar?: string
   display_name: string
+  bio?: string | null
   verified: boolean
   admin: boolean
   created_at: string

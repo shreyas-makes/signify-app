@@ -15,7 +15,33 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GitCommitGraph } from '@/components/ui/git-commit-graph'
 import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
+import { VerifiedSessionCard } from '@/components/verified-session-card'
 import type { Keystroke, TimelineEvent, TypingStatistics } from '@/types'
+
+function getInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(part => part[0]?.toUpperCase() ?? '')
+    .slice(0, 2)
+    .join('') || 'WR'
+}
+
+function formatDuration(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return 'under 1s'
+  }
+
+  const totalSeconds = Math.round(seconds)
+  const minutes = Math.floor(totalSeconds / 60)
+  const remainderSeconds = Math.max(0, totalSeconds % 60)
+
+  if (minutes === 0) {
+    return `${remainderSeconds}s`
+  }
+
+  return `${minutes}m ${remainderSeconds.toString().padStart(2, '0')}s`
+}
 
 interface Author {
   display_name: string
@@ -149,6 +175,93 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
     }
   }, [allKeystrokes, post.word_count])
 
+  const authorInitials = useMemo(() => getInitials(post.author.display_name), [post.author.display_name])
+
+  const sessionMeta = useMemo(() => {
+    const details = [`${statistics.total_keystrokes.toLocaleString()} verified keystrokes`]
+    if (statistics.total_time_seconds > 0) {
+      details.push(`replay ${formatDuration(statistics.total_time_seconds)}`)
+    }
+    return details.join(' | ')
+  }, [statistics.total_keystrokes, statistics.total_time_seconds])
+
+  const proofId = useMemo(() => `${post.public_slug}-${post.id}`, [post.public_slug, post.id])
+
+  const snippetLines = useMemo(
+    () => [
+      <>
+        <span className="text-sm font-medium text-foreground/90">Proof fingerprint</span>
+        <span className="font-mono text-sm text-muted-foreground">{proofId}</span>
+      </>,
+      <>
+        <span className="text-sm font-medium text-foreground/90">Keystrokes captured</span>
+        <span className="font-semibold text-primary">
+          {statistics.total_keystrokes.toLocaleString()}
+        </span>
+      </>,
+      <>
+        <span className="text-sm font-medium text-foreground/90">Integrity review</span>
+        <span className="font-semibold text-chart-3">
+          {post.verification.keystroke_verified ? 'Pass' : 'Pending'}
+        </span>
+      </>,
+    ],
+    [proofId, statistics.total_keystrokes, post.verification.keystroke_verified]
+  )
+
+  const snippetFooter = useMemo(() => {
+    const details: string[] = []
+
+    if (post.published_at) {
+      const publishedDate = new Date(post.published_at)
+      details.push(
+        `Published ${publishedDate.toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}`
+      )
+    }
+
+    details.push(
+      statistics.pause_count === 0
+        ? 'No unusual pauses detected'
+        : `${statistics.pause_count} thoughtful pause${statistics.pause_count === 1 ? '' : 's'}`
+    )
+
+    details.push(`${statistics.backspace_count} corrections`)
+
+    if (statistics.average_wpm > 0) {
+      details.push(`${statistics.average_wpm} WPM`)
+    }
+
+    return details.join(' · ')
+  }, [post.published_at, statistics.pause_count, statistics.backspace_count, statistics.average_wpm])
+
+  const excerpt = useMemo(() => {
+    const stripped = post.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    if (!stripped) return ''
+    return stripped.length > 180 ? `${stripped.slice(0, 177)}…` : stripped
+  }, [post.content])
+
+  const timeline = useMemo(() => [
+    {
+      label: 'Total keystrokes',
+      value: statistics.total_keystrokes.toLocaleString(),
+      accent: 'from-primary to-chart-2'
+    },
+    {
+      label: 'Corrections logged',
+      value: statistics.correction_count.toLocaleString(),
+      accent: 'from-accent to-chart-4'
+    },
+    {
+      label: 'Replay length',
+      value: statistics.total_time_seconds > 0 ? formatDuration(statistics.total_time_seconds) : 'under 1s',
+      accent: 'from-secondary to-chart-3'
+    }
+  ], [statistics.total_keystrokes, statistics.correction_count, statistics.total_time_seconds])
+
   // Generate timeline events for visualization (use first chunk for performance)
   const timelineEvents = useMemo((): TimelineEvent[] => {
     const events: TimelineEvent[] = []
@@ -251,32 +364,46 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           </div>
 
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-start gap-3 mb-4">
-              <Badge 
-                variant="outline"
-                className="border-border bg-muted text-foreground hover:bg-muted"
-              >
-                <Shield className="h-3 w-3 mr-1" />
-                Keystroke Verified
-              </Badge>
-              <Badge 
-                variant="outline"
-                className="border-border bg-background text-muted-foreground hover:bg-muted"
-              >
-                <Activity className="h-3 w-3 mr-1" />
-                Live Replay
-              </Badge>
+          <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] xl:gap-10">
+            <div>
+              <div className="mb-4 flex items-start gap-3">
+                <Badge 
+                  variant="outline"
+                  className="border-border bg-muted text-foreground hover:bg-muted"
+                >
+                  <Shield className="mr-1 h-3 w-3" />
+                  Keystroke Verified
+                </Badge>
+                <Badge 
+                  variant="outline"
+                  className="border-border bg-background text-muted-foreground hover:bg-muted"
+                >
+                  <Activity className="mr-1 h-3 w-3" />
+                  Live Replay
+                </Badge>
+              </div>
+              
+              <h1 className="mb-2 text-3xl font-bold text-foreground">
+                Keystroke Timeline: {post.title}
+              </h1>
+              <p className="text-muted-foreground">
+                Let readers replay the real keystrokes that shaped this draft from {post.author.display_name}. It is proof that every sentence was written by hand.
+              </p>
             </div>
-            
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Keystroke Timeline: {post.title}
-            </h1>
-            <p className="text-muted-foreground mb-4">
-              Watch the authentic keystroke-by-keystroke creation by {post.author.display_name}
-            </p>
-
-            
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-0 -top-6 right-0 hidden rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/20 to-foreground/10 blur-3xl lg:block" />
+              <VerifiedSessionCard
+                initials={authorInitials}
+                sessionMeta={sessionMeta}
+                authenticityLabel={post.verification.keystroke_verified ? 'Verified' : 'Pending'}
+                snippetTitle="Proof of authorship summary"
+                snippetLines={snippetLines}
+                snippetFooter={snippetFooter}
+                excerpt={excerpt ? `“${excerpt}”` : undefined}
+                timeline={timeline}
+                className="relative z-10"
+              />
+            </div>
           </div>
 
           <div className="mb-10">

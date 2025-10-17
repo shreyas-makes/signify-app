@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/react'
+import type { KeyboardEvent } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Keystroke } from '@/types'
@@ -91,16 +93,27 @@ interface MiniGitGraphProps {
   width?: number
   height?: number
   className?: string
+  keystrokeUrl?: string
+  ariaLabel?: string
+  label?: string
+  ctaText?: string
+  graphClassName?: string
 }
 
 export function MiniGitGraph({ 
   keystrokes, 
   width = 320,
   height = 160,
-  className = ""
+  className = "",
+  keystrokeUrl,
+  ariaLabel,
+  label = 'Keystroke activity',
+  ctaText = 'View details',
+  graphClassName = '',
 }: MiniGitGraphProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [containerWidth, setContainerWidth] = useState(width)
+  const isInteractive = Boolean(keystrokeUrl)
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -141,6 +154,25 @@ export function MiniGitGraph({
     return calculateBarcodeData(keystrokes, resolvedWidth)
   }, [keystrokes, resolvedWidth])
 
+  const navigateToKeystrokes = () => {
+    if (!keystrokeUrl) {
+      return
+    }
+
+    router.visit(keystrokeUrl)
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!isInteractive) {
+      return
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      navigateToKeystrokes()
+    }
+  }
+
   const getBarcodeColor = (intensity: number) => {
     if (intensity === 0) return '#ffffff' // White for no activity
     
@@ -162,54 +194,83 @@ export function MiniGitGraph({
 
   // Calculate barcode dimensions
   const barSpacing = 1
-  const barHeight = height - 16 // Leave margins top/bottom
-  const barY = 8 // Top margin
+  const topPadding = 6
+  const bottomPadding = 6
+  const barHeight = Math.max(0, height - (topPadding + bottomPadding))
+  const barY = topPadding // Top margin
   
   // Calculate total width needed and scale if necessary
   const totalWidthNeeded = bars.reduce((acc, intensity) => acc + getBarWidth(intensity) + barSpacing, 0)
   const scaleX = totalWidthNeeded > resolvedWidth ? resolvedWidth / totalWidthNeeded : 1
 
   return (
-    <div ref={containerRef} className={`block w-full ${className}`}>
-      {keystrokes.length === 0 ? (
-        <div 
-          className="flex h-full w-full items-center justify-center rounded border border-border/20 bg-muted/30 text-xs text-muted-foreground"
-          style={{ minHeight: height }}
-        >
-          No data
-        </div>
-      ) : (
-        <svg 
-          width="100%" 
-          height={height}
-          viewBox={`0 0 ${resolvedWidth} ${height}`}
-          preserveAspectRatio="none"
-          className="block w-full rounded border border-border/20"
-          style={{ background: '#fafafa' }} // Light background for contrast
-        >
-          {/* Barcode bars */}
-          {(() => {
-            let currentX = 0
-            return bars.map((intensity, index) => {
-              const barWidth = getBarWidth(intensity) * scaleX
-              const x = currentX
-              currentX += barWidth + (barSpacing * scaleX)
-              
-              return (
-                <rect
-                  key={index}
-                  x={x}
-                  y={barY}
-                  width={Math.max(0.5, barWidth - (barSpacing * scaleX))} // Ensure minimum visibility
-                  height={barHeight}
-                  fill={getBarcodeColor(intensity)}
-                  rx={0} // Sharp corners for barcode appearance
-                />
-              )
-            })
-          })()}
-        </svg>
-      )}
+    <div
+      ref={containerRef}
+      className={[
+        'group relative w-full transition',
+        isInteractive && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+        className,
+      ].filter(Boolean).join(' ')}
+      onClick={navigateToKeystrokes}
+      onKeyDown={handleKeyDown}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={ariaLabel}
+    >
+      <div className="flex items-center justify-between text-[0.5rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground/60">
+        <span>{label}</span>
+        {isInteractive && ctaText ? (
+          <span className="opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+            {ctaText}
+          </span>
+        ) : null}
+      </div>
+
+      <div
+        className={[
+          'mt-2 w-full overflow-hidden rounded-xl border border-[#eadfce] bg-white',
+          graphClassName,
+        ].filter(Boolean).join(' ')}
+        style={{ height }}
+      >
+        {keystrokes.length === 0 ? (
+          <div 
+            className="flex h-full w-full items-center justify-center text-[0.65rem] text-muted-foreground/80"
+          >
+            No data
+          </div>
+        ) : (
+          <svg 
+            width="100%" 
+            height="100%"
+            viewBox={`0 0 ${resolvedWidth} ${height}`}
+            preserveAspectRatio="none"
+            className="block w-full"
+          >
+            {/* Barcode bars */}
+            {(() => {
+              let currentX = 0
+              return bars.map((intensity, index) => {
+                const barWidth = getBarWidth(intensity) * scaleX
+                const x = currentX
+                currentX += barWidth + (barSpacing * scaleX)
+                
+                return (
+                  <rect
+                    key={index}
+                    x={x}
+                    y={barY}
+                    width={Math.max(0.5, barWidth - (barSpacing * scaleX))} // Ensure minimum visibility
+                    height={barHeight}
+                    fill={getBarcodeColor(intensity)}
+                    rx={0} // Sharp corners for barcode appearance
+                  />
+                )
+              })
+            })()}
+          </svg>
+        )}
+      </div>
     </div>
   )
 }

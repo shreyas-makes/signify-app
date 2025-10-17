@@ -1,13 +1,22 @@
-import type { ReactNode } from "react"
+import { Head, Link, usePage } from '@inertiajs/react'
+import {
+  ArrowRight,
+  Fingerprint,
+  Github,
+  LineChart,
+  PenTool,
+  Play,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react'
+import type { ReactNode } from 'react'
 
-import { Head, Link, usePage } from "@inertiajs/react"
-import { ArrowRight, Fingerprint, PenTool, ShieldCheck, LineChart, Play, Sparkles, Github } from "lucide-react"
-
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { dashboardPath, publicPostsPath, signInPath, signUpPath } from "@/routes"
-import type { SharedData } from "@/types"
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { VerifiedSessionCard } from '@/components/verified-session-card'
+import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
+import type { SharedData } from '@/types'
 
 export default function Welcome() {
   const page = usePage<SharedData>()
@@ -84,8 +93,7 @@ export default function Welcome() {
                   Prove every word you publish is unmistakably yours.
                 </h1>
                 <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                  Signify captures each keystroke with cryptographic precision so your readers, partners, and platforms know your work is
-                  authentically human. Build trust instantly with shareable writing proofs and immersive replays.
+                  Signify traces every keystroke while you draft so editors, readers, and platforms feel the human craft in your words. Publish with a shareable proof that shows exactly how your story came to life—no AI, just you.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <Button size="lg" asChild className="group flex w-full items-center justify-center gap-2 px-6 py-3 text-base sm:w-auto">
@@ -117,51 +125,12 @@ export default function Welcome() {
               </div>
 
               <div className="relative">
-              <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
-              <Card className="relative overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-xl backdrop-blur">
-                <CardContent className="space-y-6 p-8">
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-muted text-sm font-semibold text-foreground">
-                          SJ
-                        </span>
-                        <div>
-                          <p className="font-semibold text-foreground">Session verified</p>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">3 min ago · 1,348 keystrokes</p>
-                        </div>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="border-primary/30 bg-primary/10 text-xs font-semibold text-primary"
-                      >
-                        Authentic
-                      </Badge>
-                    </div>
-
-                    <div className="rounded-2xl border border-border bg-muted/60 p-5 text-left shadow-inner">
-                      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
-                        <Fingerprint className="h-4 w-4 text-primary" />
-                        Replay in progress
-                      </div>
-                      <div className="mt-4 space-y-3 font-mono text-sm leading-relaxed text-muted-foreground">
-                        <p>{">> Launching proof sequence..."}</p>
-                        <p>
-                          const entry = <span className="text-primary">Signify.capture()</span>
-                        </p>
-                        <p>
-                          entry.commit(<span className="text-accent">"Every sentence is traced, every edit logged."</span>)
-                        </p>
-                        <p className="text-xs text-muted-foreground">Timeline sync: 00:00:17</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <TimelineItem label="Draft authored" value="12:34:08" accent="from-primary to-chart-2" />
-                      <TimelineItem label="Edits verified" value="12:37:44" accent="from-accent to-chart-4" />
-                      <TimelineItem label="Proof shared" value="12:39:02" accent="from-secondary to-chart-3" />
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
+                <VerifiedSessionCard
+                  initials="SJ"
+                  sessionMeta="3 min ago · 1,348 keystrokes"
+                  excerpt="“Drawing the lineage of storytelling from draft to publication proves my craft hasn’t been lost to automation.”"
+                />
               </div>
             </div>
           </section>
@@ -462,18 +431,6 @@ function Metric({ value, title, description }: { value: string; title: string; d
       <p className="text-sm font-semibold uppercase tracking-wide text-primary">{value}</p>
       <p className="mt-3 text-lg font-semibold text-foreground">{title}</p>
       <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  )
-}
-
-function TimelineItem({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-sm">
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${accent}`} />
-        <span>{label}</span>
-      </div>
-      <span className="font-semibold text-foreground">{value}</span>
     </div>
   )
 }

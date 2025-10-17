@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_10_213016) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_17_211532) do
   create_table "documents", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -64,6 +64,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_10_213016) do
     t.datetime "updated_at", null: false
     t.string "display_name"
     t.boolean "admin", default: false, null: false
+    t.string "avatar_url"
+    t.text "bio"
+    t.datetime "onboarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 

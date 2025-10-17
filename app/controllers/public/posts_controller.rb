@@ -59,7 +59,7 @@ class Public::PostsController < ApplicationController
     total_keystrokes = @post.keystrokes.count
     has_more = (page * per_page) < total_keystrokes
     
-    if request.xhr?
+    if request.xhr? && (!request.respond_to?(:inertia?) || !request.inertia?)
       # Handle AJAX requests for pagination
       render json: {
         keystrokes: keystrokes_json(keystrokes),
@@ -102,7 +102,8 @@ class Public::PostsController < ApplicationController
         word_count: post.word_count,
         reading_time_minutes: post.reading_time_minutes,
         author: {
-          display_name: post.user.display_name
+          display_name: post.user.display_name,
+          profile_url: public_author_path(post.user)
         },
         excerpt: truncate_content(post.content, 200)
       }
@@ -123,7 +124,10 @@ class Public::PostsController < ApplicationController
       reading_time_minutes: post.reading_time_minutes,
       keystroke_count: post.keystroke_count,
       author: {
-        display_name: post.user.display_name
+        id: post.user.id,
+        display_name: post.user.display_name,
+        bio: post.user.bio,
+        profile_url: public_author_path(post.user)
       },
       verification: {
         keystroke_verified: post.keystroke_count > 0,

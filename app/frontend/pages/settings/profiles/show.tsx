@@ -7,6 +7,7 @@ import InputError from "@/components/input-error"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import AppLayout from "@/layouts/app-layout"
 import SettingsLayout from "@/layouts/settings/layout"
 import { settingsProfilePath } from "@/routes"
@@ -30,7 +31,7 @@ export default function Profile() {
         <div className="space-y-6">
           <HeadingSmall
             title="Profile information"
-            description="Update your name"
+            description="Update the details that appear on your public profile"
           />
 
           <Form
@@ -43,20 +44,67 @@ export default function Profile() {
           >
             {({ errors, processing, recentlySuccessful }) => (
               <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Full name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      className="mt-1 block w-full"
+                      defaultValue={auth.user.name}
+                      required
+                      autoComplete="name"
+                      placeholder="Full name"
+                    />
+                    <InputError className="mt-2" message={errors.name} />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="display_name">Display name</Label>
+                    <Input
+                      id="display_name"
+                      name="display_name"
+                      className="mt-1 block w-full"
+                      defaultValue={auth.user.display_name}
+                      required
+                      autoComplete="nickname"
+                      placeholder="How readers see your name"
+                    />
+                    <InputError className="mt-2" message={errors.display_name} />
+                  </div>
+                </div>
+
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
-
+                  <Label htmlFor="avatar_url">Profile picture URL</Label>
                   <Input
-                    id="name"
-                    name="name"
+                    id="avatar_url"
+                    name="avatar_url"
                     className="mt-1 block w-full"
-                    defaultValue={auth.user.name}
-                    required
-                    autoComplete="name"
-                    placeholder="Full name"
+                    defaultValue={auth.user.avatar_url ?? ""}
+                    inputMode="url"
+                    placeholder="https://"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Provide a square image hosted online. We recommend 512×512 pixels.
+                  </p>
+                  <InputError className="mt-2" message={errors.avatar_url} />
+                </div>
 
-                  <InputError className="mt-2" message={errors.name} />
+                <div className="grid gap-2">
+                  <Label htmlFor="bio">Author description</Label>
+                  <Textarea
+                    id="bio"
+                    name="bio"
+                    className="mt-1 block w-full"
+                    defaultValue={auth.user.bio ?? ""}
+                    placeholder="Summarize your expertise, focus, or writing style"
+                    maxLength={500}
+                    rows={4}
+                  />
+                  <div className="text-sm text-muted-foreground">
+                    Appears beneath your verification badge on published posts.
+                  </div>
+                  <InputError className="mt-2" message={errors.bio} />
                 </div>
 
                 <div className="flex items-center gap-4">

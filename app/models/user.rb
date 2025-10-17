@@ -19,6 +19,7 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true, format: {with: URI::MailTo::EMAIL_REGEXP}
   validates :password, allow_nil: true, length: {minimum: 12}
   validates :display_name, presence: true, length: {maximum: 100}
+  validates :bio, length: { maximum: 500 }, allow_blank: true
 
   normalizes :email, with: -> { _1.strip.downcase }
 

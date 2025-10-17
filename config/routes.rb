@@ -29,6 +29,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :start, only: [:show, :update], controller: :start
+
   namespace :settings do
     resource :profile, only: [:show, :update]
     resource :password, only: [:show, :update]
@@ -41,6 +43,7 @@ Rails.application.routes.draw do
   get "posts", to: "public/posts#index", as: :public_posts
   get "posts/:public_slug", to: "public/posts#show", as: :public_post
   get "posts/:public_slug/keystrokes", to: "public/posts#keystrokes", as: :public_post_keystrokes
+  get "authors/:id", to: "public/authors#show", as: :public_author
   
   # Data access and verification API
   namespace :api do
