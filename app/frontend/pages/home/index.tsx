@@ -129,7 +129,7 @@ export default function Welcome() {
                 <VerifiedSessionCard
                   initials="SJ"
                   sessionMeta="3 min ago · 1,348 keystrokes"
-                  excerpt="“Drawing the lineage of storytelling from draft to publication proves my craft hasn’t been lost to automation.”"
+                  previewHeading="Feature draft preview"
                 />
               </div>
             </div>

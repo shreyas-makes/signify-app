@@ -43,6 +43,42 @@ function formatDuration(seconds: number) {
   return `${minutes}m ${remainderSeconds.toString().padStart(2, '0')}s`
 }
 
+function extractPreviewParagraphs(rawContent: string, maxParagraphs = 4) {
+  const stripped = rawContent
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (!stripped) {
+    return []
+  }
+
+  const sentences = stripped.split(/(?<=[.!?])\s+/).filter(Boolean)
+  const paragraphs: string[] = []
+  let current = ''
+
+  for (const sentence of sentences) {
+    const next = current ? `${current} ${sentence}` : sentence
+    if (next.length > 260 && current) {
+      paragraphs.push(current.trim())
+      current = sentence
+      if (paragraphs.length >= maxParagraphs) {
+        break
+      }
+    } else {
+      current = next
+    }
+  }
+
+  if (paragraphs.length < maxParagraphs && current) {
+    paragraphs.push(current.trim())
+  }
+
+  return paragraphs.slice(0, maxParagraphs)
+}
+
 interface Author {
   display_name: string
 }
@@ -238,29 +274,17 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
     return details.join(' · ')
   }, [post.published_at, statistics.pause_count, statistics.backspace_count, statistics.average_wpm])
 
-  const excerpt = useMemo(() => {
-    const stripped = post.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-    if (!stripped) return ''
-    return stripped.length > 180 ? `${stripped.slice(0, 177)}…` : stripped
-  }, [post.content])
-
-  const timeline = useMemo(() => [
-    {
-      label: 'Total keystrokes',
-      value: statistics.total_keystrokes.toLocaleString(),
-      accent: 'from-primary to-chart-2'
-    },
-    {
-      label: 'Corrections logged',
-      value: statistics.correction_count.toLocaleString(),
-      accent: 'from-accent to-chart-4'
-    },
-    {
-      label: 'Replay length',
-      value: statistics.total_time_seconds > 0 ? formatDuration(statistics.total_time_seconds) : 'under 1s',
-      accent: 'from-secondary to-chart-3'
+  const previewContent = useMemo(() => {
+    const paragraphs = extractPreviewParagraphs(post.content)
+    if (paragraphs.length === 0) {
+      return undefined
     }
-  ], [statistics.total_keystrokes, statistics.correction_count, statistics.total_time_seconds])
+    return {
+      title: post.title,
+      meta: `${post.author.display_name} · ${post.word_count.toLocaleString()} words`,
+      paragraphs,
+    }
+  }, [post.content, post.title, post.author.display_name, post.word_count])
 
   // Generate timeline events for visualization (use first chunk for performance)
   const timelineEvents = useMemo((): TimelineEvent[] => {
@@ -399,8 +423,8 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                 snippetTitle="Proof of authorship summary"
                 snippetLines={snippetLines}
                 snippetFooter={snippetFooter}
-                excerpt={excerpt ? `“${excerpt}”` : undefined}
-                timeline={timeline}
+                previewHeading="Captured session draft"
+                previewContent={previewContent}
                 className="relative z-10"
               />
             </div>

@@ -158,3 +158,69 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+@layer utilities {
+  .scroll-preview {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    border-radius: calc(var(--radius) - 6px);
+  }
+
+  .scroll-preview-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: scroll-preview 60s linear infinite;
+  }
+
+  .scroll-preview:hover .scroll-preview-inner,
+  .scroll-preview:focus-within .scroll-preview-inner {
+    animation-play-state: paused;
+  }
+
+  .scroll-preview-segment {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+  }
+
+  .scroll-preview::before,
+  .scroll-preview::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 32px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .scroll-preview::before {
+    top: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.92),
+      rgba(255, 255, 255, 0)
+    );
+  }
+
+  .scroll-preview::after {
+    bottom: 0;
+    background: linear-gradient(
+      to top,
+      rgba(255, 255, 255, 0.92),
+      rgba(255, 255, 255, 0)
+    );
+  }
+
+  @keyframes scroll-preview {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+}
