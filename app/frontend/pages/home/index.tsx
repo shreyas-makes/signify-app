@@ -2,11 +2,9 @@ import { Head, Link, usePage } from '@inertiajs/react'
 import {
   ArrowRight,
   Fingerprint,
-  Github,
   LineChart,
   PenTool,
   Play,
-  ShieldCheck,
   Sparkles,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -110,18 +108,6 @@ export default function Welcome() {
                   </Button>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <Metric
-                    value="ms-level capture"
-                    title="Every keystroke recorded"
-                    description="Immutable, tamper-evident timeline."
-                  />
-                  <Metric
-                    value="4.9/5"
-                    title="Writer satisfaction"
-                    description="Across 1,200+ verified sessions."
-                  />
-                </div>
               </div>
 
               <div className="relative">
@@ -182,210 +168,15 @@ export default function Welcome() {
                   details={["Inline annotations", "Playback controls", "Collaborative reviews"]}
                 />
                 <FeatureCard
-                  icon={<ShieldCheck className="h-5 w-5 text-chart-3" />}
-                  title="Compliance ready"
-                  description="Export verifiable reports for legal, editorial, and platform compliance workflows."
-                  details={["SOC2-aligned storage", "Full audit trails", "Exportable session proofs"]}
-                />
-                <FeatureCard
                   icon={<LineChart className="h-5 w-5 text-chart-4" />}
                   title="Live analytics"
                   description="Monitor writing velocity, editing cadence, and authenticity scores across your organization."
                   details={["Session heatmaps", "Risk scoring", "Insights API"]}
                 />
-                <FeatureCard
-                  icon={<Sparkles className="h-5 w-5 text-chart-5" />}
-                  title="AI assistance, verified"
-                  description="Declare AI assistance transparently with dual-signature proofs for every generated block."
-                  details={["Hybrid workflows", "Source labeling", "Reader-friendly badges"]}
-                />
-                <FeatureCard
-                  icon={<Play className="h-5 w-5 text-chart-2" />}
-                  title="Embeddable experiences"
-                  description="Embed writing replays anywhere with responsive, accessible components."
-                  details={["Custom branding", "Dark mode ready", "One-line install"]}
-                />
               </div>
             </div>
           </section>
 
-          <section id="how-it-works" className="border-b border-border bg-muted py-20">
-            <div className="mx-auto grid w-full max-w-6xl gap-16 px-4 md:grid-cols-[minmax(0,0.9fr)_1fr] md:items-start">
-              <div className="space-y-4">
-                <Badge
-                  variant="secondary"
-                  className="w-fit text-xs font-semibold uppercase tracking-widest text-secondary-foreground shadow-sm"
-                >
-                  How Signify works
-                </Badge>
-                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
-                  Capture, verify, and share proof in under five minutes.
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  We pair writing telemetry with cryptographic signatures so every draft produces an irrefutable authenticity packet.
-                </p>
-                <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-md">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Proof bundle includes</h3>
-                  <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                    <li>• Session hash + signature</li>
-                    <li>• Full keystroke timeline</li>
-                    <li>• Replay embed + highlights</li>
-                    <li>• AI assistance disclosures</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <ProcessStep
-                  step="01"
-                  title="Capture session data"
-                  description="Writers draft inside Signify or connect via our editors. Every keystroke, edit, and pause is recorded locally."
-                />
-                <ProcessStep
-                  step="02"
-                  title="Verify authenticity"
-                  description="Timeline signatures are checked against our integrity network. Any anomalies are surfaced instantly."
-                />
-                <ProcessStep
-                  step="03"
-                  title="Share proof bundle"
-                  description="Publish a replay link or export a compliance-ready PDF for legal, editorial, or partner review."
-                />
-              </div>
-            </div>
-          </section>
-
-          <section id="security" className="border-b border-border bg-background py-20">
-            <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 lg:grid-cols-[minmax(0,0.9fr)_1fr] lg:items-center">
-              <div className="space-y-4">
-                <Badge
-                  variant="outline"
-                  className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
-                >
-                  Ironclad authenticity
-                </Badge>
-                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
-                  Proof infrastructure built for legal teams and creative leaders.
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  End-to-end encryption, provenance tracking, and exportable audit trails ensure every document can stand up under scrutiny.
-                </p>
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <ChecklistItem title="Zero-knowledge storage" description="Session data encrypted at the edge before hitting our servers." />
-                  <ChecklistItem title="Chain of custody" description="Immutable event log with multi-party attestation on every signature." />
-                  <ChecklistItem
-                    title="Region-aware hosting"
-                    description="Deploy writers in US, EU, or APAC data clusters based on compliance needs."
-                  />
-                  <ChecklistItem
-                    title="Enterprise controls"
-                    description="SAML SSO, granular permissions, and configurable retention windows."
-                  />
-                </div>
-              </div>
-
-              <Card className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/15 shadow-lg">
-                <CardContent className="space-y-6 p-8">
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold uppercase tracking-widest text-primary">Real-time authenticity</h3>
-                    <p className="text-3xl font-semibold text-foreground">99.98% capture integrity</p>
-                    <p className="text-sm text-muted-foreground">
-                      Automated anomaly detection flags any pasted or imported content before publication.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-border bg-card/80 p-5 shadow-sm">
-                    <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Session snapshot</p>
-                    <div className="mt-4 space-y-4 text-sm text-muted-foreground">
-                      <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
-                        <span>Human-authored</span>
-                        <span className="font-semibold text-primary">Pass</span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
-                        <span>AI assistance</span>
-                        <span className="font-semibold text-accent">Transparent</span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
-                        <span>Integrity score</span>
-                        <span className="font-semibold text-chart-2">99.7</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Signify issues W3C-compliant provenance manifests with every published proof bundle.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          <section className="border-b border-border bg-background py-20">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4">
-              <div className="max-w-2xl space-y-4">
-                <Badge
-                  variant="outline"
-                  className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
-                >
-                  Writers who switched
-                </Badge>
-                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
-                  “The replay turned my readers into subscribers overnight.”
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Signify helps independent writers and enterprise teams prove originality while delivering an engaging behind-the-scenes
-                  experience.
-                </p>
-              </div>
-              <div className="grid gap-6 lg:grid-cols-2">
-                <TestimonialCard
-                  quote="The proof bundle is now a mandatory part of every editorial handoff. It keeps our bylines honest and our sponsors confident."
-                  author="Alex Chen"
-                  role="Editorial Director, Archway Media"
-                  stats="8 brands onboarded"
-                />
-                <TestimonialCard
-                  quote="Watching the keystroke replay is like sitting beside our writers. It's the transparency our community has been asking for."
-                  author="Sarah Johnson"
-                  role="Founder, The Craft Co."
-                  stats="62% increase in membership"
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="bg-gradient-to-br from-primary via-accent to-chart-4 py-20 text-primary-foreground">
-            <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-4 text-center">
-              <Badge
-                variant="secondary"
-                className="border-primary-foreground/30 bg-primary-foreground/15 text-xs font-semibold uppercase tracking-wider text-primary-foreground/90"
-              >
-                Start in minutes
-              </Badge>
-              <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
-                Ready to prove your voice is authentically human?
-              </h2>
-              <p className="max-w-2xl text-lg text-primary-foreground/80">
-                Launch your first verified session for free. Invite collaborators, share the replay, and embed your proof anywhere.
-              </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Button size="lg" asChild>
-                  <Link href={auth.user ? dashboardPath() : signUpPath()}>
-                    {auth.user ? "Open dashboard" : "Create your first proof"}
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  asChild
-                  className="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  <a href="https://github.com/placeholder/signify" target="_blank" rel="noopener noreferrer">
-                    <Github className="mr-2 h-4 w-4" />
-                    View product roadmap
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </section>
         </main>
 
         <footer className="border-t border-border bg-background py-12 text-sm text-muted-foreground">
@@ -456,48 +247,6 @@ function FeatureCard({ icon, title, description, details }: {
             <li key={item}>• {item}</li>
           ))}
         </ul>
-      </CardContent>
-    </Card>
-  )
-}
-
-function ProcessStep({ step, title, description }: { step: string; title: string; description: string }) {
-  return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-transform hover:-translate-x-1">
-      <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary to-accent" />
-      <div className="ml-4 space-y-3">
-        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{step}</span>
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
-      </div>
-    </div>
-  )
-}
-
-function ChecklistItem({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="space-y-1 rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <p className="text-base font-semibold text-foreground">{title}</p>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  )
-}
-
-function TestimonialCard({ quote, author, role, stats }: {
-  quote: string
-  author: string
-  role: string
-  stats: string
-}) {
-  return (
-    <Card className="h-full rounded-3xl border border-border bg-card/80 p-8 shadow-lg backdrop-blur">
-      <CardContent className="flex h-full flex-col gap-6 p-0">
-        <p className="text-lg italic leading-relaxed text-muted-foreground">“{quote}”</p>
-        <div className="mt-auto space-y-2">
-          <p className="text-base font-semibold text-foreground">{author}</p>
-          <p className="text-sm text-muted-foreground">{role}</p>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">{stats}</p>
-        </div>
       </CardContent>
     </Card>
   )
