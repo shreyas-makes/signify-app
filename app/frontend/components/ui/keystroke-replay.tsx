@@ -45,7 +45,6 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
     if (!trimmed) return 0
     return trimmed.split(/\s+/).length
   }, [finalContent])
-  const efficiency = totalKeystrokes > 0 ? Math.round((finalContent.length / totalKeystrokes) * 100) : 0
   const keysPerWord = finalWordCount > 0 ? Math.round(totalKeystrokes / finalWordCount) : totalKeystrokes
 
   const hasValidCursorData = useMemo(() => {
@@ -56,7 +55,7 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
     return nonZeroPositions > positions.length * 0.1 // At least 10% should have non-zero positions
   }, [playableKeystrokes])
 
-  const findCursorPosition = useCallback((keystroke: KeystrokeEvent, contentLength: number, currentIndex: number) => {
+  const findCursorPosition = useCallback((keystroke: KeystrokeEvent, contentLength: number) => {
     const rawPosition =
       keystroke.cursor_position ??
       keystroke.cursorPosition ??
@@ -113,8 +112,8 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
     }
   }, [])
 
-  const applyKeystroke = useCallback((content: string, keystroke: KeystrokeEvent, currentIndex: number = 0) => {
-    const position = findCursorPosition(keystroke, content.length, currentIndex)
+  const applyKeystroke = useCallback((content: string, keystroke: KeystrokeEvent) => {
+    const position = findCursorPosition(keystroke, content.length)
 
     if (keystroke.key_code === 8 || keystroke.character === "\b") {
       // Backspace removes the character before the cursor
@@ -136,10 +135,34 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
     return content.slice(0, position) + normalizedCharacter + content.slice(position)
   }, [findCursorPosition, normalizeCharacter])
 
+  const productiveKeystrokes = useMemo(() => {
+    if (playableKeystrokes.length === 0) return 0
+
+    let content = ""
+    let productive = 0
+    // Treat efficiency as share of keystrokes that actually expanded the document
+
+    for (const keystroke of playableKeystrokes) {
+      const nextContent = applyKeystroke(content, keystroke)
+
+      if (nextContent.length > content.length) {
+        productive++
+      }
+
+      content = nextContent
+    }
+
+    return productive
+  }, [applyKeystroke, playableKeystrokes])
+
+  const efficiency = totalKeystrokes > 0
+    ? Math.min(Math.floor((productiveKeystrokes / totalKeystrokes) * 100), 99)
+    : 0
+
   const rebuildContent = useCallback((limit: number) => {
     let content = ""
     for (let i = 0; i < limit && i < playableKeystrokes.length; i++) {
-      content = applyKeystroke(content, playableKeystrokes[i], i)
+      content = applyKeystroke(content, playableKeystrokes[i])
     }
     return content
   }, [applyKeystroke, playableKeystrokes])
@@ -151,7 +174,7 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
       const delay = baseDelay / playbackSpeed
 
       intervalRef.current = setTimeout(() => {
-        setDisplayContent(prev => applyKeystroke(prev, keystroke, currentIndex))
+        setDisplayContent(prev => applyKeystroke(prev, keystroke))
         setCurrentIndex(prev => prev + 1)
       }, delay)
     } else if (currentIndex >= totalKeystrokes) {
@@ -229,7 +252,7 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
             <CardTitle className="text-xl font-semibold text-foreground">
               Live Keystroke Replay
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Rebuilding "{title}" keystroke-by-keystroke</p>
+            <p className="text-sm text-muted-foreground">Rebuilding &ldquo;{title}&rdquo; keystroke-by-keystroke</p>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{currentIndex.toLocaleString()} / {totalKeystrokes.toLocaleString()} keys</span>
