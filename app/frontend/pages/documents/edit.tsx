@@ -316,8 +316,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     : keystrokeCount) ?? 0
   const pageBackgroundClass = isPublished ? "bg-[#f4f1e8]" : "bg-[#f8f4eb]"
   const shellPaddingClass = isPublished
-    ? "max-w-5xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
-    : "max-w-4xl px-4 sm:px-6 py-4 sm:py-8"
+    ? "max-w-7xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
+    : "max-w-7xl px-4 sm:px-6 py-4 sm:py-8"
   const editorSurfaceClass = isPublished
     ? "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
     : "rounded-lg border border-input bg-white shadow-sm"
