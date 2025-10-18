@@ -16,7 +16,7 @@ import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppSidebarLayout from "@/layouts/app/app-sidebar-layout"
 import { documentPath, documentsPath } from "@/routes"
-import type { Document } from "@/types"
+import type { BreadcrumbItem, Document } from "@/types"
 
 interface KeystrokeEvent {
   id: number
@@ -33,6 +33,17 @@ interface DocumentsEditProps {
   documents: Document[]
   keystrokes?: KeystrokeEvent[]
 }
+
+const buildBreadcrumbs = (document: Document): BreadcrumbItem[] => [
+  {
+    title: "Documents",
+    href: documentsPath(),
+  },
+  {
+    title: document.title || "Untitled Document",
+    href: "#",
+  },
+]
 
 export default function DocumentsEdit({ document, documents, keystrokes = [] }: DocumentsEditProps) {
   const { data, setData, errors } = useForm({
@@ -327,14 +338,14 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const toolbarWrapperClass = cn(
     "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300",
     isPublished ? "px-0 pt-2 pb-4 text-[#5c4d35]" : "px-4 sm:px-6 py-4 border-b",
-    !isPublished && (isNewDocument ? "bg-gradient-to-r from-primary/5 to-transparent border-primary/20" : "bg-white border-border"),
+    !isPublished && (isNewDocument ? "bg-gradient-to-r from-primary/5 to-transparent border-primary/20" : "border-border"),
   )
   const metaTextClass = isPublished ? "text-sm text-[#5c4d35]" : "text-sm text-muted-foreground"
   const previewMetaAccentClass = isPublished ? "text-[#5c4d35]/80" : "text-muted-foreground"
 
   return (
     <AppSidebarLayout 
-      breadcrumbs={breadcrumbs(document)}
+      breadcrumbs={buildBreadcrumbs(document)}
       documents={documents}
       currentDocumentId={document.id}
     >
