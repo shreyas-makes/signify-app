@@ -322,11 +322,11 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     ? document.keystroke_count
     : keystrokeCount) ?? 0
   const pageBackgroundClass = "bg-[#f4f1e8]"
-  const shellPaddingClass = "max-w-7xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
+  const shellPaddingClass = "max-w-6xl px-6 sm:px-14 lg:px-24 py-10 sm:py-16 gap-8"
   const editorSurfaceClass =
     "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
   const previewSurfaceClass =
-    "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-8 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-10 sm:py-12"
+    "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-8 py-10 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-14 sm:py-14"
   const toolbarWrapperClass = cn(
     "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 px-0 pt-2 pb-4 text-[#5c4d35]"
   )
@@ -537,7 +537,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </div>
                 )}
 
-                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-4 py-6 sm:px-8 sm:py-10 mx-auto")}>
+                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-6 py-8 sm:px-12 sm:py-12 mx-auto")}>
                   <RichTextEditor
                     ref={editorRef}
                     value={data.document.content}

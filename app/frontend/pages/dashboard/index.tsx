@@ -1,16 +1,13 @@
 import { Head, Link, router } from "@inertiajs/react"
 import {
   ArrowUpDown, 
-  Calendar,
   ChevronLeft,
   ChevronRight,
   Clock, 
   Edit, 
   Eye, 
   FileText,
-  Grid,
   Keyboard,
-  List,
   MoreHorizontal, 
   Plus, 
   Search, 
@@ -21,7 +18,7 @@ import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { 
   DropdownMenu, 
@@ -55,7 +52,6 @@ export default function Dashboard({
   filters, 
   statistics 
 }: DashboardProps) {
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [selectedDocuments, setSelectedDocuments] = useState<number[]>([])
   const [isPerformingBulkAction, setIsPerformingBulkAction] = useState(false)
 
@@ -155,8 +151,8 @@ export default function Dashboard({
     <AppLayout>
       <Head title="Dashboard" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="space-y-8">
+      <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-16">
+        <div className="space-y-10">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="mt-4 space-y-1">
@@ -173,9 +169,9 @@ export default function Dashboard({
           </div>
 
           {/* Statistics */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-8 sm:p-10 space-y-3">
                 <div className="flex items-center space-x-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">Total Documents</span>
@@ -188,7 +184,7 @@ export default function Dashboard({
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-8 sm:p-10 space-y-3">
                 <div className="flex items-center space-x-2">
                   <Eye className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">Total Words</span>
@@ -201,7 +197,7 @@ export default function Dashboard({
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-8 sm:p-10 space-y-3">
                 <div className="flex items-center space-x-2">
                   <Keyboard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">Keystrokes</span>
@@ -214,7 +210,7 @@ export default function Dashboard({
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-8 sm:p-10 space-y-3">
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">Ready to Publish</span>
@@ -228,9 +224,9 @@ export default function Dashboard({
           </div>
 
           {/* Filters and Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
-              <div className="relative w-full sm:w-80">
+          <div className="flex w-full flex-col gap-5 rounded-[32px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8 sm:py-6">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center w-full sm:w-auto">
+              <div className="relative w-full sm:w-80 lg:w-96">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search documents..."
@@ -253,7 +249,7 @@ export default function Dashboard({
               </Select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-3">
               {selectedDocuments.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -279,25 +275,6 @@ export default function Dashboard({
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              
-              <div className="flex items-center border rounded-md">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-r-none"
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'table' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('table')}
-                  className="rounded-l-none"
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -327,88 +304,13 @@ export default function Dashboard({
                 )}
               </CardContent>
             </Card>
-          ) : viewMode === 'grid' ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {documents.map((document) => (
-                <Card key={document.id} className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 hover:-translate-y-1">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-3 flex-1">
-                        <Checkbox
-                          checked={selectedDocuments.includes(document.id)}
-                          onCheckedChange={() => toggleDocumentSelection(document.id)}
-                        />
-                        <CardTitle className="text-sm font-semibold line-clamp-2 group-hover:text-primary transition-colors">
-                          {document.title || "Untitled Document"}
-                        </CardTitle>
-                      </div>
-                      <Badge 
-                        variant={getStatusColor(document.status)}
-                        className="shrink-0 capitalize"
-                      >
-                        {getStatusBadgeText(document.status)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-4">
-                      {document.content && (
-                        <p className="text-muted-foreground line-clamp-3 leading-relaxed">
-                          {document.content}
-                        </p>
-                      )}
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground border-t pt-4">
-                        <div className="flex items-center gap-2">
-                          <Eye className="h-4 w-4" />
-                          <span>{document.word_count} words</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Keyboard className="h-4 w-4" />
-                          <span>{document.keystroke_count}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{formatReadingTime(document.reading_time_minutes)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate(document.updated_at)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3 pt-2 justify-end">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        {document.status === 'draft' && (
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            aria-label="Delete document"
-                            onClick={() => {
-                              if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
-                                router.delete(documentPath({ id: document.id }))
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
+            <Card className="rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.35)]">
+              <CardContent className="p-0 overflow-hidden">
+                <div className="px-6 py-5 sm:px-10 sm:py-8">
+                  <Table className="w-full text-sm [&_th]:px-6 [&_th]:py-4 [&_td]:px-6 [&_td]:py-4 [&_th:first-child]:pl-0 [&_td:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:last-child]:pr-0">
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
                       <TableHead className="w-12">
                         <Checkbox
                           checked={selectedDocuments.length === documents.length}
@@ -462,7 +364,7 @@ export default function Dashboard({
                   </TableHeader>
                   <TableBody>
                     {documents.map((document) => (
-                      <TableRow key={document.id}>
+                      <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-[#f7f1e6]">
                         <TableCell>
                           <Checkbox
                             checked={selectedDocuments.includes(document.id)}
@@ -513,6 +415,7 @@ export default function Dashboard({
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           )}
