@@ -1,15 +1,27 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import { ChevronDown, ChevronRight, Edit, Eye, ExternalLink, Loader2, Play, RefreshCw, Save, Send, Sparkles } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  Eye,
+  ExternalLink,
+  Loader2,
+  Play,
+  RefreshCw,
+  Save,
+  Send,
+  Sparkles,
+} from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Input } from "@/components/ui/input"
 import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
@@ -276,30 +288,25 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   }
 
   const canPublishNow = canPublish()
-  const saveStatusToneClass =
-    ({
-      default: "border-primary/30 bg-primary/10 text-primary",
-      secondary: "border-border/40 bg-muted/10 text-muted-foreground",
-      destructive: "border-destructive/30 bg-destructive/10 text-destructive",
-    }[autoSave.getSaveStatusColor()] ?? "border-border bg-muted text-muted-foreground")
+  const saveStatusLabel = autoSave.getSaveStatusText()
   const saveButtonLabel = isSaving ? "Saving..." : "Save"
   const publishButtonLabel = isPublishing ? "Publishing..." : getPublishButtonText()
-  const documentStatusBadge = (() => {
+  const documentStatusIndicator = (() => {
     switch (document.status) {
       case 'published':
         return {
           label: 'Published',
-          className: "border border-primary/40 bg-primary/10 text-primary"
+          indicatorClassName: "bg-emerald-400"
         }
       case 'ready_to_publish':
         return {
           label: 'Ready to publish',
-          className: "border border-amber-200 bg-amber-50 text-amber-700"
+          indicatorClassName: "bg-emerald-300"
         }
       default:
         return {
           label: 'Draft',
-          className: "border border-border/50 bg-muted/70 text-muted-foreground"
+          indicatorClassName: "bg-amber-300"
         }
     }
   })()
@@ -361,89 +368,102 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
-                  <Badge
-                    variant="outline"
-                    className={`rounded-full border px-3 py-1 text-xs font-medium leading-none shadow-none ${saveStatusToneClass}`}
-                  >
-                    {autoSave.getSaveStatusText()}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "rounded-full px-3 py-1 text-xs font-medium leading-none shadow-none",
-                      documentStatusBadge.className,
-                    )}
-                  >
-                    {documentStatusBadge.label}
-                  </Badge>
+                <TooltipProvider delayDuration={0}>
+                  <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          aria-label={`${documentStatusIndicator.label} status`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6c7ab]/50 bg-white/50 shadow-none"
+                        >
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "block h-2.5 w-2.5 rounded-full opacity-80",
+                              documentStatusIndicator.indicatorClassName,
+                            )}
+                          />
+                          <span className="sr-only">{documentStatusIndicator.label}</span>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{documentStatusIndicator.label}</TooltipContent>
+                    </Tooltip>
+                    <span className="sr-only" role="status" aria-live="polite">
+                      {saveStatusLabel}
+                    </span>
 
-                  {autoSave.saveStatus === 'error' && (
-                    <Button
-                      onClick={() => void autoSave.retry()}
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      <span>Retry save</span>
-                    </Button>
-                  )}
-
-                  {publicPostUrl && (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="ghost"
-                      className="gap-2 text-[#3f3422]"
-                    >
-                      <a
-                        href={publicPostUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    {autoSave.saveStatus === 'error' && (
+                      <Button
+                        onClick={() => void autoSave.retry()}
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        <span>View post</span>
-                      </a>
-                    </Button>
-                  )}
-
-                  <Button
-                    onClick={() => void handleManualSave()}
-                    disabled={
-                      isSaving ||
-                      autoSave.saveStatus === 'saving' ||
-                      (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
-                    }
-                    size="sm"
-                    variant="outline"
-                    className="gap-2"
-                  >
-                    {isSaving ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
+                        <RefreshCw className="h-4 w-4" />
+                        <span>Retry save</span>
+                      </Button>
                     )}
-                    <span>{saveButtonLabel}</span>
-                  </Button>
 
-                  {document.status !== 'published' && (
+                    {publicPostUrl && (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="ghost"
+                        className="gap-2 text-[#3f3422]"
+                      >
+                        <a
+                          href={publicPostUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span>View post</span>
+                        </a>
+                      </Button>
+                    )}
+
                     <Button
-                      onClick={() => void handlePublish()}
-                      disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
-                      size="sm"
-                      variant={canPublishNow ? "default" : "outline"}
-                      className={cn("gap-2", !canPublishNow && "text-muted-foreground")}
+                      onClick={() => void handleManualSave()}
+                      disabled={
+                        isSaving ||
+                        autoSave.saveStatus === 'saving' ||
+                        (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
+                      }
+                      size="icon"
+                      variant="ghost"
+                      aria-label={saveButtonLabel}
+                      className="rounded-full border border-[#d6c7ab]/70 bg-white/70 text-[#5c4d35] shadow-none hover:bg-white"
                     >
-                      {isPublishing ? (
+                      {isSaving ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Send className="h-4 w-4" />
+                        <Save className="h-4 w-4" />
                       )}
-                      <span>{publishButtonLabel}</span>
+                      <span className="sr-only">{saveButtonLabel}</span>
                     </Button>
-                  )}
-                </div>
+
+                    {document.status !== 'published' && (
+                      <Button
+                        onClick={() => void handlePublish()}
+                        disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
+                        size="icon"
+                        variant={canPublishNow ? "default" : "outline"}
+                        aria-label={publishButtonLabel}
+                        className={cn(
+                          "rounded-full shadow-sm",
+                          !canPublishNow && "border border-[#d6c7ab]/60 bg-white/70 text-muted-foreground hover:bg-white",
+                        )}
+                      >
+                        {isPublishing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">{publishButtonLabel}</span>
+                      </Button>
+                    )}
+                  </div>
+                </TooltipProvider>
               </div>
 
               <TabsContent value="write" className="mt-6 space-y-6">
