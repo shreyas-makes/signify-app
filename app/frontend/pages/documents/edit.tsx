@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import { ChevronDown, ChevronRight, ExternalLink, Loader2, Play, RefreshCw, Save, Send, Sparkles } from "lucide-react"
+import { ChevronDown, ChevronRight, Edit, Eye, ExternalLink, Loader2, Play, RefreshCw, Save, Send, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -342,18 +342,22 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
               className="mt-2 flex-1"
             >
               <div className={toolbarWrapperClass}>
-                <TabsList className="rounded-full border border-[#d6c7ab] bg-white/70 p-1 text-[#6e5a3d] shadow-sm transition-colors">
+                <TabsList className="rounded-full border border-[#d6c7ab]/70 bg-white/60 p-1 text-[#6e5a3d] shadow-none transition-colors">
                   <TabsTrigger
                     value="write"
-                    className="rounded-full px-4 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/60 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
+                    aria-label="Edit mode"
+                    className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
                   >
-                    Edit
+                    <Edit className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
+                    <span className="sr-only">Edit</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="preview"
-                    className="rounded-full px-4 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/60 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
+                    aria-label="Preview mode"
+                    className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
                   >
-                    Preview
+                    <Eye className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
+                    <span className="sr-only">Preview</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -513,7 +517,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </div>
                 )}
 
-                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-4 py-6 sm:px-8 sm:py-10")}>
+                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-4 py-6 sm:px-8 sm:py-10 mx-auto")}>
                   <RichTextEditor
                     ref={editorRef}
                     value={data.document.content}
