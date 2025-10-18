@@ -1,0 +1,1 @@
+when writing complex features or significant refactors, use an ExecPlan (add that to the .agent/plans.md) from design to impkementation. write new plans to the .agent dir. place any temporary research, clones, etc. in a .gitignored subdirectory of .agent.

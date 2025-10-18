@@ -11,21 +11,16 @@ import { Textarea } from "@/components/ui/textarea"
 import AppLayout from "@/layouts/app-layout"
 import SettingsLayout from "@/layouts/settings/layout"
 import { settingsProfilePath } from "@/routes"
-import type { BreadcrumbItem, SharedData } from "@/types"
+import type { SharedData } from "@/types"
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Profile settings",
-    href: settingsProfilePath(),
-  },
-]
+const pageTitle = "Profile settings"
 
 export default function Profile() {
   const { auth } = usePage<SharedData>().props
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={breadcrumbs[breadcrumbs.length - 1].title} />
+    <AppLayout>
+      <Head title={pageTitle} />
 
       <SettingsLayout>
         <div className="space-y-6">

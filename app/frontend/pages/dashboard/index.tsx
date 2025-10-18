@@ -36,7 +36,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import AppLayout from "@/layouts/app-layout"
 import { dashboardBulkActionPath, dashboardPath, documentPath, editDocumentPath, newDocumentPath } from "@/routes"
 import type { 
-  BreadcrumbItem, 
   Document, 
   DocumentFilters, 
   DocumentPagination, 
@@ -49,13 +48,6 @@ interface DashboardProps {
   filters: DocumentFilters
   statistics: DocumentStatistics
 }
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Dashboard",
-    href: dashboardPath(),
-  },
-]
 
 export default function Dashboard({ 
   documents, 
@@ -160,7 +152,7 @@ export default function Dashboard({
   }
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout>
       <Head title="Dashboard" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

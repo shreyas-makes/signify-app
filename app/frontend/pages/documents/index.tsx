@@ -7,19 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AppLayout from "@/layouts/app-layout"
-import { documentPath, documentsPath, editDocumentPath, newDocumentPath } from "@/routes"
-import type { BreadcrumbItem, Document } from "@/types"
+import { documentPath, editDocumentPath, newDocumentPath } from "@/routes"
+import type { Document } from "@/types"
 
 interface DocumentsIndexProps {
   documents: Document[]
 }
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Documents",
-    href: documentsPath(),
-  },
-]
 
 export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
   const [isCreating, setIsCreating] = useState(false)
@@ -57,7 +50,7 @@ export default function DocumentsIndex({ documents }: DocumentsIndexProps) {
   }
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout>
       <Head title="Documents" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -5,15 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import AppLayout from "@/layouts/app-layout"
 import SettingsLayout from "@/layouts/settings/layout"
-import { sessionPath, settingsSessionsPath } from "@/routes"
-import type { BreadcrumbItem, Session, SharedData } from "@/types"
+import { sessionPath } from "@/routes"
+import type { Session, SharedData } from "@/types"
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Sessions",
-    href: settingsSessionsPath(),
-  },
-]
+const pageTitle = "Sessions"
 
 interface SessionsProps {
   sessions: Session[]
@@ -23,8 +18,8 @@ export default function Sessions({ sessions }: SessionsProps) {
   const { auth } = usePage<SharedData>().props
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={breadcrumbs[breadcrumbs.length - 1].title} />
+    <AppLayout>
+      <Head title={pageTitle} />
 
       <SettingsLayout>
         <div className="space-y-6">

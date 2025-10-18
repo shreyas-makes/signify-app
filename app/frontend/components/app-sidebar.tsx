@@ -1,5 +1,15 @@
 import { Link, router } from "@inertiajs/react"
-import { BookOpen, Calendar, ChevronDown, ChevronRight, FileText, Folder, LayoutGrid, Plus } from "lucide-react"
+import {
+  BookOpen,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Folder,
+  LayoutGrid,
+  Newspaper,
+  Plus,
+} from "lucide-react"
 import { useState } from "react"
 
 import { NavFooter } from "@/components/nav-footer"
@@ -33,6 +43,16 @@ const mainNavItems: NavItem[] = [
     href: dashboardPath(),
     icon: LayoutGrid,
   },
+  {
+    title: "Documents",
+    href: documentsPath(),
+    icon: FileText,
+  },
+  {
+    title: "Published Posts",
+    href: "/posts",
+    icon: Newspaper,
+  },
 ]
 
 const footerNavItems: NavItem[] = [
@@ -60,7 +80,7 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
   const documentsList = documents ?? []
   const hasDocuments = documentsList.length > 0
   const showDocumentsSection = isSidebarExpanded && hasDocuments
-  
+
   const handleNewDocument = () => {
     router.post(newDocumentPath())
   }
@@ -76,24 +96,25 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays === 1) return 'Today'
-    if (diffDays === 2) return 'Yesterday'
+
+    if (diffDays === 1) return "Today"
+    if (diffDays === 2) return "Yesterday"
     if (diffDays <= 7) return `${diffDays}d ago`
-    
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   }
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'published':
-        return 'default'
-      case 'draft':
-        return 'secondary'
+      case "published":
+        return "default"
+      case "draft":
+        return "secondary"
       default:
-        return 'outline'
+        return "outline"
     }
   }
+
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
@@ -110,8 +131,7 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
 
       <SidebarContent>
         <NavMain items={mainNavItems} />
-        
-        {/* Documents Section */}
+
         {showDocumentsSection && (
           <SidebarGroup>
             <Collapsible open={documentsExpanded} onOpenChange={setDocumentsExpanded}>
@@ -130,8 +150,8 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
               <SidebarGroupAction asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={handleNewDocument}
                   className="h-5 w-5 p-0"
@@ -147,26 +167,23 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
                         <SidebarMenuButton
                           onClick={() => handleDocumentClick(document)}
                           isActive={document.id === currentDocumentId}
-                          className="flex flex-col items-start gap-1 p-2 h-auto"
+                          className="flex h-auto flex-col items-start gap-1 p-2"
                         >
-                          <div className="flex items-center gap-2 w-full">
+                          <div className="flex w-full items-center gap-2">
                             <FileText className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate text-sm font-medium">
                               {document.title || "Untitled Document"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 w-full pl-5">
+                          <div className="flex w-full items-center gap-2 pl-5">
                             <span className="text-xs text-muted-foreground">
                               {formatDate(document.updated_at)}
                             </span>
-                            <Badge 
-                              variant={getStatusBadgeVariant(document.status)}
-                              className="text-xs h-4 px-1"
-                            >
+                            <Badge variant={getStatusBadgeVariant(document.status)} className="h-4 px-1 text-xs">
                               {document.status}
                             </Badge>
                             {document.word_count > 0 && (
-                              <span className="text-xs text-muted-foreground ml-auto">
+                              <span className="ml-auto text-xs text-muted-foreground">
                                 {document.word_count} words
                               </span>
                             )}

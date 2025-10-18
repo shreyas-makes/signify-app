@@ -9,21 +9,16 @@ import { Label } from "@/components/ui/label"
 import AppLayout from "@/layouts/app-layout"
 import SettingsLayout from "@/layouts/settings/layout"
 import { identityEmailVerificationPath, settingsEmailPath } from "@/routes"
-import type { BreadcrumbItem, SharedData } from "@/types"
+import type { SharedData } from "@/types"
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Email settings",
-    href: settingsEmailPath(),
-  },
-]
+const pageTitle = "Email settings"
 
 export default function Email() {
   const { auth } = usePage<SharedData>().props
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={breadcrumbs[breadcrumbs.length - 1].title} />
+    <AppLayout>
+      <Head title={pageTitle} />
 
       <SettingsLayout>
         <div className="space-y-6">

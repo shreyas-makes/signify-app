@@ -4,20 +4,13 @@ import AppearanceTabs from "@/components/appearance-tabs"
 import HeadingSmall from "@/components/heading-small"
 import AppLayout from "@/layouts/app-layout"
 import SettingsLayout from "@/layouts/settings/layout"
-import { settingsAppearancePath } from "@/routes"
-import type { BreadcrumbItem } from "@/types"
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Appearance settings",
-    href: settingsAppearancePath(),
-  },
-]
+const pageTitle = "Appearance settings"
 
 export default function Appearance() {
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title={breadcrumbs[breadcrumbs.length - 1].title} />
+    <AppLayout>
+      <Head title={pageTitle} />
 
       <SettingsLayout>
         <div className="space-y-6">

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-class Public::PostsController < ApplicationController
+class Public::PostsController < InertiaController
   skip_before_action :authenticate, only: [:index, :show, :keystrokes]
+  before_action :perform_authentication, only: [:index, :show, :keystrokes]
   before_action :set_post, only: [:show, :keystrokes]
 
   def index
@@ -113,6 +114,7 @@ class Public::PostsController < ApplicationController
   def detailed_post_json(post)
     # Get a small sample of keystrokes for mini graph visualization
     sample_keystrokes = post.keystrokes.ordered.limit(50)
+    is_owner = Current.user&.id == post.user_id
     
     {
       id: post.id,
@@ -133,7 +135,9 @@ class Public::PostsController < ApplicationController
         keystroke_verified: post.keystroke_count > 0,
         total_keystrokes: post.keystroke_count
       },
-      sample_keystrokes: keystrokes_json(sample_keystrokes)
+      sample_keystrokes: keystrokes_json(sample_keystrokes),
+      can_edit: is_owner,
+      dashboard_path: is_owner ? dashboard_path : nil
     }
   end
 

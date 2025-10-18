@@ -10,14 +10,13 @@ import { Input } from "@/components/ui/input"
 import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppSidebarLayout from "@/layouts/app/app-sidebar-layout"
 import { documentPath, documentsPath } from "@/routes"
-import type { BreadcrumbItem, Document } from "@/types"
+import type { Document } from "@/types"
 
 interface KeystrokeEvent {
   id: number
@@ -34,17 +33,6 @@ interface DocumentsEditProps {
   documents: Document[]
   keystrokes?: KeystrokeEvent[]
 }
-
-const breadcrumbs = (document: Document): BreadcrumbItem[] => [
-  {
-    title: "Documents",
-    href: documentsPath(),
-  },
-  {
-    title: document.title || "Untitled Document",
-    href: "#",
-  },
-]
 
 export default function DocumentsEdit({ document, documents, keystrokes = [] }: DocumentsEditProps) {
   const { data, setData, errors } = useForm({
@@ -294,13 +282,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
       secondary: "border-border/40 bg-muted/10 text-muted-foreground",
       destructive: "border-destructive/30 bg-destructive/10 text-destructive",
     }[autoSave.getSaveStatusColor()] ?? "border-border bg-muted text-muted-foreground")
-  const iconButtonClass =
-    "rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:ring-primary/30 disabled:opacity-50"
-  const iconButtonGroupClass = "flex items-center gap-1.5"
-  const primaryIconButtonClass =
-    "bg-primary text-primary-foreground border-primary/80 hover:bg-primary/90 hover:text-primary-foreground"
-  const saveTooltipText = isSaving ? "Saving..." : "Save"
-  const publishTooltipText = isPublishing ? "Publishing..." : getPublishButtonText()
+  const saveButtonLabel = isSaving ? "Saving..." : "Save"
+  const publishButtonLabel = isPublishing ? "Publishing..." : getPublishButtonText()
   const documentStatusBadge = (() => {
     switch (document.status) {
       case 'published':
@@ -331,7 +314,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const previewKeystrokeCount = (typeof document.keystroke_count === 'number'
     ? document.keystroke_count
     : keystrokeCount) ?? 0
-  const pageBackgroundClass = isPublished ? "bg-[#f4f1e8]" : "bg-white"
+  const pageBackgroundClass = isPublished ? "bg-[#f4f1e8]" : "bg-[#f8f4eb]"
   const shellPaddingClass = isPublished
     ? "max-w-5xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
     : "max-w-4xl px-4 sm:px-6 py-4 sm:py-8"
@@ -341,9 +324,9 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const previewSurfaceClass = isPublished
     ? "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-8 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-10 sm:py-12"
     : "rounded-lg border border-border bg-background px-6 py-8 shadow-inner"
-  const headerWrapperClass = cn(
-    "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-300",
-    isPublished ? "px-0 pb-6 text-[#5c4d35]" : "px-4 sm:px-6 py-4 border-b",
+  const toolbarWrapperClass = cn(
+    "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300",
+    isPublished ? "px-0 pt-2 pb-4 text-[#5c4d35]" : "px-4 sm:px-6 py-4 border-b",
     !isPublished && (isNewDocument ? "bg-gradient-to-r from-primary/5 to-transparent border-primary/20" : "bg-white border-border"),
   )
   const metaTextClass = isPublished ? "text-sm text-[#5c4d35]" : "text-sm text-muted-foreground"
@@ -360,169 +343,119 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
       <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
         <div className="flex-1 overflow-auto">
           <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
-            <div className={headerWrapperClass}>
-              <div className={metaTextClass}>
-                <span className="inline-block">{wordCount} words</span>
-                <span className="hidden sm:inline"> • </span>
-                <span className="block sm:inline">{keystrokeCount} keystrokes</span>
-                {pasteAttemptCount > 0 && (
-                  <span className="text-amber-600 font-medium block sm:inline">
-                    <span className="hidden sm:inline"> • </span>
-                    {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
-                  </span>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
-                <Badge
-                  variant="outline"
-                  className={`rounded-full border px-3 py-1 text-xs font-medium leading-none shadow-none ${saveStatusToneClass}`}
-                >
-                  {autoSave.getSaveStatusText()}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "rounded-full px-3 py-1 text-xs font-medium leading-none shadow-none",
-                    documentStatusBadge.className,
-                  )}
-                >
-                  {documentStatusBadge.label}
-                </Badge>
-
-                <div className={iconButtonGroupClass}>
-                  {autoSave.saveStatus === 'error' && (
-                    <TooltipProvider delayDuration={0}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            onClick={() => void autoSave.retry()}
-                            variant="ghost"
-                            size="icon"
-                            className={iconButtonClass}
-                            aria-label="Retry save"
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">Retry save</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => void handleManualSave()}
-                          disabled={
-                            isSaving ||
-                            autoSave.saveStatus === 'saving' ||
-                            (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
-                          }
-                          size="icon"
-                          variant="ghost"
-                          className={cn(iconButtonClass, isSaving && "text-primary")}
-                          aria-label={saveTooltipText}
-                        >
-                          {isSaving ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Save className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">{saveTooltipText}</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  {publicPostUrl && (
-                    <TooltipProvider delayDuration={0}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            asChild
-                            size="icon"
-                            variant="ghost"
-                            className={iconButtonClass}
-                          >
-                            <a
-                              href={publicPostUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              aria-label="View published post"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">View published post</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-
-                  {document.status !== 'published' && (
-                    <TooltipProvider delayDuration={0}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            onClick={() => void handlePublish()}
-                            disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
-                            size="icon"
-                            variant="outline"
-                            className={`${iconButtonClass} ${canPublishNow ? primaryIconButtonClass : ''}`}
-                            aria-label={publishTooltipText}
-                          >
-                            {isPublishing ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Send className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">{publishTooltipText}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-              </div>
-            </div>
-
             <Tabs
               value={activeView}
               onValueChange={(value) => setActiveView(value as 'write' | 'preview')}
               className="mt-2 flex-1"
             >
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className={toolbarWrapperClass}>
                 <TabsList
                   className={cn(
-                    "rounded-full border border-border/40 bg-white/70 p-1 text-muted-foreground shadow-sm",
-                    isPublished && "border-[#d6c7ab] text-[#6e5a3d]",
+                    "rounded-full border border-[#d6c7ab] bg-white/70 p-1 text-[#6e5a3d] shadow-sm transition-colors",
+                    isPublished && "text-[#6e5a3d]",
                   )}
                 >
                   <TabsTrigger
                     value="write"
-                    className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                    className="rounded-full px-4 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/60 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
                   >
                     Edit
                   </TabsTrigger>
                   <TabsTrigger
                     value="preview"
-                    className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                    className="rounded-full px-4 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/60 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
                   >
                     Preview
                   </TabsTrigger>
                 </TabsList>
+
+                <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+                  <Badge
+                    variant="outline"
+                    className={`rounded-full border px-3 py-1 text-xs font-medium leading-none shadow-none ${saveStatusToneClass}`}
+                  >
+                    {autoSave.getSaveStatusText()}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-medium leading-none shadow-none",
+                      documentStatusBadge.className,
+                    )}
+                  >
+                    {documentStatusBadge.label}
+                  </Badge>
+
+                  {autoSave.saveStatus === 'error' && (
+                    <Button
+                      onClick={() => void autoSave.retry()}
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      <span>Retry save</span>
+                    </Button>
+                  )}
+
+                  {publicPostUrl && (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="ghost"
+                      className="gap-2 text-[#1f2937]"
+                    >
+                      <a
+                        href={publicPostUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>View post</span>
+                      </a>
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={() => void handleManualSave()}
+                    disabled={
+                      isSaving ||
+                      autoSave.saveStatus === 'saving' ||
+                      (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
+                    }
+                    size="sm"
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    <span>{saveButtonLabel}</span>
+                  </Button>
+
+                  {document.status !== 'published' && (
+                    <Button
+                      onClick={() => void handlePublish()}
+                      disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
+                      size="sm"
+                      variant={canPublishNow ? "default" : "outline"}
+                      className={cn("gap-2", !canPublishNow && "text-muted-foreground")}
+                    >
+                      {isPublishing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                      <span>{publishButtonLabel}</span>
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <TabsContent value="write" className="mt-6 space-y-6">
-                {isPublished && (
-                  <div className="rounded-2xl border border-[#eadfce] bg-white/80 px-4 py-3 text-sm text-[#5c4d35] shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]">
-                    <span className="font-semibold">Editing a published post.</span> Updates stay private until you publish again.
-                  </div>
-                )}
-
-                <div className="space-y-2">
+                <div className="space-y-2 pt-1 sm:pt-2">
                   <Input
                     ref={titleInputRef}
                     id="title"
@@ -532,13 +465,25 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     onChange={(e) => setData('document.title', e.target.value)}
                     placeholder="Untitled Document"
                     className={cn(
-                      "text-3xl sm:text-5xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation transition-all duration-300",
-                      isPublished && "text-[#322718] sm:text-[3rem] leading-[1.05] tracking-tight placeholder:text-[#cbbba4]",
+                      "text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation transition-all duration-300",
+                      "h-auto px-1 sm:px-0 py-3 sm:py-4 shadow-none",
+                      isPublished && "text-[#322718] placeholder:text-[#cbbba4]",
                       isNewDocument && data.document.title === 'Untitled Document' && "bg-gradient-to-r from-primary/10 to-transparent rounded-md px-2 -mx-2",
                     )}
                   />
                   {errors['document.title'] && (
                     <p className="text-sm text-destructive">{errors['document.title']}</p>
+                  )}
+                </div>
+
+                <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1 px-1 sm:px-0")}>
+                  <span>{wordCount} words</span>
+                  <span className={cn("text-muted-foreground/50", isPublished && "text-[#d0c3ae]")}>•</span>
+                  <span>{keystrokeCount} keystrokes</span>
+                  {pasteAttemptCount > 0 && (
+                    <span className="text-amber-600 font-medium">
+                      {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
+                    </span>
                   )}
                 </div>
 

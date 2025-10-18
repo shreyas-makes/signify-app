@@ -7,6 +7,7 @@ import { GitCommitGraph } from '@/components/ui/git-commit-graph'
 import { KeystrokeBarcode } from '@/components/ui/keystroke-barcode'
 import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
 import { VerifiedSessionCard } from '@/components/verified-session-card'
+import AppLogo from '@/components/app-logo'
 import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
 import type { Keystroke, SharedData } from '@/types'
 
@@ -85,10 +86,12 @@ export default function Welcome() {
         <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-primary via-accent to-chart-2 text-primary-foreground shadow-sm">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <span className="text-lg font-semibold tracking-tight">Signify</span>
+              <AppLogo
+                iconClassName="size-10"
+                iconInnerClassName="size-5"
+                labelWrapperClassName="ml-3"
+                labelClassName="text-lg font-semibold tracking-tight"
+              />
             </Link>
 
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">

@@ -8,18 +8,6 @@ import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import AppLayout from "@/layouts/app-layout"
 import { documentsPath } from "@/routes"
-import type { BreadcrumbItem } from "@/types"
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: "Documents",
-    href: documentsPath(),
-  },
-  {
-    title: "New Document",
-    href: "#",
-  },
-]
 
 export default function DocumentsNew() {
   const { data, setData, post, processing, errors } = useForm({
@@ -55,7 +43,7 @@ export default function DocumentsNew() {
   }
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout>
       <Head title="New Document" />
 
       <div className="h-screen flex flex-col">
