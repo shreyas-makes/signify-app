@@ -1,18 +1,7 @@
 import { Link, router } from "@inertiajs/react"
-import {
-  BookOpen,
-  Calendar,
-  ChevronDown,
-  ChevronRight,
-  FileText,
-  Folder,
-  LayoutGrid,
-  Newspaper,
-  Plus,
-} from "lucide-react"
+import { Calendar, ChevronDown, ChevronRight, FileText, LayoutGrid, Newspaper, Plus } from "lucide-react"
 import { useState } from "react"
 
-import { NavFooter } from "@/components/nav-footer"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { Badge } from "@/components/ui/badge"
@@ -44,27 +33,9 @@ const mainNavItems: NavItem[] = [
     icon: LayoutGrid,
   },
   {
-    title: "Documents",
-    href: documentsPath(),
-    icon: FileText,
-  },
-  {
     title: "Published Posts",
     href: "/posts",
     icon: Newspaper,
-  },
-]
-
-const footerNavItems: NavItem[] = [
-  {
-    title: "Repository",
-    href: "https://github.com/inertia-rails/signify",
-    icon: Folder,
-  },
-  {
-    title: "Documentation",
-    href: "https://inertia-rails.dev",
-    icon: BookOpen,
   },
 ]
 
@@ -210,7 +181,6 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavFooter items={footerNavItems} className="mt-auto" />
         <NavUser />
       </SidebarFooter>
     </Sidebar>

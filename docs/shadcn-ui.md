@@ -819,19 +819,6 @@ npm install @radix-ui/react-dialog
 
 --------------------------------
 
-TITLE: Install Breadcrumb component using CLI
-DESCRIPTION: Installs the Breadcrumb component into your project using the shadcn/ui CLI command, simplifying the setup process.
-
-SOURCE: https://github.com/shadcn-ui/ui/blob/main/apps/www/content/docs/components/breadcrumb.mdx#_snippet_0
-
-LANGUAGE: bash
-CODE:
-```
-npx shadcn@latest add breadcrumb
-```
-
---------------------------------
-
 TITLE: Install Menubar Component using shadcn/ui CLI
 DESCRIPTION: This command adds the Menubar component to your project using the shadcn/ui CLI, automating the setup process and integrating it with your existing UI components.
 

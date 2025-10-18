@@ -15,8 +15,8 @@ import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppSidebarLayout from "@/layouts/app/app-sidebar-layout"
-import { documentPath, documentsPath } from "@/routes"
-import type { BreadcrumbItem, Document } from "@/types"
+import { documentPath } from "@/routes"
+import type { Document } from "@/types"
 
 interface KeystrokeEvent {
   id: number
@@ -33,17 +33,6 @@ interface DocumentsEditProps {
   documents: Document[]
   keystrokes?: KeystrokeEvent[]
 }
-
-const buildBreadcrumbs = (document: Document): BreadcrumbItem[] => [
-  {
-    title: "Documents",
-    href: documentsPath(),
-  },
-  {
-    title: document.title || "Untitled Document",
-    href: "#",
-  },
-]
 
 export default function DocumentsEdit({ document, documents, keystrokes = [] }: DocumentsEditProps) {
   const { data, setData, errors } = useForm({
@@ -345,7 +334,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
   return (
     <AppSidebarLayout 
-      breadcrumbs={buildBreadcrumbs(document)}
       documents={documents}
       currentDocumentId={document.id}
     >

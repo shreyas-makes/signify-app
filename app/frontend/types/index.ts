@@ -5,11 +5,6 @@ export interface Auth {
   session: Pick<Session, "id">
 }
 
-export interface BreadcrumbItem {
-  title: string
-  href: string
-}
-
 export interface NavItem {
   title: string
   href: string
