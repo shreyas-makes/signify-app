@@ -146,6 +146,9 @@ export default function Dashboard({
   const formatReadingTime = (minutes: number) => {
     return minutes === 1 ? '1 min' : `${minutes} mins`
   }
+  const metricIconClass = "inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#efe5d3] text-[#5c4d35]"
+  const metricStatClass = "mt-2 text-3xl font-semibold tracking-tight text-[#322718]"
+  const metricDescriptionClass = "mt-1 text-sm text-muted-foreground"
 
   return (
     <AppLayout>
@@ -171,54 +174,70 @@ export default function Dashboard({
           {/* Statistics */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardContent className="p-8 sm:p-10 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Total Documents</span>
+              <CardContent className="p-6 sm:p-7 lg:p-8">
+                <div className="flex h-full flex-col">
+                  <span className={metricIconClass} aria-hidden>
+                    <FileText className="h-4 w-4" />
+                  </span>
+                  <div className="mt-5">
+                    <p className="text-sm font-medium text-muted-foreground">Total Documents</p>
+                    <p className={metricStatClass}>{statistics.total_documents}</p>
+                    <p className={metricDescriptionClass}>
+                      {statistics.draft_count} drafts, {statistics.published_count} published
+                    </p>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold">{statistics.total_documents}</p>
-                <p className="text-xs text-muted-foreground">
-                  {statistics.draft_count} drafts, {statistics.published_count} published
-                </p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-8 sm:p-10 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Total Words</span>
+              <CardContent className="p-6 sm:p-7 lg:p-8">
+                <div className="flex h-full flex-col">
+                  <span className={metricIconClass} aria-hidden>
+                    <Eye className="h-4 w-4" />
+                  </span>
+                  <div className="mt-5">
+                    <p className="text-sm font-medium text-muted-foreground">Total Words</p>
+                    <p className={metricStatClass}>{statistics.total_words.toLocaleString()}</p>
+                    <p className={metricDescriptionClass}>
+                      ~{formatReadingTime(statistics.avg_reading_time)} avg reading time
+                    </p>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold">{statistics.total_words.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">
-                  ~{formatReadingTime(statistics.avg_reading_time)} avg reading time
-                </p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-8 sm:p-10 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Keyboard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Keystrokes</span>
+              <CardContent className="p-6 sm:p-7 lg:p-8">
+                <div className="flex h-full flex-col">
+                  <span className={metricIconClass} aria-hidden>
+                    <Keyboard className="h-4 w-4" />
+                  </span>
+                  <div className="mt-5">
+                    <p className="text-sm font-medium text-muted-foreground">Keystrokes</p>
+                    <p className={metricStatClass}>{statistics.total_keystrokes.toLocaleString()}</p>
+                    <p className={metricDescriptionClass}>
+                      Verified authenticity
+                    </p>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold">{statistics.total_keystrokes.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">
-                  Verified authenticity
-                </p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-8 sm:p-10 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Ready to Publish</span>
+              <CardContent className="p-6 sm:p-7 lg:p-8">
+                <div className="flex h-full flex-col">
+                  <span className={metricIconClass} aria-hidden>
+                    <Clock className="h-4 w-4" />
+                  </span>
+                  <div className="mt-5">
+                    <p className="text-sm font-medium text-muted-foreground">Ready to Publish</p>
+                    <p className={metricStatClass}>{statistics.ready_to_publish_count}</p>
+                    <p className={metricDescriptionClass}>
+                      Documents ready for publication
+                    </p>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold">{statistics.ready_to_publish_count}</p>
-                <p className="text-xs text-muted-foreground">
-                  Documents ready for publication
-                </p>
               </CardContent>
             </Card>
           </div>
