@@ -1,69 +1,74 @@
 # Signify
 
-A modern full-stack application with Rails backend and React frontend using Inertia.js.
+Prove every word you publish is unmistakably yours.
 
-## Features
+Signify is the open-source writing platform that traces every keystroke while you draft so editors, readers, and platforms feel the human craft in your words. Publish with a shareable proof bundle that shows exactly how your story came to life—no AI, just you.
 
-- [Inertia Rails](https://inertia-rails.dev) & [Vite Rails](https://vite-ruby.netlify.app) setup
-- [React](https://react.dev) frontend with TypeScript & [shadcn/ui](https://ui.shadcn.com) component library
-- User authentication system (based on [Authentication Zero](https://github.com/lazaronixon/authentication-zero))
-- [Kamal](https://kamal-deploy.org/) for deployment
-- Optional SSR support
+## Why teams choose Signify
 
-See also:
-- [Svelte Starter Kit](https://github.com/inertia-rails/svelte-starter-kit) for Inertia Rails with Svelte
-- [Vue Starter Kit](https://github.com/inertia-rails/vue-starter-kit) for Inertia Rails with Vue
+- Verified human authorship end-to-end with keystroke capture baked into the writing experience.
+- Transparent publishing that bundles drafts, replays, and integrity certificates in a single shareable link.
+- Real-time analytics that surface writing velocity, focus breaks, and revision patterns across your workspace.
+- Built on modern Rails + React foundations so contributors can ship confidently and extend the platform quickly.
 
+## Platform highlights
 
-## Setup
+### Keystroke DNA
+See the human fingerprint in every draft. Keystroke telemetry renders an immutable barcode of the writing session so reviewers can spot real authorship at a glance.
 
-1. Clone this repository
-2. Setup dependencies & run the server:
+### Immersive replays
+Walk readers through every decision. Collaborators can scrub through the draft exactly as it unfolded—pauses, edits, corrections, and all.
+
+### Live analytics
+Spot authenticity trends in real time. Aggregate keystroke evidence to understand writing velocity, focus breaks, and correction rhythms across your team.
+
+### Open-source community
+Spin up your first verified session in minutes, or contribute code, docs, and ideas to make authorship verification stronger for everyone.
+
+## Quick start
+
+1. Install dependencies and prepare the app:
    ```bash
    bin/setup
    ```
-3. Open http://localhost:3000
+2. Launch the Rails + Vite development servers:
+   ```bash
+   bin/dev
+   ```
+3. Open `http://localhost:3000` and start writing with proof.
+
+### Core stack
+
+- [Ruby on Rails](https://rubyonrails.org/) backend with [Inertia.js](https://inertiajs.com/) transport
+- [Vite](https://vitejs.dev/) + [React](https://react.dev/) + TypeScript UI with [shadcn/ui](https://ui.shadcn.com/) components
+- Authentication foundation based on [Authentication Zero](https://github.com/lazaronixon/authentication-zero)
+- [Kamal](https://kamal-deploy.org/) deployment templates and optional SSR support
+
+## Project layout
+
+- `app/frontend/pages/home` – marketing landing page and reusable messaging
+- `app/frontend/pages/documents` – keystroke-first writing experience
+- `app/services/keystroke_verification_service.rb` – signing and verification pipeline
+- `docs/` – product requirements, APIs, and contributor notes
+- `DEPLOYMENT.md` – production rollout guide (Hetzner + Kamal)
+
+## Contributing
+
+We welcome issues, pull requests, and feature proposals:
+
+- Browse `todo.md` and `docs/prd.md` for open problems and roadmap context.
+- Open an issue describing the change you’d like to make or pick up an existing one.
+- Follow conventional GitHub etiquette (small PRs, clear descriptions, tests where it makes sense).
+
+Join the conversation, share ideas, or showcase how you’re using Signify—every contribution helps keep human writing verifiable.
 
 ## Enabling SSR
 
-This starter kit comes with optional SSR support. To enable it, follow these steps:
+Server-side rendering is optional but ready to enable:
 
-1. Open `app/frontend/entrypoints/inertia.ts` and uncomment part of the `setup` function:
-   ```ts
-   // Uncomment the following to enable SSR hydration:
-   // if (el.hasChildNodes()) {
-   //   hydrateRoot(el, createElement(App, props))
-   //   return
-   // }
-   ```
-2. Open `config/deploy.yml` and uncomment several lines:
-   ```yml
-   servers:
-     # Uncomment to enable SSR:
-     # vite_ssr:
-     #   hosts:
-     #     - 192.168.0.1
-     #   cmd: bundle exec vite ssr
-     #   options:
-     #     network-alias: vite_ssr
-      
-   # ...
-      
-   env:
-     clear:
-       # Uncomment to enable SSR:
-       # INERTIA_SSR_ENABLED: true
-       # INERTIA_SSR_URL: "http://vite_ssr:13714"
-      
-   # ...
-      
-   builder:
-     # Uncomment to enable SSR:
-     # dockerfile: Dockerfile-ssr
-   ```
-   
-That's it! Now you can deploy your app with SSR support.
+1. In `app/frontend/entrypoints/inertia.ts`, uncomment the SSR hydration block in `setup`.
+2. In `config/deploy.yml`, uncomment the SSR server, environment variables, and `Dockerfile-ssr` builder.
 
 ## License
 
-The project is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Available under the [MIT License](https://opensource.org/licenses/MIT).
