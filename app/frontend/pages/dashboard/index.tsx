@@ -327,7 +327,7 @@ export default function Dashboard({
             <Card className="rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.35)]">
               <CardContent className="p-0 overflow-hidden">
                 <div className="px-6 py-5 sm:px-10 sm:py-8">
-                  <Table className="w-full text-sm [&_th]:px-6 [&_th]:py-4 [&_td]:px-6 [&_td]:py-4 [&_th:first-child]:pl-0 [&_td:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:last-child]:pr-0">
+                  <Table className="w-full text-sm [&_th]:px-7 [&_th]:py-4 [&_td]:px-7 [&_td]:py-4 [&_th:first-child]:pl-6 [&_td:first-child]:pl-6 [&_th:last-child]:pr-6 [&_td:last-child]:pr-6">
                   <TableHeader>
                     <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
                       <TableHead className="w-12">
@@ -441,7 +441,7 @@ export default function Dashboard({
 
           {/* Pagination */}
           {pagination.total_pages > 1 && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pb-12">
               <p className="text-sm text-muted-foreground">
                 Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to{' '}
                 {Math.min(pagination.current_page * pagination.per_page, pagination.total_documents)} of{' '}
