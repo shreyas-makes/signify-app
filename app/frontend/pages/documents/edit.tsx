@@ -314,23 +314,17 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const previewKeystrokeCount = (typeof document.keystroke_count === 'number'
     ? document.keystroke_count
     : keystrokeCount) ?? 0
-  const pageBackgroundClass = isPublished ? "bg-[#f4f1e8]" : "bg-[#f8f4eb]"
-  const shellPaddingClass = isPublished
-    ? "max-w-7xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
-    : "max-w-7xl px-4 sm:px-6 py-4 sm:py-8"
-  const editorSurfaceClass = isPublished
-    ? "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
-    : "rounded-lg border border-input bg-white shadow-sm"
-  const previewSurfaceClass = isPublished
-    ? "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-8 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-10 sm:py-12"
-    : "rounded-lg border border-border bg-background px-6 py-8 shadow-inner"
+  const pageBackgroundClass = "bg-[#f4f1e8]"
+  const shellPaddingClass = "max-w-7xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
+  const editorSurfaceClass =
+    "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
+  const previewSurfaceClass =
+    "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-8 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-10 sm:py-12"
   const toolbarWrapperClass = cn(
-    "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300",
-    isPublished ? "px-0 pt-2 pb-4 text-[#5c4d35]" : "px-4 sm:px-6 py-4 border-b",
-    !isPublished && (isNewDocument ? "bg-white" : "border-border"),
+    "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 px-0 pt-2 pb-4 text-[#5c4d35]"
   )
-  const metaTextClass = isPublished ? "text-sm text-[#5c4d35]" : "text-sm text-muted-foreground"
-  const previewMetaAccentClass = isPublished ? "text-[#5c4d35]/80" : "text-muted-foreground"
+  const metaTextClass = "text-sm text-[#5c4d35]"
+  const previewMetaAccentClass = "text-[#5c4d35]/80"
 
   return (
     <AppSidebarLayout 
@@ -348,12 +342,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
               className="mt-2 flex-1"
             >
               <div className={toolbarWrapperClass}>
-                <TabsList
-                  className={cn(
-                    "rounded-full border border-[#d6c7ab] bg-white/70 p-1 text-[#6e5a3d] shadow-sm transition-colors",
-                    isPublished && "text-[#6e5a3d]",
-                  )}
-                >
+                <TabsList className="rounded-full border border-[#d6c7ab] bg-white/70 p-1 text-[#6e5a3d] shadow-sm transition-colors">
                   <TabsTrigger
                     value="write"
                     className="rounded-full px-4 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/60 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
@@ -402,7 +391,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                       asChild
                       size="sm"
                       variant="ghost"
-                      className="gap-2 text-[#1f2937]"
+                      className="gap-2 text-[#3f3422]"
                     >
                       <a
                         href={publicPostUrl}
@@ -464,9 +453,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     onChange={(e) => setData('document.title', e.target.value)}
                     placeholder="Untitled Document"
                     className={cn(
-                      "text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation transition-all duration-300",
+                      "text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
                       "h-auto px-1 sm:px-0 py-3 sm:py-4 shadow-none",
-                      isPublished && "text-[#322718] placeholder:text-[#cbbba4]",
                       isNewDocument && data.document.title === 'Untitled Document' && "bg-gradient-to-r from-primary/10 to-transparent rounded-md px-2 -mx-2",
                     )}
                   />
@@ -477,7 +465,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
                 <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1 px-1 sm:px-0")}>
                   <span>{wordCount} words</span>
-                  <span className={cn("text-muted-foreground/50", isPublished && "text-[#d0c3ae]")}>•</span>
+                  <span className="text-[#d0c3ae]">•</span>
                   <span>{keystrokeCount} keystrokes</span>
                   {pasteAttemptCount > 0 && (
                     <span className="text-amber-600 font-medium">
@@ -525,30 +513,25 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </div>
                 )}
 
-                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden", isPublished ? "px-4 py-6 sm:px-8 sm:py-10" : "p-0")}>
+                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-4 py-6 sm:px-8 sm:py-10")}>
                   <RichTextEditor
                     ref={editorRef}
                     value={data.document.content}
                     onChange={handleContentChange}
                     placeholder={isNewDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
-                    className={cn(
-                      "h-full touch-manipulation",
-                      !isPublished && "min-h-[300px] sm:min-h-[calc(100vh-300px)]",
-                    )}
-                    textareaClassName={cn(
-                      isPublished && "p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent",
-                    )}
+                    className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
+                    textareaClassName="p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
                   />
                 </div>
                 {errors['document.content'] && (
-                  <p className={cn("text-sm text-destructive", isPublished ? "px-1" : "px-1 sm:px-2")}>{errors['document.content']}</p>
+                  <p className="px-1 text-sm text-destructive">{errors['document.content']}</p>
                 )}
 
                 {keystrokes.length > 0 && (
-                  <div className={cn("border-t pt-6", isPublished ? "border-[#eadcc6]" : "border-border")}>
+                  <div className="border-t border-[#eadcc6] pt-6">
                     <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
                       <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="flex h-auto items-center gap-2 p-0 text-left text-[#1f2937] hover:bg-transparent">
+                        <Button variant="ghost" className="flex h-auto items-center gap-2 p-0 text-left text-[#3f3422] hover:bg-transparent">
                           {showKeystrokeReplay ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
