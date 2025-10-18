@@ -64,13 +64,15 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const isPublished = document.status === 'published'
   const [activeView, setActiveView] = useState<'write' | 'preview'>(isPublished ? 'preview' : 'write')
+  const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
+  const isFirstDocument = !hasExistingDocuments
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
   
-  // Show welcome message for new documents
+  // Show welcome message only for the user's first document
   useEffect(() => {
-    if (isNewDocument) {
+    if (isNewDocument && isFirstDocument) {
       setShowWelcome(true)
       // Auto-focus title after a short delay
       const timer = setTimeout(() => {
@@ -79,7 +81,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [isNewDocument])
+  }, [isNewDocument, isFirstDocument])
 
   // Keystroke capture
   const { attachToElement, getKeystrokesForTransmission, keystrokeCount } = useKeystrokeCapture({
@@ -479,7 +481,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     className={cn(
                       "text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
                       "h-auto px-1 sm:px-0 py-3 sm:py-4 shadow-none",
-                      isNewDocument && data.document.title === 'Untitled Document' && "bg-gradient-to-r from-primary/10 to-transparent rounded-md px-2 -mx-2",
+                      isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
                     )}
                   />
                   {errors['document.title'] && (
@@ -498,7 +500,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   )}
                 </div>
 
-                {showWelcome && isNewDocument && (
+                {showWelcome && isNewDocument && isFirstDocument && (
                   <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 p-6">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
                     <div className="relative">
@@ -542,7 +544,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     ref={editorRef}
                     value={data.document.content}
                     onChange={handleContentChange}
-                    placeholder={isNewDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
+                    placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
                     className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
                     textareaClassName="p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
                   />
