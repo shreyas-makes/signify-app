@@ -1,11 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
+import { cn } from "@/lib/utils"
+
 interface RichTextEditorProps {
   value?: string
   onChange?: (content: string) => void
   placeholder?: string
   className?: string
   disabled?: boolean
+  textareaClassName?: string
 }
 
 export interface RichTextEditorRef {
@@ -16,7 +19,7 @@ export interface RichTextEditorRef {
 }
 
 export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
-  ({ value = '', onChange, placeholder = "Start writing...", className, disabled }, ref) => {
+  ({ value = '', onChange, placeholder = "Start writing...", className, disabled, textareaClassName }, ref) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     useImperativeHandle(ref, () => ({
@@ -63,23 +66,11 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           onChange={handleChange}
           placeholder={placeholder}
           disabled={disabled}
-          className={`
-            w-full 
-            min-h-[500px] 
-            p-6 
-            border-0 
-            bg-transparent 
-            text-lg 
-            leading-relaxed 
-            resize-none 
-            focus:outline-none 
-            focus:ring-0
-            focus:border-transparent
-            outline-none
-            ring-0
-            placeholder:text-muted-foreground/50
-            ${disabled ? 'opacity-50 pointer-events-none' : ''}
-          `}
+          className={cn(
+            "w-full min-h-[500px] resize-none border-0 bg-transparent p-6 text-lg leading-relaxed outline-none ring-0 placeholder:text-muted-foreground/50 focus:border-transparent focus:outline-none focus:ring-0",
+            disabled ? "pointer-events-none opacity-50" : "",
+            textareaClassName,
+          )}
           style={{
             fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
             fontSize: '18px',

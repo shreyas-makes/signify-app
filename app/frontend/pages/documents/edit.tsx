@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react"
-import { ChevronDown, ChevronRight, ExternalLink, Eye, Loader2, Play, RefreshCw, Save, Send, Sparkles } from "lucide-react"
+import { ChevronDown, ChevronRight, ExternalLink, Loader2, Play, RefreshCw, Save, Send, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -9,6 +9,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input"
 import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
@@ -59,6 +62,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
+  const isPublished = document.status === 'published'
+  const [activeView, setActiveView] = useState<'write' | 'preview'>(isPublished ? 'preview' : 'write')
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
@@ -282,6 +287,68 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     return 'Publish'
   }
 
+  const canPublishNow = canPublish()
+  const saveStatusToneClass =
+    ({
+      default: "border-primary/30 bg-primary/10 text-primary",
+      secondary: "border-border/40 bg-muted/10 text-muted-foreground",
+      destructive: "border-destructive/30 bg-destructive/10 text-destructive",
+    }[autoSave.getSaveStatusColor()] ?? "border-border bg-muted text-muted-foreground")
+  const iconButtonClass =
+    "rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:ring-primary/30 disabled:opacity-50"
+  const iconButtonGroupClass = "flex items-center gap-1.5"
+  const primaryIconButtonClass =
+    "bg-primary text-primary-foreground border-primary/80 hover:bg-primary/90 hover:text-primary-foreground"
+  const saveTooltipText = isSaving ? "Saving..." : "Save"
+  const publishTooltipText = isPublishing ? "Publishing..." : getPublishButtonText()
+  const documentStatusBadge = (() => {
+    switch (document.status) {
+      case 'published':
+        return {
+          label: 'Published',
+          className: "border border-primary/40 bg-primary/10 text-primary"
+        }
+      case 'ready_to_publish':
+        return {
+          label: 'Ready to publish',
+          className: "border border-amber-200 bg-amber-50 text-amber-700"
+        }
+      default:
+        return {
+          label: 'Draft',
+          className: "border border-border/50 bg-muted/70 text-muted-foreground"
+        }
+    }
+  })()
+  const previewWordCount = wordCount
+  const previewReadingTimeMinutes = Math.max(1, Math.round(Math.max(previewWordCount, 1) / 200))
+  const previewReadingLabel = `${previewReadingTimeMinutes} min${previewReadingTimeMinutes === 1 ? '' : 's'} read`
+  const previewTitle = data.document.title.trim() || "Untitled Document"
+  const hasAnyContent = data.document.content.trim().length > 0
+  const previewContentMarkup = hasAnyContent
+    ? data.document.content
+    : '<p class="text-muted-foreground/70">Start writing to see your public preview.</p>'
+  const previewKeystrokeCount = (typeof document.keystroke_count === 'number'
+    ? document.keystroke_count
+    : keystrokeCount) ?? 0
+  const pageBackgroundClass = isPublished ? "bg-[#f4f1e8]" : "bg-white"
+  const shellPaddingClass = isPublished
+    ? "max-w-5xl px-5 sm:px-12 lg:px-16 py-8 sm:py-12"
+    : "max-w-4xl px-4 sm:px-6 py-4 sm:py-8"
+  const editorSurfaceClass = isPublished
+    ? "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
+    : "rounded-lg border border-input bg-white shadow-sm"
+  const previewSurfaceClass = isPublished
+    ? "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-8 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-10 sm:py-12"
+    : "rounded-lg border border-border bg-background px-6 py-8 shadow-inner"
+  const headerWrapperClass = cn(
+    "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-300",
+    isPublished ? "px-0 pb-6 text-[#5c4d35]" : "px-4 sm:px-6 py-4 border-b",
+    !isPublished && (isNewDocument ? "bg-gradient-to-r from-primary/5 to-transparent border-primary/20" : "bg-white border-border"),
+  )
+  const metaTextClass = isPublished ? "text-sm text-[#5c4d35]" : "text-sm text-muted-foreground"
+  const previewMetaAccentClass = isPublished ? "text-[#5c4d35]/80" : "text-muted-foreground"
+
   return (
     <AppSidebarLayout 
       breadcrumbs={breadcrumbs(document)}
@@ -290,202 +357,330 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     >
       <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
-      <div className="h-full flex flex-col bg-white">
-        {/* Header */}
-        <div className={`flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 border-b transition-all duration-300 ${
-          isNewDocument ? 'bg-gradient-to-r from-primary/5 to-transparent border-primary/20' : 'bg-white border-border'
-        }`}>
-          <div className="text-sm text-muted-foreground">
-            <span className="inline-block">{wordCount} words</span>
-            <span className="hidden sm:inline"> • </span>
-            <span className="block sm:inline">{keystrokeCount} keystrokes</span>
-            {pasteAttemptCount > 0 && (
-              <span className="text-amber-600 font-medium block sm:inline">
+      <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
+        <div className="flex-1 overflow-auto">
+          <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
+            <div className={headerWrapperClass}>
+              <div className={metaTextClass}>
+                <span className="inline-block">{wordCount} words</span>
                 <span className="hidden sm:inline"> • </span>
-                {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
-              </span>
-            )}
-          </div>
-
-          {/* Actions Row */}
-          <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
-            <Badge variant={autoSave.getSaveStatusColor()} className="text-xs">
-              {autoSave.getSaveStatusText()}
-            </Badge>
-            {autoSave.saveStatus === 'error' && (
-              <Button
-                onClick={() => void autoSave.retry()}
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            )}
-            <Button
-              onClick={() => void handleManualSave()}
-              disabled={isSaving || autoSave.saveStatus === 'saving' || (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)}
-              size="sm"
-              variant="outline"
-            >
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 sm:mr-2" />
-              )}
-              <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save'}</span>
-            </Button>
-            {publicPostUrl && (
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="touch-manipulation min-h-[44px] min-w-[44px]"
-              >
-                <a
-                  href={publicPostUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View published post"
-                >
-                  <ExternalLink className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">View Published Post</span>
-                  <span className="sm:hidden">View Post</span>
-                </a>
-              </Button>
-            )}
-            
-            {document.status === 'published' ? (
-              <Button size="sm" disabled variant="default">
-                <Eye className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Published</span>
-              </Button>
-            ) : (
-              <Button
-                onClick={() => void handlePublish()}
-                disabled={!canPublish() || autoSave.saveStatus === 'saving' || isPublishing}
-                size="sm"
-                variant={canPublish() ? "default" : "outline"}
-              >
-                {isPublishing ? (
-                  <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4 sm:mr-2" />
+                <span className="block sm:inline">{keystrokeCount} keystrokes</span>
+                {pasteAttemptCount > 0 && (
+                  <span className="text-amber-600 font-medium block sm:inline">
+                    <span className="hidden sm:inline"> • </span>
+                    {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
+                  </span>
                 )}
-                <span className="hidden sm:inline">{isPublishing ? 'Publishing...' : getPublishButtonText()}</span>
-              </Button>
-            )}
-          </div>
-        </div>
+              </div>
 
-        {/* Editor */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col max-w-4xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-8">
-            {/* Title */}
-            <div className="mb-6 sm:mb-8">
-              <Input
-                ref={titleInputRef}
-                id="title"
-                name="title"
-                type="text"
-                value={data.document.title}
-                onChange={(e) => setData('document.title', e.target.value)}
-                placeholder="Untitled Document"
-                className={`text-3xl sm:text-5xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation transition-all duration-300 ${
-                  isNewDocument && data.document.title === 'Untitled Document' 
-                    ? 'bg-gradient-to-r from-primary/10 to-transparent rounded-md px-2 -mx-2' 
-                    : ''
-                }`}
-              />
-              {errors['document.title'] && (
-                <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
-              )}
-            </div>
+              <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+                <Badge
+                  variant="outline"
+                  className={`rounded-full border px-3 py-1 text-xs font-medium leading-none shadow-none ${saveStatusToneClass}`}
+                >
+                  {autoSave.getSaveStatusText()}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium leading-none shadow-none",
+                    documentStatusBadge.className,
+                  )}
+                >
+                  {documentStatusBadge.label}
+                </Badge>
 
-            {/* Welcome Message for New Documents */}
-            {showWelcome && isNewDocument && (
-              <div className="mb-6 p-6 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 border border-primary/20 rounded-lg relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
-                <div className="relative">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-primary/10 rounded-full">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-lg">Welcome to Signify!</h3>
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
-                    and stored for verification, proving this content was written by a human.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-primary">
-                      <div className="w-2 h-2 bg-primary rounded-full" />
-                      <span>Start with a title above</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-primary">
-                      <div className="w-2 h-2 bg-primary rounded-full" />
-                      <span>Write naturally - no copy/paste</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-primary">
-                      <div className="w-2 h-2 bg-primary rounded-full" />
-                      <span>Auto-save keeps your work safe</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowWelcome(false)}
-                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Dismiss welcome message"
-                  >
-                    ×
-                  </button>
+                <div className={iconButtonGroupClass}>
+                  {autoSave.saveStatus === 'error' && (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => void autoSave.retry()}
+                            variant="ghost"
+                            size="icon"
+                            className={iconButtonClass}
+                            aria-label="Retry save"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">Retry save</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => void handleManualSave()}
+                          disabled={
+                            isSaving ||
+                            autoSave.saveStatus === 'saving' ||
+                            (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
+                          }
+                          size="icon"
+                          variant="ghost"
+                          className={cn(iconButtonClass, isSaving && "text-primary")}
+                          aria-label={saveTooltipText}
+                        >
+                          {isSaving ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{saveTooltipText}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {publicPostUrl && (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            asChild
+                            size="icon"
+                            variant="ghost"
+                            className={iconButtonClass}
+                          >
+                            <a
+                              href={publicPostUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="View published post"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">View published post</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  {document.status !== 'published' && (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => void handlePublish()}
+                            disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
+                            size="icon"
+                            variant="outline"
+                            className={`${iconButtonClass} ${canPublishNow ? primaryIconButtonClass : ''}`}
+                            aria-label={publishTooltipText}
+                          >
+                            {isPublishing ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{publishTooltipText}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               </div>
-            )}
-
-            {/* Content */}
-            <div className="flex-1 border border-input rounded-lg overflow-hidden bg-white shadow-sm min-h-0">
-              <RichTextEditor
-                ref={editorRef}
-                value={data.document.content}
-                onChange={handleContentChange}
-                placeholder={isNewDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
-                className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-              />
-              {errors['document.content'] && (
-                <p className="text-sm text-destructive mt-2 px-4 sm:px-6">{errors['document.content']}</p>
-              )}
             </div>
 
-            {/* Keystroke Replay Section */}
-            {keystrokes.length > 0 && (
-              <div className="mt-8 border-t pt-8">
-                <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 text-left p-0 h-auto">
-                      {showKeystrokeReplay ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                      <Play className="h-4 w-4" />
-                      <span className="font-medium">Keystroke Replay</span>
-                      <span className="text-sm text-muted-foreground">
-                        ({keystrokes.length} keystrokes recorded)
-                      </span>
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-4">
-                    <KeystrokeReplay
-                      keystrokes={keystrokes}
-                      title={data.document.title || "Untitled Document"}
-                      finalContent={data.document.content}
-                      className="max-w-none"
-                    />
-                  </CollapsibleContent>
-                </Collapsible>
+            <Tabs
+              value={activeView}
+              onValueChange={(value) => setActiveView(value as 'write' | 'preview')}
+              className="mt-2 flex-1"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <TabsList
+                  className={cn(
+                    "rounded-full border border-border/40 bg-white/70 p-1 text-muted-foreground shadow-sm",
+                    isPublished && "border-[#d6c7ab] text-[#6e5a3d]",
+                  )}
+                >
+                  <TabsTrigger
+                    value="write"
+                    className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    Edit
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preview"
+                    className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    Preview
+                  </TabsTrigger>
+                </TabsList>
               </div>
-            )}
+
+              <TabsContent value="write" className="mt-6 space-y-6">
+                {isPublished && (
+                  <div className="rounded-2xl border border-[#eadfce] bg-white/80 px-4 py-3 text-sm text-[#5c4d35] shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]">
+                    <span className="font-semibold">Editing a published post.</span> Updates stay private until you publish again.
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Input
+                    ref={titleInputRef}
+                    id="title"
+                    name="title"
+                    type="text"
+                    value={data.document.title}
+                    onChange={(e) => setData('document.title', e.target.value)}
+                    placeholder="Untitled Document"
+                    className={cn(
+                      "text-3xl sm:text-5xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 touch-manipulation transition-all duration-300",
+                      isPublished && "text-[#322718] sm:text-[3rem] leading-[1.05] tracking-tight placeholder:text-[#cbbba4]",
+                      isNewDocument && data.document.title === 'Untitled Document' && "bg-gradient-to-r from-primary/10 to-transparent rounded-md px-2 -mx-2",
+                    )}
+                  />
+                  {errors['document.title'] && (
+                    <p className="text-sm text-destructive">{errors['document.title']}</p>
+                  )}
+                </div>
+
+                {showWelcome && isNewDocument && (
+                  <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 p-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
+                    <div className="relative">
+                      <div className="mb-3 flex items-center gap-3">
+                        <div className="rounded-full bg-primary/10 p-2">
+                          <Sparkles className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Welcome to Signify!</h3>
+                      </div>
+                      <p className="mb-4 text-muted-foreground">
+                        You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
+                        and stored for verification, proving this content was written by a human.
+                      </p>
+                      <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                        <div className="flex items-center gap-2 text-primary">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                          <span>Start with a title above</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-primary">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                          <span>Write naturally - no copy/paste</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-primary">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                          <span>Auto-save keeps your work safe</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowWelcome(false)}
+                        className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label="Dismiss welcome message"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden", isPublished ? "px-4 py-6 sm:px-8 sm:py-10" : "p-0")}>
+                  <RichTextEditor
+                    ref={editorRef}
+                    value={data.document.content}
+                    onChange={handleContentChange}
+                    placeholder={isNewDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
+                    className={cn(
+                      "h-full touch-manipulation",
+                      !isPublished && "min-h-[300px] sm:min-h-[calc(100vh-300px)]",
+                    )}
+                    textareaClassName={cn(
+                      isPublished && "p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent",
+                    )}
+                  />
+                </div>
+                {errors['document.content'] && (
+                  <p className={cn("text-sm text-destructive", isPublished ? "px-1" : "px-1 sm:px-2")}>{errors['document.content']}</p>
+                )}
+
+                {keystrokes.length > 0 && (
+                  <div className={cn("border-t pt-6", isPublished ? "border-[#eadcc6]" : "border-border")}>
+                    <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="flex h-auto items-center gap-2 p-0 text-left text-[#1f2937] hover:bg-transparent">
+                          {showKeystrokeReplay ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                          <Play className="h-4 w-4" />
+                          <span className="font-medium">Keystroke Replay</span>
+                          <span className={cn("text-sm", previewMetaAccentClass)}>
+                            ({keystrokes.length} keystrokes recorded)
+                          </span>
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-4">
+                        <KeystrokeReplay
+                          keystrokes={keystrokes}
+                          title={data.document.title || "Untitled Document"}
+                          finalContent={data.document.content}
+                          className="max-w-none"
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="preview" className="mt-6">
+                <div className={previewSurfaceClass}>
+                  <article>
+                    <header className="mb-10">
+                      <h1 className="text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
+                        {previewTitle}
+                      </h1>
+                      <p className="mt-3 text-xs font-medium uppercase tracking-[0.35em] text-[#a38f74]">
+                        {previewReadingLabel}
+                      </p>
+                      <div className="mt-6 text-sm text-[#5c4d35]">
+                        <span>{previewWordCount.toLocaleString()} words</span>
+                        <span className="mx-2 inline-block text-[#d0c3ae]">•</span>
+                        <span>{previewKeystrokeCount.toLocaleString()} keystrokes</span>
+                      </div>
+                    </header>
+
+                    <div
+                      className="prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#2d2518] prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422] prose-strong:text-[#2d2518]"
+                      dangerouslySetInnerHTML={{ __html: previewContentMarkup }}
+                    />
+
+                    <footer className="mt-12 border-t border-[#eadcc6] pt-6 text-sm text-[#5c4d35]">
+                      {publicPostUrl ? (
+                        <p>
+                          Readers currently view this page at{" "}
+                          <a
+                            href={publicPostUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-[#8a6d44]/60 underline-offset-4 transition-colors hover:text-[#8a6d44]"
+                          >
+                            {publicPostUrl}
+                          </a>.
+                        </p>
+                      ) : (
+                        <p>Publish to generate a shareable public link for this post.</p>
+                      )}
+                      <p className="mt-3 text-[#7a674a]">
+                        Because you&apos;re signed in, you can switch back to Edit to keep refining your draft without leaving this page.
+                      </p>
+                      {!hasAnyContent && (
+                        <p className="mt-3 text-muted-foreground">
+                          Add content in the editor to see a richer preview.
+                        </p>
+                      )}
+                    </footer>
+                  </article>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>

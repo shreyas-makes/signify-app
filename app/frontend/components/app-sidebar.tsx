@@ -20,6 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { dashboardPath, documentsPath, editDocumentPath, newDocumentPath } from "@/routes"
 import type { Document, NavItem } from "@/types"
@@ -54,6 +55,11 @@ interface AppSidebarProps {
 
 export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
   const [documentsExpanded, setDocumentsExpanded] = useState(true)
+  const { state } = useSidebar()
+  const isSidebarExpanded = state === "expanded"
+  const documentsList = documents ?? []
+  const hasDocuments = documentsList.length > 0
+  const showDocumentsSection = isSidebarExpanded && hasDocuments
   
   const handleNewDocument = () => {
     router.post(newDocumentPath())
@@ -106,7 +112,7 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
         <NavMain items={mainNavItems} />
         
         {/* Documents Section */}
-        {documents && documents.length > 0 && (
+        {showDocumentsSection && (
           <SidebarGroup>
             <Collapsible open={documentsExpanded} onOpenChange={setDocumentsExpanded}>
               <CollapsibleTrigger asChild>
@@ -120,7 +126,7 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
                     <Calendar className="h-4 w-4" />
                     <span>Recent Documents</span>
                   </div>
-                  <span className="ml-auto text-xs">{documents.length}</span>
+                  <span className="ml-auto text-xs">{documentsList.length}</span>
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
               <SidebarGroupAction asChild>
@@ -136,7 +142,7 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
               <CollapsibleContent>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {documents.slice(0, 10).map((document) => (
+                    {documentsList.slice(0, 10).map((document) => (
                       <SidebarMenuItem key={document.id}>
                         <SidebarMenuButton
                           onClick={() => handleDocumentClick(document)}
@@ -169,12 +175,12 @@ export function AppSidebar({ documents, currentDocumentId }: AppSidebarProps) {
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>
-                  {documents.length > 10 && (
+                  {documentsList.length > 10 && (
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
                         <Link href={documentsPath()}>
                           <FileText className="h-4 w-4" />
-                          <span>View All Documents ({documents.length})</span>
+                          <span>View All Documents ({documentsList.length})</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

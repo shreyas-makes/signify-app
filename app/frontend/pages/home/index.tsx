@@ -1,20 +1,72 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import {
-  ArrowRight,
-  Fingerprint,
-  LineChart,
-  PenTool,
-  Play,
-  Sparkles,
-} from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ArrowRight, Github, Play, Sparkles } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { GitCommitGraph } from '@/components/ui/git-commit-graph'
+import { KeystrokeBarcode } from '@/components/ui/keystroke-barcode'
+import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
 import { VerifiedSessionCard } from '@/components/verified-session-card'
 import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
-import type { SharedData } from '@/types'
+import type { Keystroke, SharedData } from '@/types'
+
+interface DemoAction {
+  type: 'char' | 'backspace'
+  value?: string
+  delay: number
+}
+
+const demoBaseTimestamp = Date.parse('2024-01-04T16:00:00Z')
+
+const demoActions: DemoAction[] = [
+  { type: 'char', value: 'H', delay: 180 },
+  { type: 'char', value: 'u', delay: 120 },
+  { type: 'char', value: 'm', delay: 110 },
+  { type: 'char', value: 'a', delay: 105 },
+  { type: 'char', value: 'n', delay: 115 },
+  { type: 'char', value: ' ', delay: 140 },
+  { type: 'char', value: 'h', delay: 130 },
+  { type: 'char', value: 'a', delay: 100 },
+  { type: 'char', value: 'n', delay: 100 },
+  { type: 'char', value: 'd', delay: 100 },
+  { type: 'char', value: 's', delay: 110 },
+  { type: 'char', value: ' ', delay: 140 },
+  { type: 'char', value: 'd', delay: 120 },
+  { type: 'char', value: 'r', delay: 90 },
+  { type: 'char', value: 'a', delay: 85 },
+  { type: 'char', value: 'f', delay: 80 },
+  { type: 'char', value: 't', delay: 85 },
+  { type: 'char', value: ' ', delay: 140 },
+  { type: 'char', value: 'e', delay: 100 },
+  { type: 'char', value: 'v', delay: 95 },
+  { type: 'char', value: 'e', delay: 90 },
+  { type: 'char', value: 'r', delay: 90 },
+  { type: 'char', value: 'y', delay: 120 },
+  { type: 'char', value: ' ', delay: 140 },
+  { type: 'char', value: 'l', delay: 100 },
+  { type: 'char', value: 'i', delay: 90 },
+  { type: 'char', value: 'n', delay: 90 },
+  { type: 'char', value: 'e', delay: 95 },
+  { type: 'char', value: 'e', delay: 80 },
+  { type: 'backspace', delay: 150 },
+  { type: 'char', value: ' ', delay: 160 },
+  { type: 'char', value: 'b', delay: 100 },
+  { type: 'char', value: 'y', delay: 90 },
+  { type: 'char', value: ' ', delay: 150 },
+  { type: 'char', value: 'h', delay: 110 },
+  { type: 'char', value: 'a', delay: 90 },
+  { type: 'char', value: 'n', delay: 90 },
+  { type: 'char', value: 'd', delay: 100 },
+  { type: 'char', value: '.', delay: 160 },
+]
+
+const {
+  keystrokes: replayDemoKeystrokes,
+  finalContent: replayDemoFinalContent,
+} = buildDemoKeystrokes(demoActions, demoBaseTimestamp)
+
+const analyticsDemoKeystrokes = buildAnalyticsDemoKeystrokes(replayDemoKeystrokes, 4, 14000)
+const dnaDemoKeystrokes = analyticsDemoKeystrokes.slice(0, 220)
 
 export default function Welcome() {
   const page = usePage<SharedData>()
@@ -43,14 +95,11 @@ export default function Welcome() {
               <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
                 Explore Library
               </Link>
-              <a href="#how-it-works" className="transition-colors hover:text-foreground">
-                How it Works
-              </a>
               <a href="#features" className="transition-colors hover:text-foreground">
                 Platform
               </a>
-              <a href="#security" className="transition-colors hover:text-foreground">
-                Proof
+              <a href="#get-started" className="transition-colors hover:text-foreground">
+                Get started
               </a>
             </nav>
 
@@ -114,8 +163,7 @@ export default function Welcome() {
                 <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
                 <VerifiedSessionCard
                   initials="SJ"
-                  sessionMeta="3 min ago · 1,348 keystrokes"
-                  previewHeading="Feature draft preview"
+                  sessionMeta="3 min ago | 1,348 keystrokes"
                 />
               </div>
             </div>
@@ -147,32 +195,104 @@ export default function Welcome() {
                   Why teams choose Signify
                 </Badge>
                 <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
-                  A verification layer designed for creative and compliance teams alike.
+                  100% human authorship for your published essays
                 </h2>
                 <p className="text-lg text-muted-foreground">
                   Capture the nuance of human drafting, verify originality in real time, and share transparent proof bundles with one link.
                 </p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <FeatureCard
-                  icon={<Fingerprint className="h-5 w-5 text-primary" />}
-                  title="Keystroke DNA"
-                  description="Millisecond-level capture creates a biometric map of intent that is impossible to spoof."
-                  details={["Immutable session hashes", "Cryptographic signatures", "Tamper alerts"]}
-                />
-                <FeatureCard
-                  icon={<PenTool className="h-5 w-5 text-accent" />}
-                  title="Immersive replays"
-                  description="Share a cinematic writing replay that showcases every edit, deletion, and thought process."
-                  details={["Inline annotations", "Playback controls", "Collaborative reviews"]}
-                />
-                <FeatureCard
-                  icon={<LineChart className="h-5 w-5 text-chart-4" />}
-                  title="Live analytics"
-                  description="Monitor writing velocity, editing cadence, and authenticity scores across your organization."
-                  details={["Session heatmaps", "Risk scoring", "Insights API"]}
-                />
+              <div className="grid gap-10 lg:grid-cols-12">
+                <div className="lg:col-span-4">
+                  <div className="flex h-full flex-col gap-6 rounded-3xl border border-border/70 bg-card/80 p-6 shadow-sm backdrop-blur">
+                    <div className="space-y-2">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-primary">Keystroke DNA</span>
+                      <h3 className="text-xl font-semibold text-foreground">See the human fingerprint in every draft.</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Keystroke telemetry renders an immutable barcode of the writing session so reviewers can spot real authorship at a glance.
+                      </p>
+                    </div>
+                    <KeystrokeBarcode keystrokes={dnaDemoKeystrokes} className="rounded-2xl shadow-sm" />
+                    <p className="text-xs text-muted-foreground">
+                      Sample session | {dnaDemoKeystrokes.length.toLocaleString()} keystrokes captured across focused drafting bursts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-6 lg:col-span-8">
+                  <div className="max-w-2xl space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-primary">Immersive replays</span>
+                    <h3 className="text-xl font-semibold text-foreground">Walk readers through every decision.</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Let collaborators scrub through the draft exactly as it unfolded&mdash;pauses, edits, corrections, and all.
+                    </p>
+                  </div>
+                  <KeystrokeReplay
+                    keystrokes={replayDemoKeystrokes}
+                    finalContent={replayDemoFinalContent}
+                    title="Demo draft: human hands draft every line"
+                    className="border border-border/60 bg-background/95 shadow-md ring-1 ring-border/40"
+                  />
+                </div>
+
+                <div className="space-y-6 lg:col-span-12">
+                  <div className="max-w-3xl space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-primary">Live analytics</span>
+                    <h3 className="text-xl font-semibold text-foreground">Spot authenticity trends in real time.</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Aggregate keystroke evidence to surface writing velocity, focus breaks, and correction patterns across your entire team.
+                    </p>
+                  </div>
+                  <GitCommitGraph
+                    keystrokes={analyticsDemoKeystrokes}
+                    width={880}
+                    height={280}
+                    interactive={false}
+                    className="shadow-md ring-1 ring-border/40"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="get-started"
+            className="border-t border-border bg-muted/60 py-20"
+          >
+            <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-8 px-4 text-center">
+              <Badge
+                variant="outline"
+                className="w-fit text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Join the proof
+              </Badge>
+              <h2 className="font-serif text-3xl leading-tight text-foreground sm:text-4xl">
+                Ready to start writing with proof, or help build Signify?
+              </h2>
+              <p className="max-w-2xl text-lg text-muted-foreground">
+                Spin up your first verified session in minutes, or contribute code, docs, and ideas to make authorship verification stronger for everyone.
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <Button size="lg" asChild>
+                  <Link href={auth.user ? dashboardPath() : signUpPath()}>
+                    {auth.user ? 'Go to dashboard' : 'Start writing'}
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="group border-border/70 text-foreground hover:bg-background"
+                >
+                  <a
+                    href="https://github.com/placeholder/signify"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="mr-2 h-4 w-4 group-hover:scale-105 transition-transform" />
+                    Contribute on GitHub
+                  </a>
+                </Button>
               </div>
             </div>
           </section>
@@ -216,38 +336,98 @@ export default function Welcome() {
   )
 }
 
-function Metric({ value, title, description }: { value: string; title: string; description: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card/80 p-5 shadow-sm backdrop-blur">
-      <p className="text-sm font-semibold uppercase tracking-wide text-primary">{value}</p>
-      <p className="mt-3 text-lg font-semibold text-foreground">{title}</p>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  )
+function buildDemoKeystrokes(actions: DemoAction[], baseTimestamp: number): {
+  keystrokes: Keystroke[]
+  finalContent: string
+} {
+  const keystrokes: Keystroke[] = []
+  let timestamp = baseTimestamp
+  let sequence = 1
+  let content = ''
+
+  for (const action of actions) {
+    timestamp += Math.max(action.delay, 16)
+
+    if (action.type === 'char' && typeof action.value === 'string') {
+      const cursorPosition = content.length
+      keystrokes.push({
+        id: sequence,
+        event_type: 'keydown',
+        key_code: charToKeyCode(action.value),
+        character: action.value,
+        timestamp,
+        cursor_position: cursorPosition,
+        sequence_number: sequence,
+      })
+      content = content.slice(0, cursorPosition) + action.value + content.slice(cursorPosition)
+      sequence += 1
+      continue
+    }
+
+    if (action.type === 'backspace') {
+      const cursorPosition = Math.max(0, content.length)
+      keystrokes.push({
+        id: sequence,
+        event_type: 'keydown',
+        key_code: 8,
+        character: '\b',
+        timestamp,
+        cursor_position: cursorPosition,
+        sequence_number: sequence,
+      })
+      if (cursorPosition > 0) {
+        content = content.slice(0, cursorPosition - 1) + content.slice(cursorPosition)
+      }
+      sequence += 1
+    }
+  }
+
+  return { keystrokes, finalContent: content }
 }
 
-function FeatureCard({ icon, title, description, details }: {
-  icon: ReactNode
-  title: string
-  description: string
-  details: string[]
-}) {
-  return (
-    <Card className="group h-full overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-sm transition-all hover:-translate-y-1 hover:border-border hover:shadow-xl">
-      <CardContent className="flex h-full flex-col gap-4 p-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-          {icon}
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
-        </div>
-        <ul className="mt-auto space-y-2 text-sm text-muted-foreground">
-          {details.map((item) => (
-            <li key={item}>• {item}</li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
-  )
+function buildAnalyticsDemoKeystrokes(
+  baseKeystrokes: Keystroke[],
+  loops = 3,
+  spacingMs = 12000,
+): Keystroke[] {
+  if (baseKeystrokes.length === 0) {
+    return []
+  }
+
+  const expanded: Keystroke[] = []
+  let sequence = 1
+  const baseStart = baseKeystrokes[0].timestamp
+
+  for (let loop = 0; loop < loops; loop += 1) {
+    const speedMultiplier = 1 + loop * 0.25
+    const offset = loop * spacingMs
+
+    for (const base of baseKeystrokes) {
+      const offsetFromStart = base.timestamp - baseStart
+      const scaledOffset = Math.round(offsetFromStart / speedMultiplier)
+      expanded.push({
+        ...base,
+        id: sequence,
+        sequence_number: sequence,
+        timestamp: baseStart + offset + scaledOffset,
+      })
+      sequence += 1
+    }
+  }
+
+  return expanded
+}
+
+function charToKeyCode(character: string): number {
+  if (!character) {
+    return 0
+  }
+
+  if (character === ' ') return 32
+  if (character === '.') return 190
+  if (character === ',') return 188
+  if (character === '-') return 189
+
+  const upper = character.toUpperCase()
+  return upper.charCodeAt(0)
 }

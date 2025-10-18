@@ -1,7 +1,9 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
+import { SquarePen } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import { MiniGitGraph } from '@/components/ui/mini-git-graph'
-import type { Keystroke } from '@/types'
+import type { Keystroke, SharedData } from '@/types'
 
 
 interface Author {
@@ -53,6 +55,10 @@ export default function PublicPostShow({ post, meta }: Props) {
   const authorDescription = post.author.bio?.trim()
     ? post.author.bio
     : "The author has not added a description yet."
+  const page = usePage<SharedData>()
+  const auth = page.props.auth
+  const canEdit = auth?.user?.id === post.author.id
+  const editUrl = canEdit ? `/documents/${post.id}/edit` : null
 
   return (
     <>
@@ -105,22 +111,37 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-[#f4f1e8] py-20">
-        <div className="mx-auto w-full max-w-5xl px-5 sm:px-12 lg:px-16">
-          <article className="rounded-[40px] bg-[#fdfaf2] px-9 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-16 sm:py-20">
+      <div className="min-h-screen bg-primary/5 py-30">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-10 lg:px-12">
+          {editUrl && (
+            <div className="no-print mb-6 flex justify-end">
+              <Button
+                asChild
+                variant="secondary"
+                size="sm"
+                className="gap-2 bg-white/80 text-[#3f3422] hover:bg-white"
+              >
+                <Link href={editUrl}>
+                  <SquarePen className="h-4 w-4" />
+                  Edit in Composer
+                </Link>
+              </Button>
+            </div>
+          )}
+          <article className="rounded-[40px] bg-[#fdfaf2] px-8 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-14 sm:py-30 lg:px-16">
             <header className="mb-12">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
                 {post.title}
               </h1>
               <p className="mt-3 text-sm font-medium uppercase tracking-[0.35em] text-muted-foreground/70">
-                {post.reading_time_minutes} mins read
+                {post.reading_time_minutes} min{post.reading_time_minutes === 1 ? '' : 's'} read
               </p>
 
               {post.verification.keystroke_verified && (
                 <MiniGitGraph 
                   keystrokes={post.sample_keystrokes}
                   height={52}
-                  className="mt-8 w-full max-w-xl cursor-pointer rounded-[24px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab]"
+                  className="mt-8 w-full max-w-sm cursor-pointer rounded-[12px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab]"
                   graphClassName="rounded-[14px] border border-[#eadfce] bg-[#fffdf6]"
                   keystrokeUrl={keystrokeUrl}
                   ariaLabel="View keystroke timeline"
