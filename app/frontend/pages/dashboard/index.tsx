@@ -243,7 +243,7 @@ export default function Dashboard({
           </div>
 
           {/* Filters and Controls */}
-          <div className="flex w-full flex-col gap-5 rounded-[32px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8 sm:py-6">
+          <div className="flex w-full flex-col gap-5 rounded-[32px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-10 sm:py-8">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center w-full sm:w-auto">
               <div className="relative w-full sm:w-80 lg:w-96">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -327,113 +327,113 @@ export default function Dashboard({
             <Card className="rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.35)]">
               <CardContent className="p-0 overflow-hidden">
                 <div className="px-6 py-5 sm:px-10 sm:py-8">
-                  <Table className="w-full text-sm [&_th]:px-7 [&_th]:py-4 [&_td]:px-7 [&_td]:py-4 [&_th:first-child]:pl-6 [&_td:first-child]:pl-6 [&_th:last-child]:pr-6 [&_td:last-child]:pr-6">
-                  <TableHeader>
-                    <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedDocuments.length === documents.length}
-                          onCheckedChange={toggleSelectAll}
-                        />
-                      </TableHead>
-                      <TableHead>
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleSort('title')}
-                          className="h-auto p-0 font-medium"
-                        >
-                          Title
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleSort('status')}
-                          className="h-auto p-0 font-medium"
-                        >
-                          Status
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </TableHead>
-                      <TableHead>
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleSort('word_count')}
-                          className="h-auto p-0 font-medium"
-                        >
-                          Words
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </TableHead>
-                      <TableHead>Keystrokes</TableHead>
-                      <TableHead>Reading Time</TableHead>
-                      <TableHead>
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleSort('updated_at')}
-                          className="h-auto p-0 font-medium"
-                        >
-                          Updated
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </TableHead>
-                      <TableHead className="w-20">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {documents.map((document) => (
-                      <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-[#f7f1e6]">
-                        <TableCell>
+                  <Table className="w-full text-sm [&_th]:px-6 [&_th]:py-4 [&_td]:px-6 [&_td]:py-4 [&_th:first-child]:pl-0 [&_td:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:last-child]:pr-0">
+                    <TableHeader>
+                      <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
+                        <TableHead className="w-12">
                           <Checkbox
-                            checked={selectedDocuments.includes(document.id)}
-                            onCheckedChange={() => toggleDocumentSelection(document.id)}
+                            checked={selectedDocuments.length === documents.length}
+                            onCheckedChange={toggleSelectAll}
                           />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          <Link 
-                            href={editDocumentPath({ id: document.id })}
-                            className="hover:text-primary transition-colors"
+                        </TableHead>
+                        <TableHead>
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort('title')}
+                            className="h-auto p-0 font-medium"
                           >
-                            {document.title || "Untitled Document"}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusColor(document.status)} className="capitalize">
-                            {getStatusBadgeText(document.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{document.word_count}</TableCell>
-                        <TableCell>{document.keystroke_count}</TableCell>
-                        <TableCell>{formatReadingTime(document.reading_time_minutes)}</TableCell>
-                        <TableCell>{formatDate(document.updated_at)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            {document.status === 'draft' && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                aria-label="Delete document"
-                                onClick={() => {
-                                  if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
-                                    router.delete(documentPath({ id: document.id }))
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
+                            Title
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </TableHead>
+                        <TableHead>
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort('status')}
+                            className="h-auto p-0 font-medium"
+                          >
+                            Status
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </TableHead>
+                        <TableHead>
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort('word_count')}
+                            className="h-auto p-0 font-medium"
+                          >
+                            Words
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </TableHead>
+                        <TableHead>Keystrokes</TableHead>
+                        <TableHead>Reading Time</TableHead>
+                        <TableHead>
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort('updated_at')}
+                            className="h-auto p-0 font-medium"
+                          >
+                            Updated
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </TableHead>
+                        <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {documents.map((document) => (
+                        <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-[#f7f1e6]">
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedDocuments.includes(document.id)}
+                              onCheckedChange={() => toggleDocumentSelection(document.id)}
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <Link 
+                              href={editDocumentPath({ id: document.id })}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {document.title || "Untitled Document"}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={getStatusColor(document.status)} className="capitalize">
+                              {getStatusBadgeText(document.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{document.word_count}</TableCell>
+                          <TableCell>{document.keystroke_count}</TableCell>
+                          <TableCell>{formatReadingTime(document.reading_time_minutes)}</TableCell>
+                          <TableCell>{formatDate(document.updated_at)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
+                                  <Edit className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              {document.status === 'draft' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  aria-label="Delete document"
+                                  onClick={() => {
+                                    if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+                                      router.delete(documentPath({ id: document.id }))
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
