@@ -422,15 +422,15 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                           asChild
                           size="sm"
                           variant="ghost"
-                          className="gap-2 text-[#3f3422]"
+                          className="text-[#3f3422]"
                         >
                           <a
                             href={publicPostUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label="View post"
                           >
                             <ExternalLink className="h-4 w-4" />
-                            <span>View post</span>
                           </a>
                         </Button>
                       )}
