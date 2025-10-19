@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import { BookOpen, CheckCircle, Clock, Search } from 'lucide-react'
 import type React from 'react';
 import { useState } from 'react'
@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import AppLayout from '@/layouts/app-layout'
+import type { PageProps } from '@/types'
 
 
 interface Author {
@@ -31,6 +33,7 @@ interface Props {
 
 export default function PublicPostsIndex({ posts, search = '' }: Props) {
   const [searchQuery, setSearchQuery] = useState(search ?? '')
+  const { auth } = usePage<PageProps>().props
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,7 +47,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
     router.visit(`/posts/${publicSlug}`)
   }
 
-  return (
+  const pageContent = (
     <>
       <Head title="Published Posts - Signify" />
       
@@ -154,4 +157,10 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
       </div>
     </>
   )
+
+  return auth?.user ? (
+    <AppLayout>
+      {pageContent}
+    </AppLayout>
+  ) : pageContent
 }

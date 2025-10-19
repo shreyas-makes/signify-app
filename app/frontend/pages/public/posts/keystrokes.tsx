@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import { 
   Activity,
   ArrowLeft, 
@@ -16,7 +16,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GitCommitGraph } from '@/components/ui/git-commit-graph'
 import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
 import { VerifiedSessionCard } from '@/components/verified-session-card'
-import type { Keystroke, TimelineEvent, TypingStatistics } from '@/types'
+import AppLayout from '@/layouts/app-layout'
+import { PublicPostFooter } from '@/components/public-post-footer'
+import type { Keystroke, PageProps, TimelineEvent, TypingStatistics } from '@/types'
 
 function getInitials(name: string) {
   return name
@@ -132,6 +134,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
   const [loadingMore, setLoadingMore] = useState(false)
   const [allKeystrokes, setAllKeystrokes] = useState<Keystroke[]>(keystrokes)
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800)
+  const { auth } = usePage<PageProps>().props
   const heatmapWidth = windowWidth > 1024 ? 920 : Math.max(360, windowWidth - 80)
   const heatmapHeight = windowWidth > 768 ? 360 : 260
 
@@ -361,7 +364,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
     URL.revokeObjectURL(url)
   }
 
-  return (
+  const pageContent = (
     <>
       <Head title={meta.title}>
         <meta name="description" content={meta.description} />
@@ -532,6 +535,14 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           </div>
         </div>
       </div>
+
+      <PublicPostFooter />
     </>
   )
+
+  return auth?.user ? (
+    <AppLayout>
+      {pageContent}
+    </AppLayout>
+  ) : pageContent
 }

@@ -1,9 +1,11 @@
-import { Head, Link } from '@inertiajs/react'
-import { LayoutDashboard, SquarePen } from 'lucide-react'
+import { Head, Link, usePage } from '@inertiajs/react'
+import { SquarePen } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { MiniGitGraph } from '@/components/ui/mini-git-graph'
-import type { Keystroke } from '@/types'
+import AppLayout from '@/layouts/app-layout'
+import { PublicPostFooter } from '@/components/public-post-footer'
+import type { Keystroke, PageProps } from '@/types'
 
 
 interface Author {
@@ -53,15 +55,15 @@ interface Props {
 }
 
 export default function PublicPostShow({ post, meta }: Props) {
+  const { auth } = usePage<PageProps>().props
   const keystrokeUrl = `/posts/${post.public_slug}/keystrokes`
   const authorDescription = post.author.bio?.trim()
     ? post.author.bio
     : "The author has not added a description yet."
   const canEdit = Boolean(post.can_edit)
-  const editUrl = canEdit ? `/documents/${post.id}/edit` : null
-  const dashboardUrl = post.dashboard_path ?? null
+  const editUrl = canEdit ? `/documents/${post.id}/edit?view=write` : null
 
-  return (
+  const pageContent = (
     <>
       <Head title={meta.title}>
         <meta name="description" content={meta.description} />
@@ -114,36 +116,6 @@ export default function PublicPostShow({ post, meta }: Props) {
       
       <div className="min-h-screen bg-primary/5 py-30">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-10 lg:px-12">
-          {(dashboardUrl || editUrl) && (
-            <div className="no-print mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              {dashboardUrl && (
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 bg-white/80 text-[#3f3422] hover:bg-white"
-                >
-                  <Link href={dashboardUrl}>
-                    <LayoutDashboard className="h-4 w-4" />
-                    Back to Dashboard
-                  </Link>
-                </Button>
-              )}
-              {editUrl && (
-                <Button
-                  asChild
-                  variant="secondary"
-                  size="sm"
-                  className="gap-2 bg-white/80 text-[#3f3422] hover:bg-white"
-                >
-                  <Link href={editUrl}>
-                    <SquarePen className="h-4 w-4" />
-                    Edit in Composer
-                  </Link>
-                </Button>
-              )}
-            </div>
-          )}
           <article className="rounded-[40px] bg-[#fdfaf2] px-8 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-14 sm:py-30 lg:px-16">
             <header className="mb-12">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
@@ -186,6 +158,28 @@ export default function PublicPostShow({ post, meta }: Props) {
           </article>
         </div>
       </div>
+
+      <PublicPostFooter />
+
+      {editUrl && (
+        <div className="no-print fixed bottom-6 right-6 z-40">
+          <Button
+            asChild
+            size="icon"
+            className="h-14 w-14 rounded-full border border-[#d6c7ab] bg-white/95 text-[#3f3422] shadow-lg transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+          >
+            <Link href={editUrl} aria-label="Edit in Composer">
+              <SquarePen className="h-6 w-6" />
+            </Link>
+          </Button>
+        </div>
+      )}
     </>
   )
+
+  return auth?.user ? (
+    <AppLayout>
+      {pageContent}
+    </AppLayout>
+  ) : pageContent
 }
