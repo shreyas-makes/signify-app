@@ -7,8 +7,6 @@ import {
   ExternalLink,
   Loader2,
   Play,
-  RefreshCw,
-  Save,
   Send,
   Sparkles,
 } from "lucide-react"
@@ -57,7 +55,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
   const [isPublishing, setIsPublishing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
   const editorRef = useRef<RichTextEditorRef>(null)
@@ -222,7 +219,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   }
 
   const handleManualSave = async ({ showSuccessToast = true }: { showSuccessToast?: boolean } = {}) => {
-    setIsSaving(true)
     try {
       const keystrokeData = getKeystrokesForTransmission()
       const pasteAttemptData = getPasteAttempts()
@@ -241,8 +237,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     } catch (error) {
       console.error('Manual save error:', error)
       toast.error('Failed to save document')
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -301,24 +295,34 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
   const canPublishNow = canPublish()
   const saveStatusLabel = autoSave.getSaveStatusText()
-  const saveButtonLabel = isSaving ? "Saving..." : "Save"
   const publishButtonLabel = isPublishing ? "Publishing..." : getPublishButtonText()
-  const documentStatusIndicator = (() => {
-    switch (document.status) {
-      case 'published':
+  const saveStatusIndicator = (() => {
+    const status = autoSave.saveStatus
+    switch (status) {
+      case 'saved':
         return {
-          label: 'Published',
+          label: 'Saved - Ready to publish',
           indicatorClassName: "bg-emerald-400"
         }
-      case 'ready_to_publish':
+      case 'saving':
         return {
-          label: 'Ready to publish',
-          indicatorClassName: "bg-emerald-300"
+          label: 'Saving...',
+          indicatorClassName: "bg-blue-400 animate-pulse"
+        }
+      case 'typing':
+        return {
+          label: 'Typing - Auto-save pending',
+          indicatorClassName: "bg-amber-400"
+        }
+      case 'error':
+        return {
+          label: 'Save failed - Click to retry',
+          indicatorClassName: "bg-red-400"
         }
       default:
         return {
-          label: 'Draft',
-          indicatorClassName: "bg-amber-300"
+          label: 'Unsaved changes',
+          indicatorClassName: "bg-amber-400"
         }
     }
   })()
@@ -385,37 +389,29 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span
-                            aria-label={`${documentStatusIndicator.label} status`}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6c7ab]/50 bg-white/50 shadow-none"
+                          <button
+                            onClick={autoSave.saveStatus === 'error' ? () => void autoSave.retry() : undefined}
+                            aria-label={`${saveStatusIndicator.label} status`}
+                            className={cn(
+                              "inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6c7ab]/50 bg-white/50 shadow-none transition-colors",
+                              autoSave.saveStatus === 'error' ? "hover:bg-white cursor-pointer" : "cursor-default"
+                            )}
                           >
                             <span
                               aria-hidden
                               className={cn(
                                 "block h-2.5 w-2.5 rounded-full opacity-80",
-                                documentStatusIndicator.indicatorClassName,
+                                saveStatusIndicator.indicatorClassName,
                               )}
                             />
-                            <span className="sr-only">{documentStatusIndicator.label}</span>
-                          </span>
+                            <span className="sr-only">{saveStatusIndicator.label}</span>
+                          </button>
                         </TooltipTrigger>
-                        <TooltipContent>{documentStatusIndicator.label}</TooltipContent>
+                        <TooltipContent>{saveStatusIndicator.label}</TooltipContent>
                       </Tooltip>
                       <span className="sr-only" role="status" aria-live="polite">
                         {saveStatusLabel}
                       </span>
-
-                      {autoSave.saveStatus === 'error' && (
-                        <Button
-                          onClick={() => void autoSave.retry()}
-                          variant="ghost"
-                          size="sm"
-                          className="gap-2"
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                          <span>Retry save</span>
-                        </Button>
-                      )}
 
                       {publicPostUrl && (
                         <Button
@@ -435,37 +431,13 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                         </Button>
                       )}
 
-                      <Button
-                        onClick={() => void handleManualSave()}
-                        disabled={
-                          isSaving ||
-                          autoSave.saveStatus === 'saving' ||
-                          (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
-                        }
-                        size="icon"
-                        variant="ghost"
-                        aria-label={saveButtonLabel}
-                        className="rounded-full border border-[#d6c7ab]/70 bg-white/70 text-[#5c4d35] shadow-none hover:bg-white"
-                      >
-                        {isSaving ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">{saveButtonLabel}</span>
-                      </Button>
-
-                      {document.status !== 'published' && (
+                      {document.status !== 'published' && autoSave.saveStatus === 'saved' && (
                         <Button
                           onClick={() => void handlePublish()}
-                          disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
+                          disabled={!canPublishNow || isPublishing}
                           size="icon"
-                          variant={canPublishNow ? "default" : "outline"}
                           aria-label={publishButtonLabel}
-                          className={cn(
-                            "rounded-full shadow-sm",
-                            !canPublishNow && "border border-[#d6c7ab]/60 bg-white/70 text-muted-foreground hover:bg-white",
-                          )}
+                          className="rounded-full bg-black text-white hover:bg-black/90 shadow-sm"
                         >
                           {isPublishing ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
