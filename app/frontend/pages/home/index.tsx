@@ -130,8 +130,8 @@ export default function Welcome() {
             <div className="pointer-events-none absolute inset-x-0 -top-40 flex justify-center blur-3xl">
               <div className="h-[400px] w-[720px] bg-gradient-to-r from-primary/35 via-accent/25 to-chart-2/20 opacity-60" />
             </div>
-            <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-24 pt-20 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-28 lg:gap-16">
-              <div className="space-y-8">
+            <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
+              <div className="space-y-4">
                 <Badge
                   variant="secondary"
                   className="w-fit gap-2 text-xs font-semibold uppercase tracking-wide shadow-sm ring-1 ring-primary/15"
