@@ -114,7 +114,7 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-background px-6 py-24 sm:px-10 lg:px-16 xl:px-24">
+      <div className="min-h-screen bg-background px-6 py-24 sm:px-12 lg:px-20 xl:px-28">
         <div className="mx-auto w-full max-w-4xl">
           <article className="rounded-[40px] bg-[#fdfaf2] px-8 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-12 sm:py-24 lg:px-16 lg:py-28">
             <header className="mb-12">
