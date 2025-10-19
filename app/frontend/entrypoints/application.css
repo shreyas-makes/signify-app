@@ -61,6 +61,34 @@
   --tracking-normal: 0.01em;
 }
 
+.composer-theme {
+  --background: #f4f1e8;
+  --foreground: #3f3422;
+  --card: #fdfaf2;
+  --card-foreground: #3f3422;
+  --popover: #fdfaf2;
+  --popover-foreground: #3f3422;
+  --primary: #8a6d44;
+  --primary-foreground: #fdfaf2;
+  --secondary: #fdfaf2;
+  --secondary-foreground: #3f3422;
+  --muted: #f6eddd;
+  --muted-foreground: #5c4d35;
+  --accent: #efe1cf;
+  --accent-foreground: #2d2518;
+  --border: #eadfce;
+  --input: #eadfce;
+  --ring: #d6c7ab;
+  --sidebar: #f8efe0;
+  --sidebar-foreground: #3f3422;
+  --sidebar-primary: #8a6d44;
+  --sidebar-primary-foreground: #fdfaf2;
+  --sidebar-accent: #f3e6d2;
+  --sidebar-accent-foreground: #3f3422;
+  --sidebar-border: #eadfce;
+  --sidebar-ring: #d6c7ab;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

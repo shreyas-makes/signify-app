@@ -1,4 +1,4 @@
-import { Head, router, useForm } from "@inertiajs/react"
+import { Head, router, useForm, usePage } from "@inertiajs/react"
 import {
   ChevronDown,
   ChevronRight,
@@ -53,6 +53,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
       content: document.content,
     },
   })
+  const { url } = usePage()
   
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -63,7 +64,16 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const titleInputRef = useRef<HTMLInputElement>(null)
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const isPublished = document.status === 'published'
-  const [activeView, setActiveView] = useState<'write' | 'preview'>(isPublished ? 'preview' : 'write')
+  const initialView = (() => {
+    const queryString = url.includes("?") ? url.split("?")[1] : ""
+    const params = new URLSearchParams(queryString)
+    const view = params.get("view")
+    if (view === "write" || view === "preview") {
+      return view
+    }
+    return isPublished ? "preview" : "write"
+  })() as 'write' | 'preview'
+  const [activeView, setActiveView] = useState<'write' | 'preview'>(initialView)
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
 
@@ -323,7 +333,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const previewKeystrokeCount = (typeof document.keystroke_count === 'number'
     ? document.keystroke_count
     : keystrokeCount) ?? 0
-  const pageBackgroundClass = "bg-[#f4f1e8]"
+  const pageBackgroundClass = "bg-background"
   const shellPaddingClass = "max-w-6xl px-6 sm:px-14 lg:px-24 py-10 sm:py-16 gap-8"
   const editorSurfaceClass =
     "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
@@ -336,139 +346,140 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const previewMetaAccentClass = "text-[#5c4d35]/80"
 
   return (
-    <AppSidebarLayout 
-      documents={documents}
-      currentDocumentId={document.id}
-    >
-      <Head title={`Edit: ${document.title || "Untitled Document"}`} />
+    <div className="composer-theme min-h-screen bg-background">
+      <AppSidebarLayout 
+        documents={documents}
+        currentDocumentId={document.id}
+      >
+        <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
-      <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
-        <div className="flex-1 overflow-auto">
-          <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
-            <Tabs
-              value={activeView}
-              onValueChange={(value) => setActiveView(value as 'write' | 'preview')}
-              className="mt-2 flex-1"
-            >
-              <div className={toolbarWrapperClass}>
-                <TabsList className="rounded-full border border-[#d6c7ab]/70 bg-white/60 p-1 text-[#6e5a3d] shadow-none transition-colors">
-                  <TabsTrigger
-                    value="write"
-                    aria-label="Edit mode"
-                    className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
-                  >
-                    <Edit className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
-                    <span className="sr-only">Edit</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="preview"
-                    aria-label="Preview mode"
-                    className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
-                  >
-                    <Eye className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
-                    <span className="sr-only">Preview</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TooltipProvider delayDuration={0}>
-                  <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span
-                          aria-label={`${documentStatusIndicator.label} status`}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6c7ab]/50 bg-white/50 shadow-none"
-                        >
-                          <span
-                            aria-hidden
-                            className={cn(
-                              "block h-2.5 w-2.5 rounded-full opacity-80",
-                              documentStatusIndicator.indicatorClassName,
-                            )}
-                          />
-                          <span className="sr-only">{documentStatusIndicator.label}</span>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>{documentStatusIndicator.label}</TooltipContent>
-                    </Tooltip>
-                    <span className="sr-only" role="status" aria-live="polite">
-                      {saveStatusLabel}
-                    </span>
-
-                    {autoSave.saveStatus === 'error' && (
-                      <Button
-                        onClick={() => void autoSave.retry()}
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        <span>Retry save</span>
-                      </Button>
-                    )}
-
-                    {publicPostUrl && (
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="ghost"
-                        className="gap-2 text-[#3f3422]"
-                      >
-                        <a
-                          href={publicPostUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          <span>View post</span>
-                        </a>
-                      </Button>
-                    )}
-
-                    <Button
-                      onClick={() => void handleManualSave()}
-                      disabled={
-                        isSaving ||
-                        autoSave.saveStatus === 'saving' ||
-                        (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
-                      }
-                      size="icon"
-                      variant="ghost"
-                      aria-label={saveButtonLabel}
-                      className="rounded-full border border-[#d6c7ab]/70 bg-white/70 text-[#5c4d35] shadow-none hover:bg-white"
+        <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
+          <div className="flex-1 overflow-auto">
+            <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
+              <Tabs
+                value={activeView}
+                onValueChange={(value) => setActiveView(value as 'write' | 'preview')}
+                className="mt-2 flex-1"
+              >
+                <div className={toolbarWrapperClass}>
+                  <TabsList className="rounded-full border border-[#d6c7ab]/70 bg-white/60 p-1 text-[#6e5a3d] shadow-none transition-colors">
+                    <TabsTrigger
+                      value="write"
+                      aria-label="Edit mode"
+                      className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
                     >
-                      {isSaving ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
-                      )}
-                      <span className="sr-only">{saveButtonLabel}</span>
-                    </Button>
+                      <Edit className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
+                      <span className="sr-only">Edit</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="preview"
+                      aria-label="Preview mode"
+                      className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
+                    >
+                      <Eye className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
+                      <span className="sr-only">Preview</span>
+                    </TabsTrigger>
+                  </TabsList>
 
-                    {document.status !== 'published' && (
+                  <TooltipProvider delayDuration={0}>
+                    <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span
+                            aria-label={`${documentStatusIndicator.label} status`}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6c7ab]/50 bg-white/50 shadow-none"
+                          >
+                            <span
+                              aria-hidden
+                              className={cn(
+                                "block h-2.5 w-2.5 rounded-full opacity-80",
+                                documentStatusIndicator.indicatorClassName,
+                              )}
+                            />
+                            <span className="sr-only">{documentStatusIndicator.label}</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>{documentStatusIndicator.label}</TooltipContent>
+                      </Tooltip>
+                      <span className="sr-only" role="status" aria-live="polite">
+                        {saveStatusLabel}
+                      </span>
+
+                      {autoSave.saveStatus === 'error' && (
+                        <Button
+                          onClick={() => void autoSave.retry()}
+                          variant="ghost"
+                          size="sm"
+                          className="gap-2"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          <span>Retry save</span>
+                        </Button>
+                      )}
+
+                      {publicPostUrl && (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="ghost"
+                          className="gap-2 text-[#3f3422]"
+                        >
+                          <a
+                            href={publicPostUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            <span>View post</span>
+                          </a>
+                        </Button>
+                      )}
+
                       <Button
-                        onClick={() => void handlePublish()}
-                        disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
+                        onClick={() => void handleManualSave()}
+                        disabled={
+                          isSaving ||
+                          autoSave.saveStatus === 'saving' ||
+                          (autoSave.saveStatus === 'saved' && !autoSave.hasUnsavedChanges)
+                        }
                         size="icon"
-                        variant={canPublishNow ? "default" : "outline"}
-                        aria-label={publishButtonLabel}
-                        className={cn(
-                          "rounded-full shadow-sm",
-                          !canPublishNow && "border border-[#d6c7ab]/60 bg-white/70 text-muted-foreground hover:bg-white",
-                        )}
+                        variant="ghost"
+                        aria-label={saveButtonLabel}
+                        className="rounded-full border border-[#d6c7ab]/70 bg-white/70 text-[#5c4d35] shadow-none hover:bg-white"
                       >
-                        {isPublishing ? (
+                        {isSaving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Send className="h-4 w-4" />
+                          <Save className="h-4 w-4" />
                         )}
-                        <span className="sr-only">{publishButtonLabel}</span>
+                        <span className="sr-only">{saveButtonLabel}</span>
                       </Button>
-                    )}
-                  </div>
-                </TooltipProvider>
-              </div>
 
-              <TabsContent value="write" className="mt-6 space-y-6">
+                      {document.status !== 'published' && (
+                        <Button
+                          onClick={() => void handlePublish()}
+                          disabled={!canPublishNow || autoSave.saveStatus === 'saving' || isPublishing}
+                          size="icon"
+                          variant={canPublishNow ? "default" : "outline"}
+                          aria-label={publishButtonLabel}
+                          className={cn(
+                            "rounded-full shadow-sm",
+                            !canPublishNow && "border border-[#d6c7ab]/60 bg-white/70 text-muted-foreground hover:bg-white",
+                          )}
+                        >
+                          {isPublishing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                          <span className="sr-only">{publishButtonLabel}</span>
+                        </Button>
+                      )}
+                    </div>
+                  </TooltipProvider>
+                </div>
+
+                <TabsContent value="write" className="mt-6 space-y-6">
                 <div className="space-y-2 pt-1 sm:pt-2">
                   <Input
                     ref={titleInputRef}
@@ -633,10 +644,11 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </article>
                 </div>
               </TabsContent>
-            </Tabs>
+              </Tabs>
+            </div>
           </div>
         </div>
-      </div>
-    </AppSidebarLayout>
+      </AppSidebarLayout>
+    </div>
   )
 }
