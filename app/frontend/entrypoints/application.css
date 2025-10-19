@@ -79,14 +79,6 @@
   --border: #eadfce;
   --input: #eadfce;
   --ring: #d6c7ab;
-  --sidebar: #f8efe0;
-  --sidebar-foreground: #3f3422;
-  --sidebar-primary: #8a6d44;
-  --sidebar-primary-foreground: #fdfaf2;
-  --sidebar-accent: #f3e6d2;
-  --sidebar-accent-foreground: #3f3422;
-  --sidebar-border: #eadfce;
-  --sidebar-ring: #d6c7ab;
 }
 
 @theme inline {
