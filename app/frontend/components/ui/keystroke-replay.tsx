@@ -25,6 +25,32 @@ interface KeystrokeReplayProps {
   className?: string
 }
 
+const toNumber = (value: number | string | null | undefined): number | null => {
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+  return null
+}
+
+const toNumericTimestamp = (value: number | string | null | undefined): number | null => {
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value
+  }
+  if (typeof value === "string") {
+    const numeric = Number(value)
+    if (!Number.isNaN(numeric)) {
+      return numeric
+    }
+    const parsed = Date.parse(value)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+  return null
+}
+
 export function KeystrokeReplay({ keystrokes, title, finalContent, className }: KeystrokeReplayProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -33,11 +59,102 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
+  const normalizeCharacter = useCallback((keystroke: KeystrokeEvent): string => {
+    const directChar = keystroke.character ?? ''
+    if (directChar.length === 1) {
+      if (directChar === '\r') return '\n'
+      return directChar
+    }
+
+    const descriptiveChar = directChar.trim().toLowerCase()
+    if (descriptiveChar) {
+      if (descriptiveChar === 'space' || descriptiveChar === 'spacebar' || descriptiveChar === ' ') {
+        return ' '
+      }
+      if (descriptiveChar === 'tab') {
+        return '\t'
+      }
+      if (
+        descriptiveChar === 'enter' ||
+        descriptiveChar === 'return' ||
+        descriptiveChar === 'newline'
+      ) {
+        return '\n'
+      }
+    }
+
+    const keyCode = typeof keystroke.key_code === 'string' ? parseInt(keystroke.key_code, 10) : keystroke.key_code
+
+    switch (keyCode) {
+      case 13:
+        return '\n'
+      case 9:
+        return '\t'
+      case 32:
+        return ' '
+      default:
+        return directChar.length === 1 ? directChar : ''
+    }
+  }, [])
+
   const playableKeystrokes = useMemo(() => {
-    return [...keystrokes]
-      .filter(k => k.event_type === 'keydown')
-      .sort((a, b) => a.sequence_number - b.sequence_number)
-  }, [keystrokes])
+    const sorted = [...keystrokes].sort((a, b) => a.sequence_number - b.sequence_number)
+    const sanitized: KeystrokeEvent[] = []
+    const lastAcceptedByKey = new Map<string, { timestamp: number | null, sequence: number }>()
+
+    // Deduplicate noisy capture data that records the same keydown multiple times within the same instant
+    for (const entry of sorted) {
+      if (entry.event_type !== 'keydown') {
+        continue
+      }
+
+      const normalizedKeyCode = toNumber(entry.key_code) ?? entry.key_code
+      const normalizedEntry: KeystrokeEvent = {
+        ...entry,
+        key_code: normalizedKeyCode,
+      }
+
+      const normalizedCharacter = normalizeCharacter(normalizedEntry)
+      const timestampValue = toNumericTimestamp(entry.timestamp)
+      const keySignature = `${normalizedEntry.key_code}:${normalizedCharacter}`
+      const lastAccepted = lastAcceptedByKey.get(keySignature)
+
+      const hasSameTimestamp =
+        normalizedCharacter &&
+        lastAccepted &&
+        timestampValue !== null &&
+        lastAccepted.timestamp !== null &&
+        timestampValue === lastAccepted.timestamp
+
+      const sequenceGap = lastAccepted
+        ? normalizedEntry.sequence_number - lastAccepted.sequence
+        : Number.POSITIVE_INFINITY
+
+      const shouldDeduplicate =
+        Boolean(normalizedCharacter) &&
+        Boolean(lastAccepted) &&
+        hasSameTimestamp &&
+        sequenceGap >= 0 &&
+        sequenceGap <= 2
+
+      if (shouldDeduplicate) {
+        continue
+      }
+
+      sanitized.push(normalizedEntry)
+
+      if (normalizedCharacter) {
+        lastAcceptedByKey.set(keySignature, {
+          timestamp: timestampValue,
+          sequence: normalizedEntry.sequence_number,
+        })
+      } else {
+        lastAcceptedByKey.delete(keySignature)
+      }
+    }
+
+    return sanitized
+  }, [keystrokes, normalizeCharacter])
 
   const totalKeystrokes = playableKeystrokes.length
   const finalWordCount = useMemo(() => {
@@ -72,45 +189,6 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
 
     return Math.max(0, Math.min(rawPosition, contentLength))
   }, [hasValidCursorData])
-
-  const normalizeCharacter = useCallback((keystroke: KeystrokeEvent): string => {
-    const directChar = keystroke.character ?? ''
-    if (directChar.length === 1) {
-      if (directChar === '\r') return '\n'
-      return directChar
-    }
-
-    const descriptiveChar = directChar.trim().toLowerCase()
-    if (descriptiveChar) {
-      if (descriptiveChar === 'space' || descriptiveChar === 'spacebar' || descriptiveChar === ' ') {
-        return ' '
-      }
-      if (descriptiveChar === 'tab') {
-        return '\t'
-      }
-      if (
-        descriptiveChar === 'enter' ||
-        descriptiveChar === 'return' ||
-        descriptiveChar === 'newline'
-      ) {
-        return '\n'
-      }
-    }
-
-    // Handle key codes (could be string or number)
-    const keyCode = typeof keystroke.key_code === 'string' ? parseInt(keystroke.key_code) : keystroke.key_code
-    
-    switch (keyCode) {
-      case 13:
-        return '\n'
-      case 9:
-        return '\t'
-      case 32:
-        return ' '
-      default:
-        return directChar.length === 1 ? directChar : ''
-    }
-  }, [])
 
   const applyKeystroke = useCallback((content: string, keystroke: KeystrokeEvent) => {
     const position = findCursorPosition(keystroke, content.length)
