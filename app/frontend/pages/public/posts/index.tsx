@@ -1,11 +1,9 @@
 import { Head, router, usePage } from '@inertiajs/react'
-import { BookOpen, CheckCircle, Clock, Search } from 'lucide-react'
+import { Search, Verified, Clock3, FileText, X } from 'lucide-react'
 import type React from 'react';
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import AppLayout from '@/layouts/app-layout'
 import type { PageProps } from '@/types'
@@ -33,11 +31,39 @@ interface Props {
 
 export default function PublicPostsIndex({ posts, search = '' }: Props) {
   const [searchQuery, setSearchQuery] = useState(search ?? '')
+  const [isSearchExpanded, setIsSearchExpanded] = useState(!!search)
   const { auth } = usePage<PageProps>().props
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    router.get('/posts', { search: searchQuery }, {
+    const params = searchQuery.trim() ? { search: searchQuery.trim() } : {}
+    router.get('/posts', params, {
+      preserveState: true,
+      replace: true
+    })
+  }
+
+  const toggleSearch = () => {
+    setIsSearchExpanded(!isSearchExpanded)
+    if (!isSearchExpanded) {
+      // Focus the input when expanding
+      setTimeout(() => {
+        searchInputRef.current?.focus()
+      }, 100)
+    } else if (!searchQuery) {
+      // If collapsing and no search query, clear any existing search
+      router.get('/posts', {}, {
+        preserveState: true,
+        replace: true
+      })
+    }
+  }
+
+  const clearSearch = () => {
+    setSearchQuery('')
+    setIsSearchExpanded(false)
+    router.get('/posts', {}, {
       preserveState: true,
       replace: true
     })
@@ -47,49 +73,97 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
     router.visit(`/posts/${publicSlug}`)
   }
 
+  // Auto-expand if there's a search query from URL
+  useEffect(() => {
+    if (search) {
+      setIsSearchExpanded(true)
+    }
+  }, [search])
+
+  // Clear search when query becomes empty
+  useEffect(() => {
+    if (searchQuery === '' && search) {
+      // If the local search query is empty but URL still has search param, clear it
+      router.get('/posts', {}, {
+        preserveState: true,
+        replace: true
+      })
+    }
+  }, [searchQuery, search])
+
   const pageContent = (
     <>
-      <Head title="Published Posts - Signify" />
+      <Head title="Discover - Signify" />
       
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-3xl">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              Published Posts
-            </h1>
-            <p className="text-lg text-muted-foreground mb-6">
-              Discover verified human-written content on Signify
-            </p>
-            
-            {/* Search */}
-            <form onSubmit={handleSearch} className="max-w-md mx-auto">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    type="text"
-                    placeholder="Search posts..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Button type="submit" variant="outline">
-                  Search
-                </Button>
+          <div className="mb-8 sm:mb-12">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-medium text-foreground mb-2">
+                  Discover
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Latest verified human-written posts
+                </p>
               </div>
-            </form>
+              
+              {/* Search Toggle */}
+              <div className="flex items-center gap-2">
+                {!isSearchExpanded ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleSearch}
+                    className="h-9 w-9 p-0"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <form onSubmit={handleSearch} className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Search posts..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 w-48 sm:w-64 text-sm border-muted"
+                        onBlur={(e) => {
+                          // Only collapse if no search query and not clicking on clear button
+                          if (!searchQuery && e.relatedTarget?.getAttribute('data-search-action') !== 'clear') {
+                            setIsSearchExpanded(false)
+                          }
+                        }}
+                      />
+                    </form>
+                    {searchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearSearch}
+                        className="h-9 w-9 p-0"
+                        data-search-action="clear"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Posts */}
           {posts.length === 0 ? (
-            <div className="text-center py-12">
-              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <div className="text-center py-16">
+              <FileText className="mx-auto h-8 w-8 text-muted-foreground/50 mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
                 {search ? 'No posts found' : 'No posts yet'}
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {search 
                   ? 'Try adjusting your search terms.'
                   : 'Check back later for published content.'
@@ -97,61 +171,63 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {posts.map((post) => (
-                <Card 
+            <div className="space-y-6 sm:space-y-8">
+              {posts.map((post, index) => (
+                <article 
                   key={post.id} 
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  className="group cursor-pointer border-b border-border pb-6 sm:pb-8 last:border-b-0"
                   onClick={() => visitPost(post.public_slug)}
                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-xl font-semibold text-foreground mb-2 hover:text-primary transition-colors">
-                          {post.title}
-                        </CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>By {post.author.display_name}</span>
-                          <span>{post.published_at}</span>
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="flex-shrink-0 w-5 sm:w-6 text-right">
+                      <span className="text-xs sm:text-sm text-muted-foreground font-mono">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-base sm:text-lg font-medium text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">
+                        {post.title}
+                      </h2>
+                      
+                      <p className="text-muted-foreground text-sm mb-3 leading-relaxed line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                        <span className="font-medium">{post.author.display_name}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">{post.published_at}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <div className="flex items-center gap-1">
+                          <Clock3 className="h-3 w-3" />
+                          <span>{post.reading_time_minutes}m</span>
+                        </div>
+                        <span className="hidden sm:inline">•</span>
+                        <div className="flex items-center gap-1">
+                          <Verified className="h-3 w-3 text-green-600" />
+                          <span>Verified</span>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Verified
-                      </Badge>
                     </div>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <p className="text-foreground/80 mb-4 leading-relaxed">
-                      {post.excerpt}
-                    </p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="h-4 w-4" />
-                        {post.word_count.toLocaleString()} words
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {post.reading_time_minutes} min read
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </article>
               ))}
             </div>
           )}
           
-          {/* Back to Home */}
-          <div className="text-center mt-12">
-            <Button 
-              variant="outline" 
-              onClick={() => router.visit('/')}
-              className="px-6"
-            >
-              ← Back to Home
-            </Button>
+          {/* Footer */}
+          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground">
+              <Button 
+                variant="ghost" 
+                onClick={() => router.visit('/')}
+                className="text-muted-foreground hover:text-foreground px-0 self-start"
+              >
+                ← Back to Home
+              </Button>
+              <span className="text-xs sm:text-sm">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>
+            </div>
           </div>
         </div>
       </div>
