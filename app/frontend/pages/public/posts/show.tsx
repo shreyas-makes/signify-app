@@ -114,9 +114,9 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-primary/5 py-30">
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-10 lg:px-12">
-          <article className="rounded-[40px] bg-[#fdfaf2] px-8 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-14 sm:py-30 lg:px-16">
+      <div className="min-h-screen bg-background px-6 py-24 sm:px-10 lg:px-16 xl:px-24">
+        <div className="mx-auto w-full max-w-4xl">
+          <article className="rounded-[40px] bg-[#fdfaf2] px-8 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-12 sm:py-24 lg:px-16 lg:py-28">
             <header className="mb-12">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
                 {post.title}

@@ -108,7 +108,7 @@ export function MiniGitGraph({
   keystrokeUrl,
   ariaLabel,
   label = 'Keystroke activity',
-  ctaText = 'View details',
+  ctaText = 'View details ↗',
   graphClassName = '',
 }: MiniGitGraphProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -173,15 +173,25 @@ export function MiniGitGraph({
     }
   }
 
-  const getBarcodeColor = (intensity: number) => {
+  const getBarcodeColor = (intensity: number, index: number) => {
     if (intensity === 0) return '#ffffff' // White for no activity
     
-    // High contrast black/gray scheme for barcode appearance
-    const ratio = Math.log(intensity + 1) / Math.log(maxIntensity + 1)
-    if (ratio > 0.7) return '#000000'      // Black for high intensity
-    if (ratio > 0.4) return '#333333'      // Dark gray for medium-high
-    if (ratio > 0.2) return '#666666'      // Medium gray for medium
-    return '#999999'                       // Light gray for low intensity
+    // Create more visual variance by combining intensity with positional variation
+    const baseRatio = Math.log(intensity + 1) / Math.log(maxIntensity + 1)
+    
+    // Add subtle positional variance to create more interesting patterns
+    const positionVariance = (index % 7) * 0.15 // Cycle through 7 different variance levels
+    const adjustedRatio = Math.min(1, baseRatio + positionVariance * (1 - baseRatio))
+    
+    // More granular color steps for better variance
+    if (adjustedRatio > 0.85) return '#000000'      // Pure black
+    if (adjustedRatio > 0.7) return '#1a1a1a'       // Very dark gray
+    if (adjustedRatio > 0.55) return '#333333'      // Dark gray
+    if (adjustedRatio > 0.4) return '#4d4d4d'       // Medium-dark gray
+    if (adjustedRatio > 0.25) return '#666666'      // Medium gray
+    if (adjustedRatio > 0.15) return '#808080'      // Medium-light gray
+    if (adjustedRatio > 0.05) return '#999999'      // Light gray
+    return '#b3b3b3'                                // Very light gray
   }
 
   const getBarWidth = (intensity: number) => {
@@ -202,6 +212,12 @@ export function MiniGitGraph({
   // Calculate total width needed and scale if necessary
   const totalWidthNeeded = bars.reduce((acc, intensity) => acc + getBarWidth(intensity) + barSpacing, 0)
   const scaleX = totalWidthNeeded > resolvedWidth ? resolvedWidth / totalWidthNeeded : 1
+  
+  // For shorter content, add horizontal centering and gentle spacing expansion
+  const isShortContent = totalWidthNeeded < resolvedWidth * 0.6 && bars.length > 0
+  const spacingMultiplier = isShortContent ? Math.min(2.5, resolvedWidth / totalWidthNeeded) : 1
+  const expandedWidth = totalWidthNeeded * spacingMultiplier
+  const leftOffset = isShortContent ? Math.max(0, (resolvedWidth - expandedWidth) / 2) : 0
 
   return (
     <div
@@ -249,20 +265,21 @@ export function MiniGitGraph({
           >
             {/* Barcode bars */}
             {(() => {
-              let currentX = 0
+              let currentX = leftOffset
               return bars.map((intensity, index) => {
                 const barWidth = getBarWidth(intensity) * scaleX
+                const adjustedSpacing = (barSpacing * scaleX * spacingMultiplier)
                 const x = currentX
-                currentX += barWidth + (barSpacing * scaleX)
+                currentX += barWidth + adjustedSpacing
                 
                 return (
                   <rect
                     key={index}
                     x={x}
                     y={barY}
-                    width={Math.max(0.5, barWidth - (barSpacing * scaleX))} // Ensure minimum visibility
+                    width={Math.max(0.5, barWidth)} // Ensure minimum visibility
                     height={barHeight}
-                    fill={getBarcodeColor(intensity)}
+                    fill={getBarcodeColor(intensity, index)}
                     rx={0} // Sharp corners for barcode appearance
                   />
                 )
