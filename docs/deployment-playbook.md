@@ -1,24 +1,15 @@
 **Why this setup?**
-- macOS cannot run Linux containers natively, so we install the Docker CLI plus Colima, which spins up a lightweight Linux VM that acts as the Docker daemon. That VM mirrors the Linux environment on your Hetzner VPS, ensuring images you build locally (on your laptop) will run there.
+- Docker Desktop provides the Docker daemon and build tools needed to create Linux containers on macOS/Windows. These containers mirror the Linux environment on your Hetzner VPS, ensuring images you build locally will run there.
 - Kamal builds, pushes, and deploys Docker images. It needs three secrets—Rails master key, Rails secret key base, and Docker Hub token—so the containers boot correctly and the image push to Docker Hub succeeds.
 
-**Homebrew tooling (local laptop)**
-- `brew install docker docker-compose docker-buildx colima`  
-  Installs the CLI (`docker`), compose/build plugins, and Colima (the local VM/daemon). Without Colima the CLI has nowhere to send commands.
-- Update Docker plugin search path by creating or extending `~/.docker/config.json`:
-  ```json
-  {
-    "cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]
-  }
-  ```
-  This lets the CLI auto-detect the Homebrew-managed plugins.
-
-**Starting the local Docker daemon (still local)**
-- `colima start --arch x86_64 --cpu 2 --memory 4 --disk 60`  
-  Boots a Linux VM that provides the Docker API. `--arch x86_64` makes the VM produce amd64 images, matching the Hetzner CPU. CPU/RAM/disk flags size the VM.
-- `docker context use colima`  
-  Points the Docker CLI at that VM instead of the default (nonexistent) local engine.
-- Check everything is alive: `docker --version` (CLI available) and `docker info | head -n 5` (confirms Colima is the server). If the info command fails, `colima status` or `colima restart` usually fixes it.
+**Docker Desktop setup (local laptop)**
+- Install Docker Desktop from https://www.docker.com/products/docker-desktop
+- Launch Docker Desktop and ensure it's running (look for the Docker icon in your menu bar/system tray)
+- Verify installation: `docker --version` and `docker info | head -n 5`
+- **Important**: Ensure Docker Desktop can build for the correct architecture:
+  - Open Docker Desktop → Settings → General
+  - Make sure "Use Virtualization Framework" is enabled
+  - Verify multi-platform support: `docker buildx ls` should show `linux/amd64` support
 
 **Preparing secrets (local)**
 - `export RAILS_MASTER_KEY=$(cat config/master.key)`  
@@ -49,5 +40,6 @@
 
 **Troubleshooting quick notes**
 - Prompted for a root password during deploy → public key missing on the VPS. Add it to `/root/.ssh/authorized_keys`.
-- Docker commands say “Cannot connect to the Docker daemon” → Colima isn’t running or `docker context` isn’t set.
+- Docker commands say "Cannot connect to the Docker daemon" → Docker Desktop isn't running. Launch Docker Desktop and wait for it to fully start.
 - Forgot the environment exports → rerun the three `export` commands before invoking Kamal.
+- Build fails with architecture errors → Verify `docker buildx ls` shows `linux/amd64` platform support.
