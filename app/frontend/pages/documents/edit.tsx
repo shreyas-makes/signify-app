@@ -1,9 +1,7 @@
-import { Head, router, useForm, usePage } from "@inertiajs/react"
+import { Head, router, useForm } from "@inertiajs/react"
 import {
   ChevronDown,
   ChevronRight,
-  Edit,
-  Eye,
   ExternalLink,
   Loader2,
   Play,
@@ -18,7 +16,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input"
 import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
@@ -51,26 +48,14 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
       content: document.content,
     },
   })
-  const { url } = usePage()
-  
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
   const [isPublishing, setIsPublishing] = useState(false)
   const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [showPasteNotice, setShowPasteNotice] = useState(false)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
-  const isPublished = document.status === 'published'
-  const initialView = (() => {
-    const queryString = url.includes("?") ? url.split("?")[1] : ""
-    const params = new URLSearchParams(queryString)
-    const view = params.get("view")
-    if (view === "write" || view === "preview") {
-      return view
-    }
-    return isPublished ? "preview" : "write"
-  })() as 'write' | 'preview'
-  const [activeView, setActiveView] = useState<'write' | 'preview'>(initialView)
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
 
@@ -182,6 +167,15 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
     return () => clearTimeout(timer)
   }, [attachPastePrevention])
+  
+  // Briefly surface paste warnings then fade them out
+  useEffect(() => {
+    if (pasteAttemptCount > 0) {
+      setShowPasteNotice(true)
+      const timer = setTimeout(() => setShowPasteNotice(false), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [pasteAttemptCount])
 
   // Update auto-save when data changes
   useEffect(() => {
@@ -326,28 +320,15 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
         }
     }
   })()
-  const previewWordCount = wordCount
-  const previewReadingTimeMinutes = Math.max(1, Math.round(Math.max(previewWordCount, 1) / 200))
-  const previewReadingLabel = `${previewReadingTimeMinutes} min${previewReadingTimeMinutes === 1 ? '' : 's'} read`
-  const previewTitle = data.document.title.trim() || "Untitled Document"
-  const hasAnyContent = data.document.content.trim().length > 0
-  const previewContentMarkup = hasAnyContent
-    ? data.document.content
-    : '<p class="text-muted-foreground/70">Start writing to see your public preview.</p>'
-  const previewKeystrokeCount = (typeof document.keystroke_count === 'number'
-    ? document.keystroke_count
-    : keystrokeCount) ?? 0
   const pageBackgroundClass = "bg-background"
   const shellPaddingClass = "max-w-6xl px-6 sm:px-14 lg:px-24 py-10 sm:py-16 gap-8"
   const editorSurfaceClass =
     "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
-  const previewSurfaceClass =
-    "rounded-[40px] border border-[#eadfce] bg-[#fdfaf2] px-8 py-10 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-14 sm:py-14"
   const toolbarWrapperClass = cn(
     "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 px-0 pt-2 pb-4 text-[#5c4d35]"
   )
   const metaTextClass = "text-sm text-[#5c4d35]"
-  const previewMetaAccentClass = "text-[#5c4d35]/80"
+  const metaAccentClass = "text-[#5c4d35]/80"
 
   return (
     <div className="composer-theme min-h-screen bg-background">
@@ -360,31 +341,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
         <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
           <div className="flex-1 overflow-auto">
             <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
-              <Tabs
-                value={activeView}
-                onValueChange={(value) => setActiveView(value as 'write' | 'preview')}
-                className="mt-2 flex-1"
-              >
+              <div className="mt-2 flex-1">
                 <div className={toolbarWrapperClass}>
-                  <TabsList className="rounded-full border border-[#d6c7ab]/70 bg-white/60 p-1 text-[#6e5a3d] shadow-none transition-colors">
-                    <TabsTrigger
-                      value="write"
-                      aria-label="Edit mode"
-                      className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
-                    >
-                      <Edit className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
-                      <span className="sr-only">Edit</span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="preview"
-                      aria-label="Preview mode"
-                      className="group flex items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6c7ab]/50 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:text-[#322718] data-[state=active]:shadow-sm"
-                    >
-                      <Eye className="h-4 w-4 transition-colors group-data-[state=active]:text-[#322718]" strokeWidth={1.75} />
-                      <span className="sr-only">Preview</span>
-                    </TabsTrigger>
-                  </TabsList>
-
                   <TooltipProvider delayDuration={0}>
                     <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
                       <Tooltip>
@@ -451,172 +409,126 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </TooltipProvider>
                 </div>
 
-                <TabsContent value="write" className="mt-6 space-y-6">
-                <div className="space-y-2 pt-1 sm:pt-2">
-                  <Input
-                    ref={titleInputRef}
-                    id="title"
-                    name="title"
-                    type="text"
-                    value={data.document.title}
-                    onChange={(e) => setData('document.title', e.target.value)}
-                    placeholder="Untitled Document"
-                    className={cn(
-                      "text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
-                      "h-auto px-1 sm:px-0 py-3 sm:py-4 shadow-none",
-                      isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
+                <div className="mt-6 space-y-6">
+                  <div className="space-y-2 pt-1 sm:pt-2">
+                    <Input
+                      ref={titleInputRef}
+                      id="title"
+                      name="title"
+                      type="text"
+                      value={data.document.title}
+                      onChange={(e) => setData('document.title', e.target.value)}
+                      placeholder="Untitled Document"
+                      className={cn(
+                        "text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
+                        "h-auto px-1 sm:px-0 py-3 sm:py-4 shadow-none",
+                        isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
+                      )}
+                    />
+                    {errors['document.title'] && (
+                      <p className="text-sm text-destructive">{errors['document.title']}</p>
                     )}
-                  />
-                  {errors['document.title'] && (
-                    <p className="text-sm text-destructive">{errors['document.title']}</p>
-                  )}
-                </div>
+                  </div>
 
-                <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1 px-1 sm:px-0")}>
+                  <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1 px-1 sm:px-0")}>
                   <span>{wordCount} words</span>
                   <span className="text-[#d0c3ae]">•</span>
                   <span>{keystrokeCount} keystrokes</span>
                   {pasteAttemptCount > 0 && (
-                    <span className="text-amber-600 font-medium">
+                    <span
+                      className={cn(
+                        "font-medium transition-opacity duration-500",
+                        showPasteNotice ? "text-amber-600" : "text-amber-600/40"
+                      )}
+                    >
                       {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
                     </span>
                   )}
                 </div>
 
-                {showWelcome && isNewDocument && isFirstDocument && (
-                  <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 p-6">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
-                    <div className="relative">
-                      <div className="mb-3 flex items-center gap-3">
-                        <div className="rounded-full bg-primary/10 p-2">
-                          <Sparkles className="h-5 w-5 text-primary" />
+                  {showWelcome && isNewDocument && isFirstDocument && (
+                    <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 p-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
+                      <div className="relative">
+                        <div className="mb-3 flex items-center gap-3">
+                          <div className="rounded-full bg-primary/10 p-2">
+                            <Sparkles className="h-5 w-5 text-primary" />
+                          </div>
+                          <h3 className="text-lg font-semibold">Welcome to Signify!</h3>
                         </div>
-                        <h3 className="text-lg font-semibold">Welcome to Signify!</h3>
+                        <p className="mb-4 text-muted-foreground">
+                          You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
+                          and stored for verification, proving this content was written by a human.
+                        </p>
+                        <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                          <div className="flex items-center gap-2 text-primary">
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <span>Start with a title above</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-primary">
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <span>Write naturally - no copy/paste</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-primary">
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <span>Auto-save keeps your work safe</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setShowWelcome(false)}
+                          className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
+                          aria-label="Dismiss welcome message"
+                        >
+                          ×
+                        </button>
                       </div>
-                      <p className="mb-4 text-muted-foreground">
-                        You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
-                        and stored for verification, proving this content was written by a human.
-                      </p>
-                      <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-                        <div className="flex items-center gap-2 text-primary">
-                          <div className="h-2 w-2 rounded-full bg-primary" />
-                          <span>Start with a title above</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-primary">
-                          <div className="h-2 w-2 rounded-full bg-primary" />
-                          <span>Write naturally - no copy/paste</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-primary">
-                          <div className="h-2 w-2 rounded-full bg-primary" />
-                          <span>Auto-save keeps your work safe</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setShowWelcome(false)}
-                        className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
-                        aria-label="Dismiss welcome message"
-                      >
-                        ×
-                      </button>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-6 py-8 sm:px-12 sm:py-12 mx-auto")}>
-                  <RichTextEditor
-                    ref={editorRef}
-                    value={data.document.content}
-                    onChange={handleContentChange}
-                    placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
-                    className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                    textareaClassName="p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
-                  />
-                </div>
-                {errors['document.content'] && (
-                  <p className="px-1 text-sm text-destructive">{errors['document.content']}</p>
-                )}
-
-                {keystrokes.length > 0 && (
-                  <div className="border-t border-[#eadcc6] pt-6">
-                    <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="flex h-auto items-center gap-2 p-0 text-left text-[#3f3422] hover:bg-transparent">
-                          {showKeystrokeReplay ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                          <Play className="h-4 w-4" />
-                          <span className="font-medium">Keystroke Replay</span>
-                          <span className={cn("text-sm", previewMetaAccentClass)}>
-                            ({keystrokes.length} keystrokes recorded)
-                          </span>
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-4">
-                        <KeystrokeReplay
-                          keystrokes={keystrokes}
-                          title={data.document.title || "Untitled Document"}
-                          finalContent={data.document.content}
-                          className="max-w-none"
-                        />
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="preview" className="mt-6">
-                <div className={previewSurfaceClass}>
-                  <article>
-                    <header className="mb-10">
-                      <h1 className="text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
-                        {previewTitle}
-                      </h1>
-                      <p className="mt-3 text-xs font-medium uppercase tracking-[0.35em] text-[#a38f74]">
-                        {previewReadingLabel}
-                      </p>
-                      <div className="mt-6 text-sm text-[#5c4d35]">
-                        <span>{previewWordCount.toLocaleString()} words</span>
-                        <span className="mx-2 inline-block text-[#d0c3ae]">•</span>
-                        <span>{previewKeystrokeCount.toLocaleString()} keystrokes</span>
-                      </div>
-                    </header>
-
-                    <div
-                      className="prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#2d2518] prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422] prose-strong:text-[#2d2518]"
-                      dangerouslySetInnerHTML={{ __html: previewContentMarkup }}
+                  <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-6 py-8 sm:px-12 sm:py-12 mx-auto")}>
+                    <RichTextEditor
+                      ref={editorRef}
+                      value={data.document.content}
+                      onChange={handleContentChange}
+                      placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
+                      className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
+                      textareaClassName="p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
                     />
+                  </div>
+                  {errors['document.content'] && (
+                    <p className="px-1 text-sm text-destructive">{errors['document.content']}</p>
+                  )}
 
-                    <footer className="mt-12 border-t border-[#eadcc6] pt-6 text-sm text-[#5c4d35]">
-                      {publicPostUrl ? (
-                        <p>
-                          Readers currently view this page at{" "}
-                          <a
-                            href={publicPostUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline decoration-[#8a6d44]/60 underline-offset-4 transition-colors hover:text-[#8a6d44]"
-                          >
-                            {publicPostUrl}
-                          </a>.
-                        </p>
-                      ) : (
-                        <p>Publish to generate a shareable public link for this post.</p>
-                      )}
-                      <p className="mt-3 text-[#7a674a]">
-                        Because you&apos;re signed in, you can switch back to Edit to keep refining your draft without leaving this page.
-                      </p>
-                      {!hasAnyContent && (
-                        <p className="mt-3 text-muted-foreground">
-                          Add content in the editor to see a richer preview.
-                        </p>
-                      )}
-                    </footer>
-                  </article>
+                  {keystrokes.length > 0 && (
+                    <div className="border-t border-[#eadcc6] pt-6">
+                      <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="flex h-auto items-center gap-2 p-0 text-left text-[#3f3422] hover:bg-transparent">
+                            {showKeystrokeReplay ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                            <Play className="h-4 w-4" />
+                            <span className="font-medium">Keystroke Replay</span>
+                            <span className={cn("text-sm", metaAccentClass)}>
+                              ({keystrokes.length} keystrokes recorded)
+                            </span>
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-4">
+                          <KeystrokeReplay
+                            keystrokes={keystrokes}
+                            title={data.document.title || "Untitled Document"}
+                            finalContent={data.document.content}
+                            className="max-w-none"
+                          />
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </div>
+                  )}
                 </div>
-              </TabsContent>
-              </Tabs>
+              </div>
             </div>
           </div>
         </div>

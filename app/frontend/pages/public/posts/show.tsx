@@ -61,7 +61,7 @@ export default function PublicPostShow({ post, meta }: Props) {
     ? post.author.bio
     : "The author has not added a description yet."
   const canEdit = Boolean(post.can_edit)
-  const editUrl = canEdit ? `/documents/${post.id}/edit?view=write` : null
+  const editUrl = canEdit ? `/documents/${post.id}/edit` : null
 
   const pageContent = (
     <>
@@ -141,7 +141,7 @@ export default function PublicPostShow({ post, meta }: Props) {
               className="prose prose-lg max-w-none text-[#3f3422]
                 prose-headings:font-semibold prose-headings:text-foreground
                 prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422]
-                prose-strong:text-[#2d2518]"
+                prose-strong:text-[#2d2518] whitespace-pre-line"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
             <footer className="mt-16 border-t border-[#eadcc6] pt-9">
