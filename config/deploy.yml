@@ -2,12 +2,12 @@
 service: signify
 
 # Name of the container image.
-image: your-user/signify
+image: railshobbyist/signify
 
 # Deploy to these servers.
 servers:
   web:
-    - YOUR_HETZNER_VPS_IP
+    - 91.98.196.39
 
   # Uncomment to enable SSR:
   # vite_ssr:
@@ -28,13 +28,13 @@ servers:
 # Note: If using Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
 proxy:
   ssl: false  # Set to true when you have a domain
-  host: YOUR_HETZNER_VPS_IP
+  host: 91.98.196.39
 
 # Credentials for your image host.
 registry:
   # Specify the registry server, if you're not using Docker Hub
   # server: registry.digitalocean.com / ghcr.io / ...
-  username: your-user
+  username: railshobbyist
 
   # Always use an access token rather than real password when possible.
   password:
@@ -49,6 +49,8 @@ env:
     # Application configuration
     RAILS_ENV: production
     APP_NAME: Signify
+    APP_DOMAIN: 91.98.196.39
+    ALLOWED_HOSTS: 91.98.196.39
     FORCE_SSL: false
     RACK_ATTACK_ENABLED: true
     
@@ -100,7 +102,7 @@ builder:
   # dockerfile: Dockerfile-ssr
   cache:
     type: registry
-    image: your-user/signify-build-cache
+    image: railshobbyist/signify-build-cache
     options: mode=max
 
   # # Build image via remote server (useful for faster amd64 builds on arm64 computers)
@@ -114,8 +116,10 @@ builder:
   #   - RAILS_MASTER_KEY
 
 # Use a different ssh user than root
-# ssh:
-#   user: app
+ssh:
+  user: root
+  keys:
+    - "~/.ssh/opensoftwaretools"
 
 # Use accessory services (secrets come from .kamal/secrets).
 # accessories:
