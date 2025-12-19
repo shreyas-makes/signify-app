@@ -94,6 +94,9 @@ bin/rails db:migrate RAILS_ENV=production
 ## Step 6: Deploy
 
 ```bash
+# Kamal builds from committed git state; uncommitted changes are ignored
+git status
+
 # Initial setup (first deployment)
 bin/kamal setup
 
