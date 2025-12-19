@@ -466,6 +466,56 @@ export const railsHealthCheckPath: ((
 
 /**
  * Generates rails route to
+ * /rails/info(.:format)
+ * @param {object | undefined} options
+ * @returns {string} route path
+ */
+export const railsInfoPath: ((
+  options?: {format?: OptionalRouteParameter} & RouteOptions
+) => string) & RouteHelperExtras;
+
+/**
+ * Generates rails route to
+ * /rails/info/notes(.:format)
+ * @param {object | undefined} options
+ * @returns {string} route path
+ */
+export const railsInfoNotesPath: ((
+  options?: {format?: OptionalRouteParameter} & RouteOptions
+) => string) & RouteHelperExtras;
+
+/**
+ * Generates rails route to
+ * /rails/info/properties(.:format)
+ * @param {object | undefined} options
+ * @returns {string} route path
+ */
+export const railsInfoPropertiesPath: ((
+  options?: {format?: OptionalRouteParameter} & RouteOptions
+) => string) & RouteHelperExtras;
+
+/**
+ * Generates rails route to
+ * /rails/info/routes(.:format)
+ * @param {object | undefined} options
+ * @returns {string} route path
+ */
+export const railsInfoRoutesPath: ((
+  options?: {format?: OptionalRouteParameter} & RouteOptions
+) => string) & RouteHelperExtras;
+
+/**
+ * Generates rails route to
+ * /rails/mailers(.:format)
+ * @param {object | undefined} options
+ * @returns {string} route path
+ */
+export const railsMailersPath: ((
+  options?: {format?: OptionalRouteParameter} & RouteOptions
+) => string) & RouteHelperExtras;
+
+/**
+ * Generates rails route to
  * /rails/action_mailbox/mailgun/inbound_emails/mime(.:format)
  * @param {object | undefined} options
  * @returns {string} route path

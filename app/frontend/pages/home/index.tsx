@@ -270,7 +270,7 @@ export default function Welcome() {
                 Join the proof
               </Badge>
               <h2 className="font-serif text-3xl leading-tight text-foreground sm:text-4xl">
-                Ready to start writing with proof, or help build Signify?
+                Ready to start publishing all too human essays?
               </h2>
               <p className="max-w-2xl text-lg text-muted-foreground">
                 Spin up your first verified session in minutes, or contribute code, docs, and ideas to make authorship verification stronger for everyone.
