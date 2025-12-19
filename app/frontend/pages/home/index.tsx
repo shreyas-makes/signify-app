@@ -143,7 +143,7 @@ export default function Welcome() {
                   Prove every word you publish is unmistakably yours.
                 </h1>
                 <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                  Signify traces every keystroke while you draft so editors, readers, and platforms feel the human craft in your words. Publish with a shareable proof that shows exactly how your story came to life—no AI, just you.
+                 Publish with a shareable proof that shows exactly how your story came to life—no AI, just you.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <Button size="lg" asChild className="group flex w-full items-center justify-center gap-2 px-6 py-3 text-base sm:w-auto">
@@ -152,12 +152,7 @@ export default function Welcome() {
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   </Button>
-                  <Button variant="outline" size="lg" asChild className="flex w-full items-center justify-center gap-2 px-6 py-3 text-base sm:w-auto">
-                    <Link href={publicPostsPath()}>
-                      <Play className="h-4 w-4" />
-                      Watch writing replay
-                    </Link>
-                  </Button>
+                  
                 </div>
 
               </div>
@@ -270,31 +265,13 @@ export default function Welcome() {
                 Join the proof
               </Badge>
               <h2 className="font-serif text-3xl leading-tight text-foreground sm:text-4xl">
-                Ready to start publishing all too human essays?
+                Ready to start publishing essays?
               </h2>
-              <p className="max-w-2xl text-lg text-muted-foreground">
-                Spin up your first verified session in minutes, or contribute code, docs, and ideas to make authorship verification stronger for everyone.
-              </p>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Button size="lg" asChild>
                   <Link href={auth.user ? dashboardPath() : signUpPath()}>
                     {auth.user ? 'Go to dashboard' : 'Start writing'}
                   </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  asChild
-                  className="group border-border/70 text-foreground hover:bg-background"
-                >
-                  <a
-                    href="https://github.com/placeholder/signify"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Github className="mr-2 h-4 w-4 group-hover:scale-105 transition-transform" />
-                    Contribute on GitHub
-                  </a>
                 </Button>
               </div>
             </div>
