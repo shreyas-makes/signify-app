@@ -89,7 +89,7 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl font-semibold flex items-center gap-2">
               <Shield className="h-6 w-6" />
               Admin Dashboard
@@ -167,16 +167,16 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
             <CardContent>
               <div className="space-y-4">
                 {users.slice(0, 10).map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div>
+                  <div key={user.id} className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
                       <p className="font-medium">{user.display_name}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <p className="break-words text-sm text-muted-foreground">{user.email}</p>
                       <div className="flex gap-2 mt-1">
                         {user.verified && <Badge variant="default" className="text-xs">Verified</Badge>}
                         {user.admin && <Badge variant="destructive" className="text-xs">Admin</Badge>}
                       </div>
                     </div>
-                    <div className="text-right text-sm">
+                    <div className="text-left text-sm sm:text-right">
                       <p>{user.documents_count} docs</p>
                       <p className="text-muted-foreground">{formatDate(user.created_at)}</p>
                     </div>
@@ -199,7 +199,7 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
                 <p className="text-sm text-muted-foreground">No documents have been created yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <Table>
+                  <Table className="min-w-[720px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Title</TableHead>
@@ -266,7 +266,7 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
           <CardContent>
             <div className="grid gap-4">
               {recent_posts.map((post) => (
-                <div key={post.id} className="flex items-center justify-between p-4 rounded-lg border">
+                <div key={post.id} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex-1">
                     <p className="font-medium">{post.title}</p>
                     <p className="text-sm text-muted-foreground">by {post.user.display_name}</p>
@@ -275,14 +275,14 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
                       <span>{formatNumber(post.keystroke_count)} keystrokes</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" asChild>
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+                    <Button size="sm" variant="outline" asChild className="w-full sm:w-auto">
                       <a href={`/posts/${post.public_slug}`} target="_blank" rel="noreferrer">
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </a>
                     </Button>
-                    <div className="text-right text-sm">
+                    <div className="text-left text-sm sm:text-right">
                       <p className="text-muted-foreground">{formatDate(post.published_at)}</p>
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
               <Button variant="outline" className="h-20 flex flex-col gap-2">
                 <TrendingUp className="h-6 w-6" />
                 View Analytics

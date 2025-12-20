@@ -99,7 +99,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
         <div className="mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-3xl">
           {/* Header */}
           <div className="mb-8 sm:mb-12">
-            <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div className="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-xl sm:text-2xl font-medium text-foreground mb-2">
                   Discover
@@ -110,7 +110,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
               </div>
               
               {/* Search Toggle */}
-              <div className="flex items-center gap-2">
+              <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
                 {!isSearchExpanded ? (
                   <Button
                     variant="ghost"
@@ -121,8 +121,8 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                     <Search className="h-4 w-4" />
                   </Button>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <form onSubmit={handleSearch} className="relative">
+                  <div className="flex w-full items-center gap-2 sm:w-auto">
+                    <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                       <Input
                         ref={searchInputRef}
@@ -130,7 +130,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                         placeholder="Search posts..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 w-48 sm:w-64 text-sm border-muted"
+                        className="pl-10 w-full sm:w-64 text-sm border-muted"
                         onBlur={(e) => {
                           // Only collapse if no search query and not clicking on clear button
                           if (!searchQuery && e.relatedTarget?.getAttribute('data-search-action') !== 'clear') {

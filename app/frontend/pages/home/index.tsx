@@ -120,7 +120,7 @@ export default function Welcome() {
         />
       </Head>
 
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
         <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
             <Link href="/" className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export default function Welcome() {
         <main>
           <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/5 via-background to-accent/10">
             <div className="pointer-events-none absolute inset-x-0 -top-40 flex justify-center blur-3xl">
-              <div className="h-[400px] w-[720px] bg-gradient-to-r from-primary/35 via-accent/25 to-chart-2/20 opacity-60" />
+              <div className="h-[260px] w-[420px] bg-gradient-to-r from-primary/35 via-accent/25 to-chart-2/20 opacity-60 sm:h-[400px] sm:w-[720px]" />
             </div>
             <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
               <div className="space-y-4">

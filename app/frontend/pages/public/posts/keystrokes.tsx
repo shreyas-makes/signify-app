@@ -135,7 +135,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
   const [allKeystrokes, setAllKeystrokes] = useState<Keystroke[]>(keystrokes)
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 800)
   const { auth } = usePage<PageProps>().props
-  const heatmapWidth = windowWidth > 1024 ? 920 : Math.max(360, windowWidth - 80)
+  const heatmapWidth = Math.min(920, Math.max(260, windowWidth - 48))
   const heatmapHeight = windowWidth > 768 ? 360 : 260
 
   // Handle window resize for responsive git graph

@@ -46,21 +46,26 @@ export default function DocumentsNew() {
     <AppLayout>
       <Head title="New Document" />
 
-      <div className="h-screen flex flex-col">
+      <div className="min-h-svh flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-background">
-          <Button variant="ghost" size="sm" asChild>
+        <div className="flex flex-col gap-3 border-b bg-background px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <Button variant="ghost" size="sm" asChild className="self-start">
             <a href={documentsPath()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Documents
             </a>
           </Button>
 
-          <div className="mt-4 flex items-center gap-4">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="text-sm text-muted-foreground">
               {wordCount} words
             </div>
-            <Button type="submit" form="document-form" disabled={processing}>
+            <Button
+              type="submit"
+              form="document-form"
+              disabled={processing}
+              className="w-full sm:w-auto"
+            >
               <Save className="h-4 w-4 mr-2" />
               {processing ? 'Creating...' : 'Create Document'}
             </Button>
@@ -82,7 +87,7 @@ export default function DocumentsNew() {
                   placeholder="Untitled Document"
                   required
                   autoFocus
-                  className="text-4xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  className="text-3xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 sm:text-4xl"
                 />
                 {errors['document.title'] && (
                   <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>

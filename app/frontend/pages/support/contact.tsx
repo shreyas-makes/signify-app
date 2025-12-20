@@ -175,19 +175,19 @@ export default function Contact() {
               <CardTitle>Service Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm">Service Status</span>
                 <Badge variant="default" className="bg-green-600">
                   All Systems Operational
                 </Badge>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm">Version</span>
                 <Badge variant="outline">MVP 1.0</Badge>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm">Data Centers</span>
                 <Badge variant="secondary">Hetzner EU</Badge>
               </div>

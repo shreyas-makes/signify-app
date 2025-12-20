@@ -34,9 +34,9 @@ export default function Sessions({ sessions }: SessionsProps) {
                 key={session.id}
                 className="flex flex-col space-y-2 rounded-lg border p-4"
               >
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-medium break-words">
                       {session.user_agent}
                       {session.id === auth.session.id && (
                         <Badge variant="secondary" className="ml-2">
@@ -53,7 +53,7 @@ export default function Sessions({ sessions }: SessionsProps) {
                     </p>
                   </div>
                   {session.id !== auth.session.id && (
-                    <Button variant="destructive" asChild>
+                    <Button variant="destructive" asChild className="self-start sm:self-center">
                       <Link
                         method="delete"
                         href={sessionPath({ id: session.id })}

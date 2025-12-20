@@ -244,7 +244,7 @@ export default function Dashboard({
 
           {/* Filters and Controls */}
           <div className="flex w-full flex-col gap-5 rounded-[32px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-10 sm:py-8">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center w-full sm:w-auto">
+            <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
               <div className="relative w-full sm:w-80 lg:w-96">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -268,11 +268,15 @@ export default function Dashboard({
               </Select>
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
               {selectedDocuments.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" disabled={isPerformingBulkAction}>
+                    <Button
+                      variant="outline"
+                      disabled={isPerformingBulkAction}
+                      className="w-full sm:w-auto"
+                    >
                       <MoreHorizontal className="h-4 w-4 mr-2" />
                       Bulk Actions ({selectedDocuments.length})
                     </Button>
@@ -325,98 +329,62 @@ export default function Dashboard({
             </Card>
           ) : (
             <Card className="rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.35)]">
-              <CardContent className="p-0 overflow-hidden">
+              <CardContent className="p-0">
                 <div className="px-6 py-5 sm:px-10 sm:py-8">
-                  <Table className="w-full text-sm [&_th]:px-6 [&_th]:py-4 [&_td]:px-6 [&_td]:py-4 [&_th:first-child]:pl-0 [&_td:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:last-child]:pr-0">
-                    <TableHeader>
-                      <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
-                        <TableHead className="w-12">
+                  <div className="space-y-4 md:hidden">
+                    {documents.map((document) => (
+                      <div
+                        key={document.id}
+                        className="rounded-2xl border border-[#eadfce] bg-white/70 p-4 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
                           <Checkbox
-                            checked={selectedDocuments.length === documents.length}
-                            onCheckedChange={toggleSelectAll}
+                            checked={selectedDocuments.includes(document.id)}
+                            onCheckedChange={() => toggleDocumentSelection(document.id)}
+                            className="mt-1"
                           />
-                        </TableHead>
-                        <TableHead>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleSort('title')}
-                            className="h-auto p-0 font-medium"
-                          >
-                            Title
-                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </TableHead>
-                        <TableHead>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleSort('status')}
-                            className="h-auto p-0 font-medium"
-                          >
-                            Status
-                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </TableHead>
-                        <TableHead>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleSort('word_count')}
-                            className="h-auto p-0 font-medium"
-                          >
-                            Words
-                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </TableHead>
-                        <TableHead>Keystrokes</TableHead>
-                        <TableHead>Reading Time</TableHead>
-                        <TableHead>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleSort('updated_at')}
-                            className="h-auto p-0 font-medium"
-                          >
-                            Updated
-                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </TableHead>
-                        <TableHead className="w-20">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {documents.map((document) => (
-                        <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-[#f7f1e6]">
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedDocuments.includes(document.id)}
-                              onCheckedChange={() => toggleDocumentSelection(document.id)}
-                            />
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            <Link 
-                              href={editDocumentPath({ id: document.id })}
-                              className="hover:text-primary transition-colors"
-                            >
-                              {document.title || "Untitled Document"}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={getStatusColor(document.status)} className="capitalize">
-                              {getStatusBadgeText(document.status)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{document.word_count}</TableCell>
-                          <TableCell>{document.keystroke_count}</TableCell>
-                          <TableCell>{formatReadingTime(document.reading_time_minutes)}</TableCell>
-                          <TableCell>{formatDate(document.updated_at)}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex items-start justify-between gap-3">
+                              <Link
+                                href={editDocumentPath({ id: document.id })}
+                                className="truncate font-medium text-[#3f3422] hover:text-primary transition-colors"
+                              >
+                                {document.title || "Untitled Document"}
+                              </Link>
+                              <Badge
+                                variant={getStatusColor(document.status)}
+                                className="shrink-0 capitalize"
+                              >
+                                {getStatusBadgeText(document.status)}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                              <div>
+                                <span className="block text-[11px] uppercase tracking-wide text-[#9f8a6a]">Words</span>
+                                <span>{document.word_count}</span>
+                              </div>
+                              <div>
+                                <span className="block text-[11px] uppercase tracking-wide text-[#9f8a6a]">Keystrokes</span>
+                                <span>{document.keystroke_count}</span>
+                              </div>
+                              <div>
+                                <span className="block text-[11px] uppercase tracking-wide text-[#9f8a6a]">Reading</span>
+                                <span>{formatReadingTime(document.reading_time_minutes)}</span>
+                              </div>
+                              <div>
+                                <span className="block text-[11px] uppercase tracking-wide text-[#9f8a6a]">Updated</span>
+                                <span>{formatDate(document.updated_at)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2 pt-2">
                               <Button variant="ghost" size="sm" asChild>
                                 <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
                                   <Edit className="h-4 w-4" />
                                 </Link>
                               </Button>
                               {document.status === 'draft' && (
-                                <Button 
-                                  variant="ghost" 
+                                <Button
+                                  variant="ghost"
                                   size="sm"
                                   aria-label="Delete document"
                                   onClick={() => {
@@ -429,11 +397,121 @@ export default function Dashboard({
                                 </Button>
                               )}
                             </div>
-                          </TableCell>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hidden md:block overflow-x-auto">
+                    <Table className="min-w-[900px] w-full text-sm [&_th]:px-6 [&_th]:py-4 [&_td]:px-6 [&_td]:py-4 [&_th:first-child]:pl-0 [&_td:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:last-child]:pr-0">
+                      <TableHeader>
+                        <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={selectedDocuments.length === documents.length}
+                              onCheckedChange={toggleSelectAll}
+                            />
+                          </TableHead>
+                          <TableHead>
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleSort('title')}
+                              className="h-auto p-0 font-medium"
+                            >
+                              Title
+                              <ArrowUpDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleSort('status')}
+                              className="h-auto p-0 font-medium"
+                            >
+                              Status
+                              <ArrowUpDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleSort('word_count')}
+                              className="h-auto p-0 font-medium"
+                            >
+                              Words
+                              <ArrowUpDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </TableHead>
+                          <TableHead>Keystrokes</TableHead>
+                          <TableHead>Reading Time</TableHead>
+                          <TableHead>
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleSort('updated_at')}
+                              className="h-auto p-0 font-medium"
+                            >
+                              Updated
+                              <ArrowUpDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </TableHead>
+                          <TableHead className="w-20">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {documents.map((document) => (
+                          <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-[#f7f1e6]">
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedDocuments.includes(document.id)}
+                                onCheckedChange={() => toggleDocumentSelection(document.id)}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              <Link 
+                                href={editDocumentPath({ id: document.id })}
+                                className="hover:text-primary transition-colors"
+                              >
+                                {document.title || "Untitled Document"}
+                              </Link>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={getStatusColor(document.status)} className="capitalize">
+                                {getStatusBadgeText(document.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{document.word_count}</TableCell>
+                            <TableCell>{document.keystroke_count}</TableCell>
+                            <TableCell>{formatReadingTime(document.reading_time_minutes)}</TableCell>
+                            <TableCell>{formatDate(document.updated_at)}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button variant="ghost" size="sm" asChild>
+                                  <Link href={editDocumentPath({ id: document.id })} aria-label="Edit document">
+                                    <Edit className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                                {document.status === 'draft' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    aria-label="Delete document"
+                                    onClick={() => {
+                                      if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+                                        router.delete(documentPath({ id: document.id }))
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -441,19 +519,20 @@ export default function Dashboard({
 
           {/* Pagination */}
           {pagination.total_pages > 1 && (
-            <div className="flex items-center justify-between pb-12">
+            <div className="flex flex-col gap-4 pb-12 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to{' '}
                 {Math.min(pagination.current_page * pagination.per_page, pagination.total_documents)} of{' '}
                 {pagination.total_documents} documents
               </p>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(pagination.current_page - 1)}
                   disabled={pagination.current_page === 1}
+                  className="whitespace-nowrap"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -487,6 +566,7 @@ export default function Dashboard({
                   size="sm"
                   onClick={() => handlePageChange(pagination.current_page + 1)}
                   disabled={pagination.current_page === pagination.total_pages}
+                  className="whitespace-nowrap"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
