@@ -320,14 +320,9 @@ export default function Welcome() {
 
         <footer className="border-t border-border bg-background py-12 text-sm text-muted-foreground">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground">
-                S
-              </div>
-              <div>
-                <p className="text-base font-semibold text-foreground">Signify</p>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Authenticity for writers</p>
-              </div>
+            <div>
+              <p className="font-serif text-lg tracking-tight text-foreground">Signify</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Authenticity for writers</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
