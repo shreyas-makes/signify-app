@@ -35,7 +35,6 @@ import { dashboardPath } from "@/routes"
 import type { NavItem, SharedData } from "@/types"
 
 import AppLogo from "./app-logo"
-import AppLogoIcon from "./app-logo-icon"
 
 const mainNavItems: NavItem[] = [
   {
@@ -92,7 +91,10 @@ export function AppHeader() {
               >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <SheetHeader className="flex justify-start text-left">
-                  <AppLogoIcon className="h-6 w-6 object-contain" />
+                  <AppLogo
+                    showIcon={false}
+                    labelClassName="font-serif text-lg tracking-tight"
+                  />
                 </SheetHeader>
                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                   <div className="flex h-full flex-col justify-between text-sm">
@@ -138,7 +140,10 @@ export function AppHeader() {
             prefetch
             className="flex items-center space-x-2"
           >
-            <AppLogo />
+            <AppLogo
+              showIcon={false}
+              labelClassName="font-serif text-lg tracking-tight"
+            />
           </Link>
 
           {/* Desktop Navigation */}

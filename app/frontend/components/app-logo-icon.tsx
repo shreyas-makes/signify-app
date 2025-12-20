@@ -4,7 +4,7 @@ type AppLogoIconProps = ImgHTMLAttributes<HTMLImageElement>
 
 export default function AppLogoIcon({
   alt = "Signify logo",
-  src = "/logo2.png",
+  src = "/logo3.png",
   ...props
 }: AppLogoIconProps) {
   return (

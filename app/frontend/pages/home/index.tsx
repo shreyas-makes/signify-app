@@ -125,9 +125,8 @@ export default function Welcome() {
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
             <Link href="/" className="flex items-center gap-3">
               <AppLogo
-                iconClassName="size-10"
-                labelWrapperClassName="ml-3"
-                labelClassName="text-lg font-semibold tracking-tight"
+                showIcon={false}
+                labelClassName="font-serif text-xl tracking-tight"
               />
             </Link>
 
