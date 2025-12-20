@@ -106,6 +106,9 @@ bin/kamal deploy
 - Set `APP_DOMAIN` and `ALLOWED_HOSTS` to the domain (include `www` if you use it)
 - Wait for DNS to point at the VPS IP
 - Run `bin/kamal deploy` (or `bin/kamal proxy restart` if the app is already up)
+- Ensure DNS does not include any extra A records or URL redirect records
+  - Only keep `A @ -> <vps-ip>` and `CNAME www -> <your-domain>`
+  - If `dig +short <your-domain>` shows multiple IPs, delete the extra one
 
 ## Healthcheck / troubleshooting
 
