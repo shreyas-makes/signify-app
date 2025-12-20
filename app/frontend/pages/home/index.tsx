@@ -126,7 +126,6 @@ export default function Welcome() {
             <Link href="/" className="flex items-center gap-3">
               <AppLogo
                 iconClassName="size-10"
-                iconInnerClassName="size-5"
                 labelWrapperClassName="ml-3"
                 labelClassName="text-lg font-semibold tracking-tight"
               />

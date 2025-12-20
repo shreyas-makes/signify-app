@@ -4,23 +4,18 @@ import AppLogoIcon from "./app-logo-icon"
 
 interface AppLogoProps {
   iconClassName?: string
-  iconInnerClassName?: string
   labelWrapperClassName?: string
   labelClassName?: string
 }
 
 export default function AppLogo({
   iconClassName,
-  iconInnerClassName,
   labelWrapperClassName,
   labelClassName,
 }: AppLogoProps = {}) {
   return (
     <>
-      <AppLogoIcon
-        className={cn("size-8", iconClassName)}
-        iconClassName={cn("h-4 w-4", iconInnerClassName)}
-      />
+      <AppLogoIcon className={cn("size-8 object-contain", iconClassName)} />
       <div className={cn("ml-2 grid flex-1 text-left", labelWrapperClassName)}>
         <span
           className={cn(
