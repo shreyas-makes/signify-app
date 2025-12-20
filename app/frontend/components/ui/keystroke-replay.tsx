@@ -23,6 +23,7 @@ interface KeystrokeReplayProps {
   title: string
   finalContent: string
   className?: string
+  autoPlayOnView?: boolean
 }
 
 const toNumber = (value: number | string | null | undefined): number | null => {
@@ -51,13 +52,14 @@ const toNumericTimestamp = (value: number | string | null | undefined): number |
   return null
 }
 
-export function KeystrokeReplay({ keystrokes, title, finalContent, className }: KeystrokeReplayProps) {
+export function KeystrokeReplay({ keystrokes, title, finalContent, className, autoPlayOnView = false }: KeystrokeReplayProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [displayContent, setDisplayContent] = useState("")
   const [playbackSpeed, setPlaybackSpeed] = useState(2) // 2x speed by default
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const normalizeCharacter = useCallback((keystroke: KeystrokeEvent): string => {
     const directChar = keystroke.character ?? ''
@@ -266,14 +268,46 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
     }
   }, [applyKeystroke, isPlaying, currentIndex, playableKeystrokes, playbackSpeed, totalKeystrokes])
 
+  const resetPlayback = useCallback(() => {
+    setIsPlaying(false)
+    setCurrentIndex(0)
+    setDisplayContent("")
+  }, [])
+
+  useEffect(() => {
+    if (!autoPlayOnView || totalKeystrokes === 0) return
+
+    const element = containerRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            if (currentIndex < totalKeystrokes) {
+              setIsPlaying(true)
+            }
+          } else {
+            resetPlayback()
+          }
+        }
+      },
+      { threshold: 0.4 }
+    )
+
+    observer.observe(element)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [autoPlayOnView, currentIndex, resetPlayback, totalKeystrokes])
+
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying)
   }
 
   const handleReset = () => {
-    setIsPlaying(false)
-    setCurrentIndex(0)
-    setDisplayContent("")
+    resetPlayback()
   }
 
   const handleSkipForward = () => {
@@ -323,8 +357,9 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
   }
 
   return (
-    <Card className={cn("shadow-sm ring-1 ring-border/40 ", className)}>
-      <CardHeader className="pb-4">
+    <div ref={containerRef}>
+      <Card className={cn("shadow-sm ring-1 ring-border/40 ", className)}>
+        <CardHeader className="pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-xl font-semibold text-foreground">
@@ -338,8 +373,27 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
             <span>{playbackSpeed}× speed</span>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </CardHeader>
+        <CardContent className="space-y-6">
+        {/* Content Display */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-foreground">Real-time Content</h4>
+            <span className="text-xs text-muted-foreground">
+              {displayContent.length} characters
+            </span>
+          </div>
+          <div 
+            ref={contentRef}
+            className="rounded-lg border border-border bg-white p-4 font-mono text-sm shadow-sm whitespace-pre-wrap min-h-[220px] max-h-[320px] overflow-y-auto"
+          >
+            {displayContent || <span className="text-muted-foreground italic">Start playback to see content...</span>}
+            {isPlaying && <span className="animate-pulse">|</span>}
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
             <span>Replay Progress</span>
@@ -418,23 +472,6 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
 
         <Separator />
 
-        {/* Content Display */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-foreground">Real-time Content</h4>
-            <span className="text-xs text-muted-foreground">
-              {displayContent.length} characters
-            </span>
-          </div>
-          <div 
-            ref={contentRef}
-            className="rounded-lg border border-border bg-white p-4 font-mono text-sm shadow-sm whitespace-pre-wrap min-h-[220px] max-h-[320px] overflow-y-auto"
-          >
-            {displayContent || <span className="text-muted-foreground italic">Start playback to see content...</span>}
-            {isPlaying && <span className="animate-pulse">|</span>}
-          </div>
-        </div>
-
         {/* Stats */}
         <div className="grid gap-4 text-center sm:grid-cols-4">
           <div className="rounded-lg border border-border bg-muted p-3">
@@ -462,7 +499,8 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className }: 
             <p className="text-xs text-muted-foreground">Keys/Word</p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

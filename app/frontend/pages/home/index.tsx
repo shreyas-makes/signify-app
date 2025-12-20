@@ -20,47 +20,32 @@ interface DemoAction {
 
 const demoBaseTimestamp = Date.parse('2024-01-04T16:00:00Z')
 
-const demoActions: DemoAction[] = [
-  { type: 'char', value: 'H', delay: 180 },
-  { type: 'char', value: 'u', delay: 120 },
-  { type: 'char', value: 'm', delay: 110 },
-  { type: 'char', value: 'a', delay: 105 },
-  { type: 'char', value: 'n', delay: 115 },
-  { type: 'char', value: ' ', delay: 140 },
-  { type: 'char', value: 'h', delay: 130 },
-  { type: 'char', value: 'a', delay: 100 },
-  { type: 'char', value: 'n', delay: 100 },
-  { type: 'char', value: 'd', delay: 100 },
-  { type: 'char', value: 's', delay: 110 },
-  { type: 'char', value: ' ', delay: 140 },
-  { type: 'char', value: 'd', delay: 120 },
-  { type: 'char', value: 'r', delay: 90 },
-  { type: 'char', value: 'a', delay: 85 },
-  { type: 'char', value: 'f', delay: 80 },
-  { type: 'char', value: 't', delay: 85 },
-  { type: 'char', value: ' ', delay: 140 },
-  { type: 'char', value: 'e', delay: 100 },
-  { type: 'char', value: 'v', delay: 95 },
-  { type: 'char', value: 'e', delay: 90 },
-  { type: 'char', value: 'r', delay: 90 },
-  { type: 'char', value: 'y', delay: 120 },
-  { type: 'char', value: ' ', delay: 140 },
-  { type: 'char', value: 'l', delay: 100 },
-  { type: 'char', value: 'i', delay: 90 },
-  { type: 'char', value: 'n', delay: 90 },
-  { type: 'char', value: 'e', delay: 95 },
-  { type: 'char', value: 'e', delay: 80 },
-  { type: 'backspace', delay: 150 },
-  { type: 'char', value: ' ', delay: 160 },
-  { type: 'char', value: 'b', delay: 100 },
-  { type: 'char', value: 'y', delay: 90 },
-  { type: 'char', value: ' ', delay: 150 },
-  { type: 'char', value: 'h', delay: 110 },
-  { type: 'char', value: 'a', delay: 90 },
-  { type: 'char', value: 'n', delay: 90 },
-  { type: 'char', value: 'd', delay: 100 },
-  { type: 'char', value: '.', delay: 160 },
-]
+function buildDemoActionsFromText(text: string): DemoAction[] {
+  const actions: DemoAction[] = []
+
+  for (const character of text) {
+    let delay = 90
+
+    if (character === ' ') {
+      delay = 140
+    } else if (',;:'.includes(character)) {
+      delay = 190
+    } else if ('.!?'.includes(character)) {
+      delay = 220
+    }
+
+    actions.push({ type: 'char', value: character, delay })
+  }
+
+  return actions
+}
+
+const demoText =
+  'It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness. ' +
+  'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. ' +
+  'All happy families are alike; each unhappy family is unhappy in its own way. ' +
+  'There was no possibility of taking a walk that day.'
+const demoActions: DemoAction[] = buildDemoActionsFromText(demoText)
 
 const {
   keystrokes: replayDemoKeystrokes,
@@ -266,6 +251,7 @@ export default function Welcome() {
                     keystrokes={replayDemoKeystrokes}
                     finalContent={replayDemoFinalContent}
                     title="Demo draft: human hands draft every line"
+                    autoPlayOnView
                     className="border border-border/60 bg-background/95 shadow-md ring-1 ring-border/40"
                   />
                 </div>

@@ -55,12 +55,12 @@ function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-green-600">{keystrokes.length.toLocaleString()} verified keystrokes</span>
+        <span className="font-medium text-primary">{keystrokes.length.toLocaleString()} verified keystrokes</span>
       </div>
       
       {/* Enhanced barcode visualization */}
       <div className="space-y-3">
-        <div className="flex h-16 w-full items-center overflow-hidden rounded-lg border border-green-300/30 bg-white/60 px-3 py-2">
+        <div className="flex h-16 w-full items-center overflow-hidden rounded-lg border border-primary/25 bg-white/70 px-3 py-2">
           <div className="flex h-full w-full items-center">
             {bars.map((intensity, index) => {
               const height = intensity === 0 ? 3 : Math.max(3, Math.min(48, (intensity / maxIntensity) * 48))
@@ -70,7 +70,7 @@ function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
               return (
                 <div
                   key={index}
-                  className="bg-green-700 transition-all hover:bg-green-600"
+                  className="bg-primary/80 transition-all hover:bg-primary"
                   style={{
                     height: `${height}px`,
                     opacity,
@@ -91,7 +91,7 @@ function EnhancedBarcode({ keystrokes }: { keystrokes: Keystroke[] }) {
 export function KeystrokeBarcode({ keystrokes, keystrokeUrl, className = "" }: KeystrokeBarcodeProps) {
   return (
     <div className={`not-prose w-full ${className}`}>
-      <div className="w-full overflow-hidden rounded-lg border border-green-200 bg-green-50">
+      <div className="w-full overflow-hidden rounded-lg border border-primary/20 bg-primary/5">
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
           <div className="min-w-0 flex-1">
             <EnhancedBarcode keystrokes={keystrokes} />
@@ -103,7 +103,7 @@ export function KeystrokeBarcode({ keystrokes, keystrokeUrl, className = "" }: K
                 asChild
                 variant="ghost" 
                 size="sm"
-                className="h-8 px-2 text-green-600 hover:bg-green-100 hover:text-green-700"
+                className="h-8 px-2 text-primary hover:bg-primary/10 hover:text-primary"
                 title="View Full Timeline"
               >
                 <a href={keystrokeUrl} target="_blank" rel="noopener noreferrer">
