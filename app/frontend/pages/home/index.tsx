@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Github, Play, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -120,7 +120,7 @@ export default function Welcome() {
         />
       </Head>
 
-      <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground">
         <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
             <Link href="/" className="flex items-center gap-3">
@@ -169,7 +169,7 @@ export default function Welcome() {
               <div className="h-[260px] w-[420px] bg-gradient-to-r from-primary/35 via-accent/25 to-chart-2/20 opacity-60 sm:h-[400px] sm:w-[720px]" />
             </div>
             <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
-              <div className="space-y-4">
+              <div className="min-w-0 space-y-4">
                 <Badge
                   variant="secondary"
                   className="w-fit gap-2 text-xs font-semibold uppercase tracking-wide shadow-sm ring-1 ring-primary/15"
@@ -195,11 +195,12 @@ export default function Welcome() {
 
               </div>
 
-              <div className="relative">
+              <div className="relative w-full min-w-0 max-w-full">
                 <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
                 <VerifiedSessionCard
                   initials="SJ"
                   sessionMeta="3 min ago | 1,348 keystrokes"
+                  className="w-full max-w-full"
                 />
               </div>
             </div>

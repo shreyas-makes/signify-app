@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
-import AppSidebarLayout from "@/layouts/app/app-sidebar-layout"
+import AppLayout from "@/layouts/app-layout"
 import { documentPath } from "@/routes"
 import type { Document } from "@/types"
 
@@ -321,30 +321,27 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     }
   })()
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "max-w-6xl px-6 sm:px-14 lg:px-24 py-10 sm:py-16 gap-8"
-  const editorSurfaceClass =
-    "rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)]"
+  const shellPaddingClass = "max-w-6xl px-6 sm:px-14 lg:px-24 py-6 sm:py-10 gap-6"
+  const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
-    "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 px-0 pt-2 pb-4 text-[#5c4d35]"
+    "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 pt-2 pb-4 text-[#5c4d35]"
   )
+  const contentInsetClass = "px-6 sm:px-10 lg:px-12"
   const metaTextClass = "text-sm text-[#5c4d35]"
   const metaAccentClass = "text-[#5c4d35]/80"
 
   return (
     <div className="composer-theme min-h-screen bg-background">
-      <AppSidebarLayout 
-        documents={documents}
-        currentDocumentId={document.id}
-      >
+      <AppLayout>
         <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
         <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
           <div className="flex-1 overflow-auto">
             <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
               <div className="mt-2 flex-1">
-                <div className={toolbarWrapperClass}>
+                <div className={cn(toolbarWrapperClass, contentInsetClass)}>
                   <TooltipProvider delayDuration={0}>
-                    <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 justify-start w-full">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
@@ -410,7 +407,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 </div>
 
                 <div className="mt-6 space-y-6">
-                  <div className="space-y-2 pt-1 sm:pt-2">
+                  <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     <Input
                       ref={titleInputRef}
                       id="title"
@@ -421,7 +418,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                       placeholder="Untitled Document"
                       className={cn(
                         "text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
-                        "h-auto px-1 sm:px-0 py-3 sm:py-4 shadow-none",
+                        "h-auto px-0 py-3 sm:py-4 shadow-none",
                         isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
                       )}
                     />
@@ -430,73 +427,75 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     )}
                   </div>
 
-                  <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1 px-1 sm:px-0")}>
-                  <span>{wordCount} words</span>
-                  <span className="text-[#d0c3ae]">•</span>
-                  <span>{keystrokeCount} keystrokes</span>
-                  {pasteAttemptCount > 0 && (
-                    <span
-                      className={cn(
-                        "font-medium transition-opacity duration-500",
-                        showPasteNotice ? "text-amber-600" : "text-amber-600/40"
-                      )}
-                    >
-                      {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
-                    </span>
-                  )}
-                </div>
+                  <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1", contentInsetClass)}>
+                    <span>{wordCount} words</span>
+                    <span className="text-[#d0c3ae]">•</span>
+                    <span>{keystrokeCount} keystrokes</span>
+                    {pasteAttemptCount > 0 && (
+                      <span
+                        className={cn(
+                          "font-medium transition-opacity duration-500",
+                          showPasteNotice ? "text-amber-600" : "text-amber-600/40"
+                        )}
+                      >
+                        {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
+                      </span>
+                    )}
+                  </div>
 
                   {showWelcome && isNewDocument && isFirstDocument && (
-                    <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 p-6">
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
-                      <div className="relative">
-                        <div className="mb-3 flex items-center gap-3">
-                          <div className="rounded-full bg-primary/10 p-2">
-                            <Sparkles className="h-5 w-5 text-primary" />
+                    <div className={contentInsetClass}>
+                      <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 p-6">
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
+                        <div className="relative">
+                          <div className="mb-3 flex items-center gap-3">
+                            <div className="rounded-full bg-primary/10 p-2">
+                              <Sparkles className="h-5 w-5 text-primary" />
+                            </div>
+                            <h3 className="text-lg font-semibold">Welcome to Signify!</h3>
                           </div>
-                          <h3 className="text-lg font-semibold">Welcome to Signify!</h3>
+                          <p className="mb-4 text-muted-foreground">
+                            You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
+                            and stored for verification, proving this content was written by a human.
+                          </p>
+                          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                            <div className="flex items-center gap-2 text-primary">
+                              <div className="h-2 w-2 rounded-full bg-primary" />
+                              <span>Start with a title above</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-primary">
+                              <div className="h-2 w-2 rounded-full bg-primary" />
+                              <span>Write naturally - no copy/paste</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-primary">
+                              <div className="h-2 w-2 rounded-full bg-primary" />
+                              <span>Auto-save keeps your work safe</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setShowWelcome(false)}
+                            className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label="Dismiss welcome message"
+                          >
+                            ×
+                          </button>
                         </div>
-                        <p className="mb-4 text-muted-foreground">
-                          You&apos;re about to create your first keystroke-verified document. Every character you type will be captured 
-                          and stored for verification, proving this content was written by a human.
-                        </p>
-                        <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-                          <div className="flex items-center gap-2 text-primary">
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <span>Start with a title above</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-primary">
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <span>Write naturally - no copy/paste</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-primary">
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <span>Auto-save keeps your work safe</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setShowWelcome(false)}
-                          className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
-                          aria-label="Dismiss welcome message"
-                        >
-                          ×
-                        </button>
                       </div>
                     </div>
                   )}
 
-                  <div className={cn(editorSurfaceClass, "min-h-[420px] overflow-hidden px-6 py-8 sm:px-12 sm:py-12 mx-auto")}>
+                  <div className={cn(editorSurfaceClass, "min-h-[420px] px-0 py-0 sm:px-0 sm:py-0", contentInsetClass)}>
                     <RichTextEditor
                       ref={editorRef}
                       value={data.document.content}
                       onChange={handleContentChange}
                       placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
                       className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                      textareaClassName="p-0 sm:px-2 sm:py-3 md:px-4 md:py-5 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
+                      textareaClassName="p-0 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
                     />
                   </div>
                   {errors['document.content'] && (
-                    <p className="px-1 text-sm text-destructive">{errors['document.content']}</p>
+                    <p className={cn("text-sm text-destructive", contentInsetClass)}>{errors['document.content']}</p>
                   )}
 
                   {keystrokes.length > 0 && (
@@ -532,7 +531,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
             </div>
           </div>
         </div>
-      </AppSidebarLayout>
+      </AppLayout>
     </div>
   )
 }

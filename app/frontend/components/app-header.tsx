@@ -1,5 +1,5 @@
 import { Link, usePage } from "@inertiajs/react"
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from "lucide-react"
+import { BookOpen, Folder, LayoutGrid, Menu, Newspaper, Search } from "lucide-react"
 
 import { Icon } from "@/components/icon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -42,6 +42,11 @@ const mainNavItems: NavItem[] = [
     title: "Dashboard",
     href: dashboardPath(),
     icon: LayoutGrid,
+  },
+  {
+    title: "Published Posts",
+    href: "/posts",
+    icon: Newspaper,
   },
 ]
 
@@ -147,16 +152,17 @@ export function AppHeader() {
                   >
                     <Link
                       href={item.href}
+                      aria-label={item.title}
                       className={cn(
                         navigationMenuTriggerStyle(),
                         page.url === item.href && activeItemStyles,
-                        "h-9 cursor-pointer px-3",
+                        "h-9 w-9 cursor-pointer justify-center px-0",
                       )}
                     >
                       {item.icon && (
-                        <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />
+                        <Icon iconNode={item.icon} className="h-4 w-4" />
                       )}
-                      {item.title}
+                      <span className="sr-only">{item.title}</span>
                     </Link>
                     {page.url === item.href && (
                       <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-foreground"></div>

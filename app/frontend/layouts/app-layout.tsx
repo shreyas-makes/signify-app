@@ -1,21 +1,11 @@
 import type { ReactNode } from "react"
 
-import AppLayoutTemplate from "@/layouts/app/app-sidebar-layout"
-import type { Document } from "@/types"
+import AppLayoutTemplate from "@/layouts/app/app-header-layout"
 
 interface AppLayoutProps {
   children: ReactNode
-  documents?: Document[]
-  currentDocumentId?: number
 }
 
-export default function AppLayout({
-  children,
-  ...props
-}: AppLayoutProps) {
-  return (
-    <AppLayoutTemplate {...props}>
-      {children}
-    </AppLayoutTemplate>
-  )
+export default function AppLayout({ children }: AppLayoutProps) {
+  return <AppLayoutTemplate>{children}</AppLayoutTemplate>
 }
