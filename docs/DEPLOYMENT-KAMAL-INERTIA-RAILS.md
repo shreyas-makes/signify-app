@@ -8,6 +8,7 @@ Use this as a repeatable checklist for deploying Inertia on Rails apps to a VPS 
 - SSH access to the VPS user that can run Docker
 - Docker Hub (or other registry) credentials with **push** access
 - Project has a working Dockerfile and Kamal config
+- Local Docker daemon is running (Docker Desktop open on macOS)
 
 ## One-time VPS setup
 
@@ -86,6 +87,11 @@ Commit any deploy-related changes (like `config/deploy.yml`, `config/credentials
   docker logout
   docker login -u <dockerhub-user>
   ```
+  Confirm the daemon is running:
+  ```bash
+  docker ps
+  ```
+  You should see headers like `CONTAINER ID` even if no containers are running.
 
 ## Deploy
 
@@ -93,6 +99,13 @@ Commit any deploy-related changes (like `config/deploy.yml`, `config/credentials
 bin/kamal setup
 bin/kamal deploy
 ```
+
+## SSL / domain cert
+
+- Set `proxy.ssl: true` and `proxy.host: <your-domain>` in `config/deploy.yml`
+- Set `APP_DOMAIN` and `ALLOWED_HOSTS` to the domain (include `www` if you use it)
+- Wait for DNS to point at the VPS IP
+- Run `bin/kamal deploy` (or `bin/kamal proxy restart` if the app is already up)
 
 ## Healthcheck / troubleshooting
 
@@ -122,6 +135,11 @@ Common issues:
 - **Docker login fails**:
   - Make sure `KAMAL_REGISTRY_PASSWORD` is exported
   - Token needs push scope
+  - If you see `flag needs an argument: 'p'`, the env var is empty or unset
+    ```bash
+    echo "$KAMAL_REGISTRY_PASSWORD"
+    docker login -u <dockerhub-user>
+    ```
 
 - **Sign in / Sign up hangs on IP (no domain)**:
   - If `config.assume_ssl = true` in production, Inertia requests return `409` with `X-Inertia-Location: https://<ip>`

@@ -27,8 +27,8 @@ servers:
 #
 # Note: If using Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
 proxy:
-  ssl: false  # Set to true when you have a domain + SSL
-  host: 57.128.170.45
+  ssl: true  # Enable SSL for the domain
+  host: signifywriting.com
 
 # Credentials for your image host.
 registry:
@@ -49,9 +49,9 @@ env:
     # Application configuration
     RAILS_ENV: production
     APP_NAME: Signify
-    APP_DOMAIN: 57.128.170.45
-    ALLOWED_HOSTS: 57.128.170.45
-    FORCE_SSL: false
+    APP_DOMAIN: signifywriting.com
+    ALLOWED_HOSTS: signifywriting.com,www.signifywriting.com
+    FORCE_SSL: true
     RACK_ATTACK_ENABLED: true
 
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
