@@ -103,6 +103,13 @@ bin/kamal deploy
 ## SSL / domain cert
 
 - Set `proxy.ssl: true` and `proxy.host: <your-domain>` in `config/deploy.yml`
+- Set `proxy.host` to include both apex and `www` if you want both:
+  - Example:
+    ```yaml
+    proxy:
+      ssl: true
+      host: "signifywriting.com www.signifywriting.com"
+    ```
 - Set `APP_DOMAIN` and `ALLOWED_HOSTS` to the domain (include `www` if you use it)
 - Wait for DNS to point at the VPS IP
 - Run `bin/kamal deploy` (or `bin/kamal proxy restart` if the app is already up)
