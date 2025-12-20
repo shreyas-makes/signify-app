@@ -147,11 +147,11 @@ export default function Welcome() {
         </header>
 
         <main>
-          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/5 via-background to-accent/10">
-            <div className="pointer-events-none absolute inset-x-0 -top-40 flex justify-center blur-3xl">
-              <div className="h-[260px] w-[420px] bg-gradient-to-r from-primary/35 via-accent/25 to-chart-2/20 opacity-60 sm:h-[400px] sm:w-[720px]" />
+          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15">
+            <div className="pointer-events-none absolute inset-x-0 -top-40 z-0 flex justify-center blur-3xl">
+              <div className="h-[260px] w-[420px] bg-gradient-to-r from-primary/30 via-accent/25 to-chart-2/20 opacity-60 blur-3xl blob-drift-1 sm:h-[400px] sm:w-[720px]" />
             </div>
-            <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
+            <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
               <div className="min-w-0 space-y-4">
                 <Badge
                   variant="secondary"
@@ -189,24 +189,14 @@ export default function Welcome() {
             </div>
           </section>
 
-          <section className="border-b border-border py-14">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4">
-              <div className="text-center text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                Trusted by teams safeguarding authentic voices
-              </div>
-              <div className="grid items-center justify-center gap-6 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:grid-cols-3 lg:grid-cols-6">
-                <span>Literary Wave</span>
-                <span>Archway Media</span>
-                <span>Publisher Co</span>
-                <span>Proof Labs</span>
-                <span>Campus Writers</span>
-                <span>Authentic Voice</span>
-              </div>
-            </div>
-          </section>
-
-          <section id="features" className="border-b border-border bg-background py-20">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4">
+          <section
+            id="features"
+            className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15 py-20"
+          >
+            <div className="pointer-events-none absolute -top-24 left-[-6%] z-0 h-[200px] w-[320px] -rotate-6 rounded-full bg-gradient-to-r from-primary/40 via-accent/30 to-chart-2/25 opacity-85 blur-3xl blob-drift-1 sm:h-[260px] sm:w-[420px]" />
+            <div className="pointer-events-none absolute top-28 right-[-8%] z-0 h-[220px] w-[360px] rotate-3 rounded-full bg-gradient-to-r from-accent/40 via-primary/30 to-chart-2/25 opacity-75 blur-3xl blob-drift-2 sm:h-[300px] sm:w-[480px]" />
+            <div className="pointer-events-none absolute bottom-10 left-[18%] z-0 h-[180px] w-[300px] -rotate-2 rounded-full bg-gradient-to-r from-chart-2/35 via-accent/30 to-primary/25 opacity-80 blur-3xl blob-drift-3 sm:h-[240px] sm:w-[380px]" />
+            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-16 px-4">
               <div className="max-w-2xl space-y-4">
                 <Badge
                   variant="outline"
@@ -280,9 +270,12 @@ export default function Welcome() {
 
           <section
             id="get-started"
-            className="border-t border-border bg-muted/60 py-20"
+            className="relative overflow-hidden border-t border-border bg-gradient-to-br from-primary/10 via-muted/70 to-accent/15 py-20"
           >
-            <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-8 px-4 text-center">
+            <div className="pointer-events-none absolute inset-x-0 -top-32 z-0 flex justify-center blur-3xl">
+              <div className="h-[220px] w-[420px] bg-gradient-to-r from-primary/40 via-accent/30 to-chart-2/25 opacity-75 blur-3xl blob-drift-2 sm:h-[300px] sm:w-[640px]" />
+            </div>
+            <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center gap-8 px-4 text-center">
               <Badge
                 variant="outline"
                 className="w-fit text-xs font-semibold uppercase tracking-wider text-muted-foreground"
