@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Github, Play, Sparkles } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -72,6 +73,43 @@ const dnaDemoKeystrokes = analyticsDemoKeystrokes.slice(0, 220)
 export default function Welcome() {
   const page = usePage<SharedData>()
   const { auth } = page.props
+  const analyticsGraphRef = useRef<HTMLDivElement | null>(null)
+  const [analyticsGraphWidth, setAnalyticsGraphWidth] = useState(880)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const element = analyticsGraphRef.current
+    if (!element) {
+      return
+    }
+
+    const updateWidth = (nextWidth: number) => {
+      const normalizedWidth = Math.max(1, Math.floor(nextWidth || 0))
+      setAnalyticsGraphWidth((prev) => (Math.abs(prev - normalizedWidth) > 1 ? normalizedWidth : prev))
+    }
+
+    updateWidth(element.clientWidth)
+
+    if ('ResizeObserver' in window && typeof window.ResizeObserver === 'function') {
+      const observer = new window.ResizeObserver((entries) => {
+        for (const entry of entries) {
+          updateWidth(entry.contentRect.width)
+        }
+      })
+
+      observer.observe(element)
+      return () => observer.disconnect()
+    }
+
+    const handleResize = () => updateWidth(element.clientWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const analyticsGraphHeight = analyticsGraphWidth < 520 ? 220 : 280
 
   return (
     <>
@@ -241,13 +279,15 @@ export default function Welcome() {
                       Aggregate keystroke evidence to surface writing velocity, focus breaks, and correction patterns across your entire team.
                     </p>
                   </div>
-                  <GitCommitGraph
-                    keystrokes={analyticsDemoKeystrokes}
-                    width={880}
-                    height={280}
-                    interactive={false}
-                    className="shadow-md ring-1 ring-border/40"
-                  />
+                  <div ref={analyticsGraphRef} className="w-full">
+                    <GitCommitGraph
+                      keystrokes={analyticsDemoKeystrokes}
+                      width={analyticsGraphWidth}
+                      height={analyticsGraphHeight}
+                      interactive={false}
+                      className="shadow-md ring-1 ring-border/40"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
