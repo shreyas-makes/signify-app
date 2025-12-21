@@ -1,8 +1,10 @@
 import { Head, useForm } from "@inertiajs/react"
-import { ArrowLeft, Save } from "lucide-react"
+import type { Editor } from "@tiptap/react"
+import { ArrowLeft, Eye, Pencil, Save } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
+import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
@@ -18,6 +20,8 @@ export default function DocumentsNew() {
   })
 
   const [wordCount, setWordCount] = useState(0)
+  const [isPreview, setIsPreview] = useState(false)
+  const [editor, setEditor] = useState<Editor | null>(null)
   const editorRef = useRef<RichTextEditorRef>(null)
 
   // Update word count when content changes
@@ -42,6 +46,9 @@ export default function DocumentsNew() {
     post(documentsPath())
   }
 
+  const previewClassName =
+    "prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#322718] prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
+
   return (
     <AppLayout showHeader={false}>
       <Head title="New Document" />
@@ -56,6 +63,26 @@ export default function DocumentsNew() {
             </Button>
 
             <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                onClick={() => setIsPreview((prev) => !prev)}
+                size="sm"
+                variant="ghost"
+                aria-pressed={isPreview}
+                className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
+              >
+                {isPreview ? (
+                  <>
+                    <Pencil className="mr-1 h-3.5 w-3.5" />
+                    Edit
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-1 h-3.5 w-3.5" />
+                    Preview
+                  </>
+                )}
+              </Button>
               <span className="text-xs uppercase tracking-[0.18em] text-[#7a6a52]">
                 {wordCount} words
               </span>
@@ -75,32 +102,56 @@ export default function DocumentsNew() {
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
             <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-4 pb-8 sm:pt-6 sm:pb-10">
-              <div className="mb-6">
-                <Input
-                  id="title"
-                  name="title"
-                  type="text"
-                  value={data.document.title}
-                  onChange={(e) => setData('document.title', e.target.value)}
-                  placeholder="Untitled Document"
-                  required
-                  autoFocus
-                  className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
-                />
-                {errors['document.title'] && (
-                  <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
+              <div className="mb-6 space-y-2">
+                {!isPreview && (
+                  <EditorToolbar
+                    editor={editor}
+                  />
+                )}
+                {isPreview ? (
+                  <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+                    {data.document.title.trim() || "Untitled Document"}
+                  </h1>
+                ) : (
+                  <>
+                    <Input
+                      id="title"
+                      name="title"
+                      type="text"
+                      value={data.document.title}
+                      onChange={(e) => setData('document.title', e.target.value)}
+                      placeholder="Untitled Document"
+                      required
+                      autoFocus
+                      className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
+                    />
+                    {errors['document.title'] && (
+                      <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
+                    )}
+                  </>
                 )}
               </div>
 
               <div className="flex-1">
-                <RichTextEditor
-                  ref={editorRef}
-                  value={data.document.content}
-                  onChange={handleContentChange}
-                  placeholder="Start writing your document..."
-                  className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
-                  textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
-                />
+                {isPreview ? (
+                  <div className={previewClassName}>
+                    {data.document.content.trim() ? (
+                      <div dangerouslySetInnerHTML={{ __html: data.document.content }} />
+                    ) : (
+                      <p className="text-[#a89a86]">Nothing to preview yet.</p>
+                    )}
+                  </div>
+                ) : (
+                  <RichTextEditor
+                    ref={editorRef}
+                    value={data.document.content}
+                    onChange={handleContentChange}
+                    placeholder="Start writing your document..."
+                    className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
+                    textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                    onEditorReady={setEditor}
+                  />
+                )}
                 {errors['document.content'] && (
                   <p className="text-sm text-destructive mt-2">{errors['document.content']}</p>
                 )}

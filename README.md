@@ -2,19 +2,23 @@
 
 Prove every word you publish is unmistakably yours.
 
-Signify is the open-source writing platform that traces every keystroke while you draft so editors, readers, and platforms feel the human craft in your words. Publish with a shareable proof bundle that shows exactly how your story came to life—no AI, just you.
+Signify is the open-source writing platform that proves human authorship through keystroke verification. Publish with a shareable proof bundle that shows exactly how your story came to life—no AI, just you.
 
 ## Why teams choose Signify
 
-- Verified human authorship end-to-end with keystroke capture baked into the writing experience.
-- Transparent publishing that bundles drafts, replays, and integrity certificates in a single shareable link.
-- Real-time analytics that surface writing velocity, focus breaks, and revision patterns across your workspace.
+- Verified human authorship end-to-end with keystroke capture baked into every draft.
+- Proof-ready publishing with a shareable bundle of drafts, replays, and session metadata in a single link.
+- Public exploration with a library of verified essays and proof links.
+- Live analytics that surface writing velocity, focus breaks, and correction patterns across your workspace.
 - Built on modern Rails + React foundations so contributors can ship confidently and extend the platform quickly.
 
 ## Platform highlights
 
 ### Keystroke DNA
 See the human fingerprint in every draft. Keystroke telemetry renders an immutable barcode of the writing session so reviewers can spot real authorship at a glance.
+
+### Proof bundles
+Ship every story with an integrity packet. Each shareable link includes the full draft timeline, verified session metadata, and replay evidence to prove authenticity.
 
 ### Immersive replays
 Walk readers through every decision. Collaborators can scrub through the draft exactly as it unfolded—pauses, edits, corrections, and all.

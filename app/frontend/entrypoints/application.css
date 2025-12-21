@@ -183,6 +183,52 @@
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.9rem;
+}
+
+.ProseMirror h1 {
+  font-size: 2.5rem;
+  line-height: 1.12;
+  font-weight: 600;
+  color: #322718;
+}
+
+.ProseMirror h2 {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #322718;
+}
+
+.ProseMirror h3 {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #322718;
+}
+
+.ProseMirror blockquote {
+  border-left: 2px solid #eadcc6;
+  padding-left: 1rem;
+  color: #5c4d35;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.6rem;
+}
+
+.ProseMirror mark {
+  background-color: #f6e2a4;
+  border-radius: 0.2rem;
+  padding: 0 0.15rem;
+}
+
 @layer utilities {
   .line-clamp-1 {
     overflow: hidden;

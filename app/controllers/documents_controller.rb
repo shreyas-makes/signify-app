@@ -161,7 +161,7 @@ class DocumentsController < InertiaController
   def sanitize_content(content)
     # Allow basic formatting but strip dangerous tags
     ActionController::Base.helpers.sanitize(content.to_s, 
-      tags: %w[p br strong b em i u ol ul li blockquote],
+      tags: %w[p br strong b em i u s mark ol ul li blockquote h1 h2 h3],
       attributes: {}
     )
   end

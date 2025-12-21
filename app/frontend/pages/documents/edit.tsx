@@ -1,25 +1,29 @@
 import { Head, router, useForm } from "@inertiajs/react"
+import type { Editor } from "@tiptap/react"
 import {
   ArrowLeft,
   ChevronDown,
   ChevronRight,
+  Eye,
   Loader2,
+  Pencil,
   Play,
   Sparkles,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
+import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Input } from "@/components/ui/input"
 import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
-import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
+import { cn } from "@/lib/utils"
 import { dashboardPath, documentPath } from "@/routes"
 import type { Document } from "@/types"
 
@@ -51,6 +55,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
   const [showPasteNotice, setShowPasteNotice] = useState(false)
+  const [isPreview, setIsPreview] = useState(false)
+  const [editor, setEditor] = useState<Editor | null>(null)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
@@ -301,6 +307,11 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const contentInsetClass = "px-0"
   const metaTextClass = "text-xs uppercase tracking-[0.18em] text-[#7a6a52]"
   const metaAccentClass = "text-[#7a6a52]/70"
+  const previewClassName = cn(
+    "prose prose-lg max-w-none text-[#3f3422]",
+    "prose-headings:font-semibold prose-headings:text-[#322718]",
+    "prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
+  )
 
   return (
     <div className="composer-theme min-h-screen bg-background">
@@ -362,6 +373,26 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 </div>
 
                 <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    onClick={() => setIsPreview((prev) => !prev)}
+                    size="sm"
+                    variant="ghost"
+                    aria-pressed={isPreview}
+                    className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
+                  >
+                    {isPreview ? (
+                      <>
+                        <Pencil className="mr-1 h-3.5 w-3.5" />
+                        Edit
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-1 h-3.5 w-3.5" />
+                        Preview
+                      </>
+                    )}
+                  </Button>
                   {document.status !== 'published' && (
                     <Button
                       onClick={() => void handlePublish()}
@@ -388,22 +419,36 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-6">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
-                    <Input
-                      ref={titleInputRef}
-                      id="title"
-                      name="title"
-                      type="text"
-                      value={data.document.title}
-                      onChange={(e) => setData('document.title', e.target.value)}
-                      placeholder="Untitled Document"
-                      className={cn(
-                        "text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
-                        "h-auto px-0 py-3 sm:py-4 shadow-none",
-                        isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
-                      )}
-                    />
-                    {errors['document.title'] && (
-                      <p className="text-sm text-destructive">{errors['document.title']}</p>
+                    {!isPreview && (
+                      <EditorToolbar
+                        editor={editor}
+                        className="mb-2"
+                      />
+                    )}
+                    {isPreview ? (
+                      <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+                        {data.document.title.trim() || "Untitled Document"}
+                      </h1>
+                    ) : (
+                      <>
+                        <Input
+                          ref={titleInputRef}
+                          id="title"
+                          name="title"
+                          type="text"
+                          value={data.document.title}
+                          onChange={(e) => setData('document.title', e.target.value)}
+                          placeholder="Untitled Document"
+                          className={cn(
+                            "text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
+                            "h-auto px-0 py-3 sm:py-4 shadow-none",
+                            isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
+                          )}
+                        />
+                        {errors['document.title'] && (
+                          <p className="text-sm text-destructive">{errors['document.title']}</p>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -462,14 +507,25 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   )}
 
                   <div className={cn(editorSurfaceClass, "min-h-[420px] px-0 py-0 sm:px-0 sm:py-0", contentInsetClass)}>
-                    <RichTextEditor
-                      ref={editorRef}
-                      value={data.document.content}
-                      onChange={handleContentChange}
-                      placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
-                      className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                      textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
-                    />
+                    {isPreview ? (
+                      <div className={previewClassName}>
+                        {data.document.content.trim() ? (
+                          <div dangerouslySetInnerHTML={{ __html: data.document.content }} />
+                        ) : (
+                          <p className="text-[#a89a86]">Nothing to preview yet.</p>
+                        )}
+                      </div>
+                    ) : (
+                      <RichTextEditor
+                        ref={editorRef}
+                        value={data.document.content}
+                        onChange={handleContentChange}
+                        placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
+                        className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
+                        textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                        onEditorReady={setEditor}
+                      />
+                    )}
                   </div>
                   {errors['document.content'] && (
                     <p className={cn("text-sm text-destructive", contentInsetClass)}>{errors['document.content']}</p>

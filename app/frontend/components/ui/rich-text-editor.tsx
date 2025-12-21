@@ -1,4 +1,9 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
+import Highlight from "@tiptap/extension-highlight"
+import Underline from "@tiptap/extension-underline"
+import type { Editor } from "@tiptap/react"
+import { EditorContent, useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -9,78 +14,124 @@ interface RichTextEditorProps {
   className?: string
   disabled?: boolean
   textareaClassName?: string
+  onEditorReady?: (editor: Editor) => void
 }
 
 export interface RichTextEditorRef {
   getContent: () => string
   setContent: (content: string) => void
   focus: () => void
-  getElement: () => HTMLTextAreaElement | null
+  getElement: () => HTMLElement | null
+  getEditor: () => Editor | null
 }
 
 export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
-  ({ value = '', onChange, placeholder = "Start writing...", className, disabled, textareaClassName }, ref) => {
-    const textareaRef = useRef<HTMLTextAreaElement>(null)
+  (
+    {
+      value = '',
+      onChange,
+      placeholder = "Start writing...",
+      className,
+      disabled,
+      textareaClassName,
+      onEditorReady,
+    },
+    ref
+  ) => {
+    const [isEmpty, setIsEmpty] = useState(!value.trim())
+
+    const editorAttributes = useMemo(() => {
+      return {
+        class: cn(
+          "w-full min-h-[500px] border-0 bg-transparent p-6 text-lg leading-relaxed outline-none focus:outline-none",
+          disabled ? "pointer-events-none opacity-50" : "",
+          textareaClassName,
+        ),
+        style: [
+          "font-family: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
+          "font-size: 18px",
+          "line-height: 1.75",
+          "outline: none",
+        ].join("; "),
+      }
+    }, [disabled, textareaClassName])
+
+    const editor = useEditor({
+      content: value,
+      editable: !disabled,
+      extensions: [
+        StarterKit.configure({
+          heading: { levels: [1, 2, 3] },
+        }),
+        Underline,
+        Highlight,
+      ],
+      editorProps: {
+        attributes: editorAttributes,
+      },
+      onUpdate: ({ editor }) => {
+        const html = editor.getHTML()
+        onChange?.(html)
+        setIsEmpty(editor.isEmpty)
+      },
+      onCreate: ({ editor }) => {
+        setIsEmpty(editor.isEmpty)
+        onEditorReady?.(editor)
+      },
+      onFocus: ({ editor }) => {
+        setIsEmpty(editor.isEmpty)
+      },
+      onBlur: ({ editor }) => {
+        setIsEmpty(editor.isEmpty)
+      },
+    })
 
     useImperativeHandle(ref, () => ({
       getContent: () => {
-        return textareaRef.current?.value ?? ''
+        return editor?.getHTML() ?? ''
       },
       setContent: (content: string) => {
-        if (textareaRef.current) {
-          textareaRef.current.value = content
-          autoResize()
+        if (editor) {
+          editor.commands.setContent(content, { emitUpdate: false })
         }
       },
       focus: () => {
-        textareaRef.current?.focus()
+        editor?.commands.focus()
       },
       getElement: () => {
-        return textareaRef.current
-      }
+        return editor?.view.dom ?? null
+      },
+      getEditor: () => {
+        return editor ?? null
+      },
     }))
 
-    const autoResize = () => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+    useEffect(() => {
+      if (!editor) return
+      const current = editor.getHTML()
+      if (value !== current) {
+        editor.commands.setContent(value, { emitUpdate: false })
       }
-    }
+    }, [editor, value])
 
     useEffect(() => {
-      autoResize()
-    }, [value])
-
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      if (onChange) {
-        onChange(e.target.value)
-      }
-      autoResize()
-    }
+      if (!editor) return
+      editor.setEditable(!disabled)
+      editor.setOptions({
+        editorProps: {
+          attributes: editorAttributes,
+        },
+      })
+    }, [disabled, editor, editorAttributes])
 
     return (
-      <div className={className}>
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={cn(
-            "w-full min-h-[500px] resize-none border-0 bg-transparent p-6 text-lg leading-relaxed outline-none ring-0 placeholder:text-muted-foreground/50 focus:border-transparent focus:outline-none focus:ring-0",
-            disabled ? "pointer-events-none opacity-50" : "",
-            textareaClassName,
-          )}
-          style={{
-            fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-            fontSize: '18px',
-            lineHeight: '1.75',
-            overflow: 'hidden',
-            outline: 'none',
-            border: 'none',
-            boxShadow: 'none'
-          }}
-        />
+      <div className={cn("relative", className)}>
+        {isEmpty && placeholder && (
+          <div className="pointer-events-none absolute left-6 top-6 text-lg text-muted-foreground/50">
+            {placeholder}
+          </div>
+        )}
+        <EditorContent editor={editor} />
       </div>
     )
   }
