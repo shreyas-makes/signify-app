@@ -81,7 +81,7 @@ export function VerifiedSessionCard({
 }: VerifiedSessionCardProps) {
   return (
     <Card className={cn('overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-xl backdrop-blur', className)}>
-      <CardContent className="space-y-6 p-8">
+      <CardContent className="space-y-5 p-6 sm:space-y-6 sm:p-7 lg:p-8">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-muted text-sm font-semibold text-foreground">
@@ -102,32 +102,32 @@ export function VerifiedSessionCard({
           </Badge>
         </div>
 
-        <div className="rounded-2xl border border-border bg-muted/60 p-5 text-left shadow-inner">
+        <div className="space-y-3 text-left sm:space-y-4">
           {previewContent?.paragraphs.length ? (
-            <div className="space-y-3">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
+            <div className="space-y-2 sm:space-y-3">
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground sm:text-xs">
                 {previewHeading}
               </span>
               <div className="scroll-preview rounded-xl border border-border/60 bg-white p-0.5 shadow-sm">
-                <div className="scroll-preview-inner rounded-lg bg-white p-4 shadow-inner">
+                <div className="scroll-preview-inner rounded-lg bg-white p-3 shadow-inner sm:p-4">
                   {[0, 1].map(loop => (
                     <div
                       key={`preview-loop-${loop}`}
-                      className="scroll-preview-segment space-y-3"
+                      className="scroll-preview-segment space-y-2 sm:space-y-3"
                       aria-hidden={loop === 1}
                     >
-                      <h4 className="text-sm font-semibold text-foreground/90">
+                      <h4 className="text-xs font-semibold text-foreground/90 sm:text-sm">
                         {previewContent.title}
                       </h4>
                       {previewContent.meta ? (
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground sm:text-xs">
                           {previewContent.meta}
                         </p>
                       ) : null}
                       {previewContent.paragraphs.map((paragraph, index) => (
                         <p
                           key={`preview-paragraph-${loop}-${index}`}
-                          className="text-sm leading-relaxed text-muted-foreground"
+                          className="text-xs leading-relaxed text-muted-foreground sm:text-sm"
                         >
                           {paragraph}
                         </p>
@@ -141,8 +141,8 @@ export function VerifiedSessionCard({
 
           <div
             className={cn(
-              'mt-4 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground',
-              previewContent?.paragraphs.length ? 'border-t border-border/60 pt-4' : ''
+            'mt-3 flex items-center gap-2 text-[11px] uppercase tracking-wide text-muted-foreground sm:mt-4 sm:gap-3 sm:text-xs',
+              previewContent?.paragraphs.length ? 'border-t border-border/60 pt-3 sm:pt-4' : ''
             )}
           >
             {snippetIcon ?? <Fingerprint className="h-4 w-4 text-primary" />}

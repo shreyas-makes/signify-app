@@ -263,9 +263,21 @@
 
   .scroll-preview {
     position: relative;
-    height: 220px;
+    height: 180px;
     overflow: hidden;
     border-radius: calc(var(--radius) - 6px);
+  }
+
+  @media (min-width: 640px) {
+    .scroll-preview {
+      height: 200px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .scroll-preview {
+      height: 220px;
+    }
   }
 
   .scroll-preview-inner {

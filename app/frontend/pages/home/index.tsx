@@ -201,10 +201,10 @@ export default function Welcome() {
                   <Sparkles className="h-4 w-4 text-primary" />
                   Verified human authorship
                 </Badge>
-                <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl md:text-6xl">
+                <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl">
                   Prove every word you publish is unmistakably yours.
                 </h1>
-                <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+                <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                  Publish with a shareable proof that shows exactly how your story came to life—no AI, just you.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -254,8 +254,8 @@ export default function Welcome() {
               </div>
 
               <div className="grid gap-10 lg:grid-cols-12">
-                <div className="lg:col-span-4">
-                  <div className="flex h-full flex-col gap-6 rounded-3xl border border-border/70 bg-card/80 p-6 shadow-sm backdrop-blur">
+                <div className="min-w-0 lg:col-span-4">
+                  <div className="flex h-full w-full min-w-0 flex-col gap-6 overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-5 shadow-sm backdrop-blur sm:p-6">
                     <div className="space-y-2">
                       <span className="text-xs font-semibold uppercase tracking-widest text-primary">Keystroke DNA</span>
                       <h3 className="text-xl font-semibold text-foreground">See the human fingerprint in every draft.</h3>
@@ -263,14 +263,17 @@ export default function Welcome() {
                         Keystroke telemetry renders an immutable barcode of the writing session so reviewers can spot real authorship at a glance.
                       </p>
                     </div>
-                    <KeystrokeBarcode keystrokes={dnaDemoKeystrokes} className="rounded-2xl shadow-sm" />
+                    <KeystrokeBarcode
+                      keystrokes={dnaDemoKeystrokes}
+                      className="w-full max-w-full rounded-2xl shadow-sm"
+                    />
                     <p className="text-xs text-muted-foreground">
                       Sample session | {dnaDemoKeystrokes.length.toLocaleString()} keystrokes captured across focused drafting bursts.
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-6 lg:col-span-8">
+                <div className="min-w-0 space-y-6 lg:col-span-8">
                   <div className="max-w-none space-y-2 sm:max-w-2xl">
                     <span className="text-xs font-semibold uppercase tracking-widest text-primary">Immersive replays</span>
                     <h3 className="text-xl font-semibold text-foreground">Walk readers through every decision.</h3>
@@ -281,11 +284,11 @@ export default function Welcome() {
                     title="Demo draft: human hands draft every line"
                     autoPlayOnView
                     showStats={false}
-                    className="border border-border/60 bg-background/95 shadow-md ring-1 ring-border/40"
+                    className="w-full max-h-[340px] overflow-hidden border border-border/60 bg-background/95 shadow-md ring-1 ring-border/40 sm:max-h-[360px] md:max-h-[420px] lg:max-h-none"
                   />
                 </div>
 
-                <div className="space-y-6 lg:col-span-12">
+                <div className="min-w-0 space-y-6 lg:col-span-12">
                   <div className="max-w-none space-y-2 sm:max-w-3xl">
                     <span className="text-xs font-semibold uppercase tracking-widest text-primary">Live analytics</span>
                     <h3 className="text-xl font-semibold text-foreground">Spot authenticity trends in real time.</h3>
@@ -293,7 +296,7 @@ export default function Welcome() {
                       Aggregate keystroke evidence to surface writing velocity, focus breaks, and correction patterns across your entire team.
                     </p>
                   </div>
-                  <div ref={analyticsGraphRef} className="w-full">
+                  <div ref={analyticsGraphRef} className="w-full min-w-0">
                     <GitCommitGraph
                       keystrokes={analyticsDemoKeystrokes}
                       width={analyticsGraphWidth}
