@@ -1,4 +1,18 @@
 import type { Editor } from "@tiptap/react"
+import type { LucideIcon } from "lucide-react"
+import {
+  Bold,
+  Heading1,
+  Heading2,
+  Heading3,
+  Highlighter,
+  Italic,
+  List,
+  ListOrdered,
+  Quote,
+  Strikethrough,
+  Underline,
+} from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -10,7 +24,7 @@ interface EditorToolbarProps {
 }
 
 interface MarkAction {
-  label: string
+  icon: LucideIcon
   ariaLabel: string
   action: () => void
   isActive?: () => boolean
@@ -34,31 +48,31 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
 
   const inlineActions: MarkAction[] = [
     {
-      label: "B",
+      icon: Bold,
       ariaLabel: "Bold",
       action: () => editor.chain().focus().toggleBold().run(),
       isActive: () => editor.isActive("bold"),
     },
     {
-      label: "I",
+      icon: Italic,
       ariaLabel: "Italic",
       action: () => editor.chain().focus().toggleItalic().run(),
       isActive: () => editor.isActive("italic"),
     },
     {
-      label: "U",
+      icon: Underline,
       ariaLabel: "Underline",
       action: () => editor.chain().focus().toggleUnderline().run(),
       isActive: () => editor.isActive("underline"),
     },
     {
-      label: "S",
+      icon: Strikethrough,
       ariaLabel: "Strikethrough",
       action: () => editor.chain().focus().toggleStrike().run(),
       isActive: () => editor.isActive("strike"),
     },
     {
-      label: "Mark",
+      icon: Highlighter,
       ariaLabel: "Highlight",
       action: () => editor.chain().focus().toggleHighlight().run(),
       isActive: () => editor.isActive("highlight"),
@@ -67,25 +81,25 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
 
   const blockActions: MarkAction[] = [
     {
-      label: "H1",
+      icon: Heading1,
       ariaLabel: "Heading 1",
       action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
       isActive: () => editor.isActive("heading", { level: 1 }),
     },
     {
-      label: "H2",
+      icon: Heading2,
       ariaLabel: "Heading 2",
       action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
       isActive: () => editor.isActive("heading", { level: 2 }),
     },
     {
-      label: "H3",
+      icon: Heading3,
       ariaLabel: "Heading 3",
       action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
       isActive: () => editor.isActive("heading", { level: 3 }),
     },
     {
-      label: "Quote",
+      icon: Quote,
       ariaLabel: "Blockquote",
       action: () => editor.chain().focus().toggleBlockquote().run(),
       isActive: () => editor.isActive("blockquote"),
@@ -94,13 +108,13 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
 
   const listActions: MarkAction[] = [
     {
-      label: "• List",
+      icon: List,
       ariaLabel: "Bulleted list",
       action: () => editor.chain().focus().toggleBulletList().run(),
       isActive: () => editor.isActive("bulletList"),
     },
     {
-      label: "1. List",
+      icon: ListOrdered,
       ariaLabel: "Numbered list",
       action: () => editor.chain().focus().toggleOrderedList().run(),
       isActive: () => editor.isActive("orderedList"),
@@ -109,7 +123,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
 
   const actionButtonClass = (active?: boolean) =>
     cn(
-      "h-8 px-2 text-xs font-semibold text-[#5c4d35]",
+      "h-8 w-8 p-0 text-[#5c4d35]",
       active && "bg-[#eadcc6]/70 text-[#2b2417]"
     )
 
@@ -125,7 +139,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           className={actionButtonClass(action.isActive?.())}
           onClick={action.action}
         >
-          {action.label}
+          <action.icon className="h-4 w-4" aria-hidden />
         </Button>
       ))}
 
@@ -141,7 +155,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           className={actionButtonClass(action.isActive?.())}
           onClick={action.action}
         >
-          {action.label}
+          <action.icon className="h-4 w-4" aria-hidden />
         </Button>
       ))}
 
@@ -157,7 +171,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           className={actionButtonClass(action.isActive?.())}
           onClick={action.action}
         >
-          {action.label}
+          <action.icon className="h-4 w-4" aria-hidden />
         </Button>
       ))}
     </div>
