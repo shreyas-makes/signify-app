@@ -219,17 +219,40 @@ function StatsGrid({ analysis }: { analysis: WritingAnalysis }) {
   ]
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {stats.map((stat) => (
-        <div key={stat.label} className="rounded-lg border bg-muted/40 p-4 transition-colors">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {stat.label}
+    <>
+      <div className="grid gap-2 sm:hidden">
+        <div className="rounded-lg border bg-muted/40 p-3 transition-colors">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Active typing
           </p>
-          <p className="text-lg font-semibold text-foreground">{stat.value}</p>
-          <p className="text-xs text-muted-foreground">{stat.descriptor}</p>
+          <p className="text-base font-semibold text-foreground">{stats[0].value}</p>
+          <p className="text-[11px] text-muted-foreground">
+            {stats[0].descriptor} · {stats[3].value} pauses
+          </p>
         </div>
-      ))}
-    </div>
+        <div className="rounded-lg border bg-muted/40 p-3 transition-colors">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Pace + corrections
+          </p>
+          <p className="text-base font-semibold text-foreground">{stats[1].value}</p>
+          <p className="text-[11px] text-muted-foreground">
+            {stats[2].value} backspace · {stats[1].descriptor}
+          </p>
+        </div>
+      </div>
+
+      <div className="hidden grid-cols-2 gap-2 sm:grid sm:gap-3 xl:grid-cols-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="rounded-lg border bg-muted/40 p-3 transition-colors sm:p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
+              {stat.label}
+            </p>
+            <p className="text-base font-semibold text-foreground sm:text-lg">{stat.value}</p>
+            <p className="text-[11px] text-muted-foreground sm:text-xs">{stat.descriptor}</p>
+          </div>
+        ))}
+      </div>
+    </>
   )
 }
 

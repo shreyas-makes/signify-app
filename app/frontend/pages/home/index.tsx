@@ -20,32 +20,73 @@ interface DemoAction {
 
 const demoBaseTimestamp = Date.parse('2024-01-04T16:00:00Z')
 
-function buildDemoActionsFromText(text: string): DemoAction[] {
+function buildHumanDemoActions(): DemoAction[] {
   const actions: DemoAction[] = []
+  const jitterPattern = [-18, -8, 0, 6, 14, -5, 11, -12, 4, 0]
+  let actionIndex = 0
+  let delayBoost = 0
 
-  for (const character of text) {
+  const pushChar = (character: string) => {
     let delay = 90
 
     if (character === ' ') {
-      delay = 140
+      delay = 135
     } else if (',;:'.includes(character)) {
-      delay = 190
+      delay = 210
     } else if ('.!?'.includes(character)) {
-      delay = 220
+      delay = 320
+    } else if (character === '\n') {
+      delay = 360
     }
 
-    actions.push({ type: 'char', value: character, delay })
+    delay += jitterPattern[actionIndex % jitterPattern.length]
+
+    if (delayBoost > 0) {
+      delay += delayBoost
+      delayBoost = 0
+    }
+
+    actions.push({ type: 'char', value: character, delay: Math.max(40, delay) })
+    actionIndex += 1
   }
+
+  const pushText = (text: string) => {
+    for (const character of text) {
+      pushChar(character)
+    }
+  }
+
+  const addPause = (durationMs: number) => {
+    delayBoost += durationMs
+  }
+
+  const addBackspaces = (count: number, delay = 120) => {
+    for (let i = 0; i < count; i += 1) {
+      const jitter = jitterPattern[actionIndex % jitterPattern.length]
+      actions.push({ type: 'backspace', delay: Math.max(45, delay + jitter) })
+      actionIndex += 1
+    }
+  }
+
+  pushText('It was the best of times, ')
+  addPause(420)
+  pushText('it was the ')
+  pushText('worsst')
+  addBackspaces(3)
+  pushText('st')
+  addPause(380)
+  pushText(' of times. ')
+  addPause(620)
+  pushText('It is a truth universallyy')
+  addBackspaces(1)
+  pushText(' acknowledged, that a single man in possession of a good fortune, must be in want of a wife. ')
+  addPause(520)
+  pushText('All happy families are alike; each unhappy family is unhappy in its own way.')
 
   return actions
 }
 
-const demoText =
-  'It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness. ' +
-  'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. ' +
-  'All happy families are alike; each unhappy family is unhappy in its own way. ' +
-  'There was no possibility of taking a walk that day.'
-const demoActions: DemoAction[] = buildDemoActionsFromText(demoText)
+const demoActions: DemoAction[] = buildHumanDemoActions()
 
 const {
   keystrokes: replayDemoKeystrokes,
@@ -196,8 +237,8 @@ export default function Welcome() {
             <div className="pointer-events-none absolute -top-24 left-[-6%] z-0 h-[200px] w-[320px] -rotate-6 rounded-full bg-gradient-to-r from-primary/40 via-accent/30 to-chart-2/25 opacity-85 blur-3xl blob-drift-1 sm:h-[260px] sm:w-[420px]" />
             <div className="pointer-events-none absolute top-28 right-[-8%] z-0 h-[220px] w-[360px] rotate-3 rounded-full bg-gradient-to-r from-accent/40 via-primary/30 to-chart-2/25 opacity-75 blur-3xl blob-drift-2 sm:h-[300px] sm:w-[480px]" />
             <div className="pointer-events-none absolute bottom-10 left-[18%] z-0 h-[180px] w-[300px] -rotate-2 rounded-full bg-gradient-to-r from-chart-2/35 via-accent/30 to-primary/25 opacity-80 blur-3xl blob-drift-3 sm:h-[240px] sm:w-[380px]" />
-            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-16 px-4">
-              <div className="max-w-2xl space-y-4">
+            <div className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-16 px-4 sm:max-w-6xl">
+              <div className="max-w-none space-y-4 sm:max-w-2xl">
                 <Badge
                   variant="outline"
                   className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
@@ -230,7 +271,7 @@ export default function Welcome() {
                 </div>
 
                 <div className="space-y-6 lg:col-span-8">
-                  <div className="max-w-2xl space-y-2">
+                  <div className="max-w-none space-y-2 sm:max-w-2xl">
                     <span className="text-xs font-semibold uppercase tracking-widest text-primary">Immersive replays</span>
                     <h3 className="text-xl font-semibold text-foreground">Walk readers through every decision.</h3>
                     <p className="text-sm text-muted-foreground">
@@ -242,12 +283,13 @@ export default function Welcome() {
                     finalContent={replayDemoFinalContent}
                     title="Demo draft: human hands draft every line"
                     autoPlayOnView
+                    showStats={false}
                     className="border border-border/60 bg-background/95 shadow-md ring-1 ring-border/40"
                   />
                 </div>
 
                 <div className="space-y-6 lg:col-span-12">
-                  <div className="max-w-3xl space-y-2">
+                  <div className="max-w-none space-y-2 sm:max-w-3xl">
                     <span className="text-xs font-semibold uppercase tracking-widest text-primary">Live analytics</span>
                     <h3 className="text-xl font-semibold text-foreground">Spot authenticity trends in real time.</h3>
                     <p className="text-sm text-muted-foreground">

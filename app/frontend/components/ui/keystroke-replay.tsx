@@ -24,6 +24,7 @@ interface KeystrokeReplayProps {
   finalContent: string
   className?: string
   autoPlayOnView?: boolean
+  showStats?: boolean
 }
 
 const toNumber = (value: number | string | null | undefined): number | null => {
@@ -52,11 +53,18 @@ const toNumericTimestamp = (value: number | string | null | undefined): number |
   return null
 }
 
-export function KeystrokeReplay({ keystrokes, title, finalContent, className, autoPlayOnView = false }: KeystrokeReplayProps) {
+export function KeystrokeReplay({
+  keystrokes,
+  title,
+  finalContent,
+  className,
+  autoPlayOnView = false,
+  showStats = true,
+}: KeystrokeReplayProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [displayContent, setDisplayContent] = useState("")
-  const [playbackSpeed, setPlaybackSpeed] = useState(2) // 2x speed by default
+  const [playbackSpeed, setPlaybackSpeed] = useState(1) // 1x speed by default
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -470,35 +478,37 @@ export function KeystrokeReplay({ keystrokes, title, finalContent, className, au
           ))}
         </div>
 
-        <Separator />
-
-        {/* Stats */}
-        <div className="grid gap-4 text-center sm:grid-cols-4">
-          <div className="rounded-lg border border-border bg-muted p-3">
-            <p className="text-sm font-semibold text-foreground">
-              {totalKeystrokes.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground">Total Keystrokes</p>
-          </div>
-          <div className="rounded-lg border border-border bg-muted p-3">
-            <p className="text-sm font-semibold text-foreground">
-              {finalContent.length.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground">Final Characters</p>
-          </div>
-          <div className="rounded-lg border border-border bg-muted p-3">
-            <p className="text-sm font-semibold text-foreground">
-              {efficiency}%
-            </p>
-            <p className="text-xs text-muted-foreground">Efficiency</p>
-          </div>
-          <div className="rounded-lg border border-border bg-muted p-3">
-            <p className="text-sm font-semibold text-foreground">
-              {keysPerWord.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground">Keys/Word</p>
-          </div>
-        </div>
+        {showStats ? (
+          <>
+            <Separator />
+            <div className="grid gap-4 text-center sm:grid-cols-4">
+              <div className="rounded-lg border border-border bg-muted p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  {totalKeystrokes.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">Total Keystrokes</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  {finalContent.length.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">Final Characters</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  {efficiency}%
+                </p>
+                <p className="text-xs text-muted-foreground">Efficiency</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  {keysPerWord.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground">Keys/Word</p>
+              </div>
+            </div>
+          </>
+        ) : null}
         </CardContent>
       </Card>
     </div>
