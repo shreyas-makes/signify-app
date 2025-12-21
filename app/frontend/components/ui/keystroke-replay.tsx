@@ -175,12 +175,26 @@ export function KeystrokeReplay({
   const keysPerWord = finalWordCount > 0 ? Math.round(totalKeystrokes / finalWordCount) : totalKeystrokes
 
   const hasValidCursorData = useMemo(() => {
-    // Check if keystroke data has meaningful cursor positioning
-    // If most keystrokes have position 0, likely test/legacy data
-    const positions = playableKeystrokes.map(k => k.cursor_position ?? k.cursorPosition ?? k.document_position ?? 0)
+    // Treat cursor data as valid only when it resembles absolute document offsets.
+    if (playableKeystrokes.length === 0) return false
+
+    const positions = playableKeystrokes.map(
+      k => k.cursor_position ?? k.cursorPosition ?? k.document_position ?? 0
+    )
     const nonZeroPositions = positions.filter(p => p > 0).length
-    return nonZeroPositions > positions.length * 0.1 // At least 10% should have non-zero positions
-  }, [playableKeystrokes])
+
+    if (nonZeroPositions === 0) return false
+
+    const maxPosition = Math.max(...positions)
+    const zeroRatio = 1 - nonZeroPositions / positions.length
+    const lengthThreshold = Math.max(5, Math.floor(finalContent.length * 0.2))
+
+    if (maxPosition < lengthThreshold && zeroRatio > 0.4) {
+      return false
+    }
+
+    return true
+  }, [playableKeystrokes, finalContent.length])
 
   const findCursorPosition = useCallback((keystroke: KeystrokeEvent, contentLength: number) => {
     const rawPosition =
