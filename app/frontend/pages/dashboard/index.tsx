@@ -243,7 +243,7 @@ export default function Dashboard({
           </div>
 
           {/* Filters and Controls */}
-          <div className="flex w-full flex-col gap-5 rounded-[32px] border border-[#eadfce] bg-[#fdfaf2] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-10 sm:py-8">
+          <div className="flex w-full flex-col gap-5 rounded-[32px] border border-[#eadfce] bg-white px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-10 sm:py-8">
             <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
               <div className="relative w-full sm:w-80 lg:w-96">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -328,14 +328,14 @@ export default function Dashboard({
               </CardContent>
             </Card>
           ) : (
-            <Card className="rounded-[36px] border border-[#eadfce] bg-[#fdfaf2] shadow-[0_26px_60px_-34px_rgba(50,40,20,0.35)]">
+            <Card className="rounded-[36px] border border-[#eadfce] bg-white shadow-[0_26px_60px_-34px_rgba(50,40,20,0.35)]">
               <CardContent className="p-0">
                 <div className="px-6 py-5 sm:px-10 sm:py-8">
                   <div className="space-y-4 md:hidden">
                     {documents.map((document) => (
                       <div
                         key={document.id}
-                        className="rounded-2xl border border-[#eadfce] bg-white/70 p-4 shadow-sm"
+                        className="rounded-2xl border border-[#eadfce] bg-white p-4 shadow-sm"
                       >
                         <div className="flex items-start gap-3">
                           <Checkbox
@@ -406,7 +406,7 @@ export default function Dashboard({
                   <div className="hidden md:block overflow-x-auto">
                     <Table className="min-w-[900px] w-full text-sm [&_th]:px-6 [&_th]:py-4 [&_td]:px-6 [&_td]:py-4 [&_th:first-child]:pl-0 [&_td:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:last-child]:pr-0">
                       <TableHeader>
-                        <TableRow className="border-b border-[#eadfce] bg-[#f8f4eb]">
+                        <TableRow className="border-b border-[#eadfce] bg-white">
                           <TableHead className="w-12">
                             <Checkbox
                               checked={selectedDocuments.length === documents.length}
@@ -460,7 +460,7 @@ export default function Dashboard({
                       </TableHeader>
                       <TableBody>
                         {documents.map((document) => (
-                          <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-[#f7f1e6]">
+                          <TableRow key={document.id} className="border-b border-[#eadfce]/70 last:border-0 hover:bg-white">
                             <TableCell>
                               <Checkbox
                                 checked={selectedDocuments.includes(document.id)}
