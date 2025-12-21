@@ -96,7 +96,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
       <Head title="Discover - Signify" />
       
       <div className="min-h-screen bg-background">
-        <div className="mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-3xl">
+        <div className="mx-auto w-full px-4 py-8 sm:px-6 sm:py-12">
           {/* Header */}
           <div className="mb-8 sm:mb-12">
             <div className="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">

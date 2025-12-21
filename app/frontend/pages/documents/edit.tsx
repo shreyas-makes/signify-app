@@ -1,11 +1,10 @@
 import { Head, router, useForm } from "@inertiajs/react"
 import {
+  ArrowLeft,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
   Loader2,
   Play,
-  Send,
   Sparkles,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
@@ -16,13 +15,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input"
 import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
-import { documentPath } from "@/routes"
+import { dashboardPath, documentPath } from "@/routes"
 import type { Document } from "@/types"
 
 interface KeystrokeEvent {
@@ -321,91 +319,96 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     }
   })()
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "max-w-6xl px-6 sm:px-14 lg:px-24 py-6 sm:py-10 gap-6"
+  const shellPaddingClass = "w-full px-4 py-8 sm:py-12 gap-6"
   const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
-    "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 pt-2 pb-4 text-[#5c4d35]"
+    "sticky top-0 z-20 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
   )
-  const contentInsetClass = "px-6 sm:px-10 lg:px-12"
-  const metaTextClass = "text-sm text-[#5c4d35]"
-  const metaAccentClass = "text-[#5c4d35]/80"
+  const contentInsetClass = "px-0"
+  const metaTextClass = "text-xs uppercase tracking-[0.18em] text-[#7a6a52]"
+  const metaAccentClass = "text-[#7a6a52]/70"
 
   return (
     <div className="composer-theme min-h-screen bg-background">
-      <AppLayout>
+      <AppLayout showHeader={false}>
         <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
         <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
-          <div className="flex-1 overflow-auto">
-            <div className={cn("flex flex-col mx-auto w-full", shellPaddingClass)}>
-              <div className="mt-2 flex-1">
-                <div className={cn(toolbarWrapperClass, contentInsetClass)}>
-                  <TooltipProvider delayDuration={0}>
-                    <div className="flex flex-wrap items-center gap-2 justify-start w-full">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={autoSave.saveStatus === 'error' ? () => void autoSave.retry() : undefined}
-                            aria-label={`${saveStatusIndicator.label} status`}
-                            className={cn(
-                              "inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6c7ab]/50 bg-white/50 shadow-none transition-colors",
-                              autoSave.saveStatus === 'error' ? "hover:bg-white cursor-pointer" : "cursor-default"
-                            )}
-                          >
-                            <span
-                              aria-hidden
-                              className={cn(
-                                "block h-2.5 w-2.5 rounded-full opacity-80",
-                                saveStatusIndicator.indicatorClassName,
-                              )}
-                            />
-                            <span className="sr-only">{saveStatusIndicator.label}</span>
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>{saveStatusIndicator.label}</TooltipContent>
-                      </Tooltip>
-                      <span className="sr-only" role="status" aria-live="polite">
-                        {saveStatusLabel}
-                      </span>
-
-                      {publicPostUrl && (
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="ghost"
-                          className="text-[#3f3422]"
-                        >
-                          <a
-                            href={publicPostUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="View post"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
+          <div className="flex-1 overflow-visible">
+            <div className={cn(toolbarWrapperClass)}>
+              <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0 text-[#5c4d35]"
+                  >
+                    <a href={dashboardPath()} aria-label="Back to dashboard">
+                      <ArrowLeft className="h-4 w-4" />
+                    </a>
+                  </Button>
+                  <button
+                    onClick={autoSave.saveStatus === 'error' ? () => void autoSave.retry() : undefined}
+                    aria-label={`${saveStatusIndicator.label} status`}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full border border-transparent bg-transparent px-2 py-1 text-xs font-medium text-[#5c4d35] transition-colors",
+                      autoSave.saveStatus === 'error' ? "hover:bg-white/60 cursor-pointer" : "cursor-default"
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "block h-2 w-2 rounded-full",
+                        saveStatusIndicator.indicatorClassName,
                       )}
-
-                      {document.status !== 'published' && autoSave.saveStatus === 'saved' && (
-                        <Button
-                          onClick={() => void handlePublish()}
-                          disabled={!canPublishNow || isPublishing}
-                          size="icon"
-                          aria-label={publishButtonLabel}
-                          className="rounded-full bg-black text-white hover:bg-black/90 shadow-sm"
-                        >
-                          {isPublishing ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">{publishButtonLabel}</span>
-                        </Button>
-                      )}
-                    </div>
-                  </TooltipProvider>
+                    />
+                    <span>{saveStatusLabel}</span>
+                  </button>
+                  {publicPostUrl && (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs font-medium text-[#5c4d35]"
+                    >
+                      <a
+                        href={publicPostUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="View post"
+                      >
+                        View
+                      </a>
+                    </Button>
+                  )}
                 </div>
 
+                <div className="flex items-center gap-3">
+                  {document.status !== 'published' && autoSave.saveStatus === 'saved' && (
+                    <Button
+                      onClick={() => void handlePublish()}
+                      disabled={!canPublishNow || isPublishing}
+                      size="sm"
+                      aria-label={publishButtonLabel}
+                      className="rounded-full bg-[#2b2417] px-4 text-xs font-semibold text-white hover:bg-[#2b2417]/90"
+                    >
+                      {isPublishing ? (
+                        <>
+                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                          Publishing...
+                        </>
+                      ) : (
+                        "Publish"
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className={cn("flex flex-col mx-auto w-full max-w-4xl", shellPaddingClass)}>
+              <div className="mt-2 flex-1">
                 <div className="mt-6 space-y-6">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     <Input
@@ -417,7 +420,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                       onChange={(e) => setData('document.title', e.target.value)}
                       placeholder="Untitled Document"
                       className={cn(
-                        "text-4xl font-semibold tracking-tight text-[#322718] sm:text-[3rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
+                        "text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
                         "h-auto px-0 py-3 sm:py-4 shadow-none",
                         isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
                       )}
@@ -427,15 +430,15 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     )}
                   </div>
 
-                  <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-3 gap-y-1", contentInsetClass)}>
+                  <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-4 gap-y-2", contentInsetClass)}>
                     <span>{wordCount} words</span>
                     <span className="text-[#d0c3ae]">•</span>
                     <span>{keystrokeCount} keystrokes</span>
                     {pasteAttemptCount > 0 && (
                       <span
                         className={cn(
-                          "font-medium transition-opacity duration-500",
-                          showPasteNotice ? "text-amber-600" : "text-amber-600/40"
+                          "font-semibold transition-opacity duration-500",
+                          showPasteNotice ? "text-[#9a6b2f]" : "text-[#9a6b2f]/40"
                         )}
                       >
                         {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
@@ -490,8 +493,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                       value={data.document.content}
                       onChange={handleContentChange}
                       placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
-                      className="h-full min-h-[300px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                      textareaClassName="p-0 text-[1.05rem] leading-[1.85] text-[#3f3422] bg-transparent"
+                      className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
+                      textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
                     />
                   </div>
                   {errors['document.content'] && (

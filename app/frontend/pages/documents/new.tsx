@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import AppLayout from "@/layouts/app-layout"
-import { documentsPath } from "@/routes"
+import { dashboardPath, documentsPath } from "@/routes"
 
 export default function DocumentsNew() {
   const { data, setData, post, processing, errors } = useForm({
@@ -43,41 +43,39 @@ export default function DocumentsNew() {
   }
 
   return (
-    <AppLayout>
+    <AppLayout showHeader={false}>
       <Head title="New Document" />
 
-      <div className="min-h-svh flex flex-col">
-        {/* Header */}
-        <div className="flex flex-col gap-3 border-b bg-background px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <Button variant="ghost" size="sm" asChild className="self-start">
-            <a href={documentsPath()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Documents
-            </a>
-          </Button>
-
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <div className="text-sm text-muted-foreground">
-              {wordCount} words
-            </div>
-            <Button
-              type="submit"
-              form="document-form"
-              disabled={processing}
-              className="w-full sm:w-auto"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {processing ? 'Creating...' : 'Create Document'}
+      <div className="min-h-svh flex flex-col bg-background">
+        <div className="sticky top-0 z-10 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
+            <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0 text-[#5c4d35]">
+              <a href={dashboardPath()}>
+                <ArrowLeft className="h-4 w-4" />
+              </a>
             </Button>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs uppercase tracking-[0.18em] text-[#7a6a52]">
+                {wordCount} words
+              </span>
+              <Button
+                type="submit"
+                form="document-form"
+                disabled={processing}
+                className="rounded-full bg-[#2b2417] px-4 text-xs font-semibold text-white hover:bg-[#2b2417]/90"
+              >
+                <Save className="mr-2 h-3.5 w-3.5" />
+                {processing ? 'Creating...' : 'Create'}
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Editor */}
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
-              {/* Title */}
-              <div className="mb-8">
+            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-8 sm:py-12">
+              <div className="mb-6">
                 <Input
                   id="title"
                   name="title"
@@ -87,24 +85,24 @@ export default function DocumentsNew() {
                   placeholder="Untitled Document"
                   required
                   autoFocus
-                  className="text-3xl font-bold border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50 sm:text-4xl"
+                  className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
                 />
                 {errors['document.title'] && (
                   <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
                 )}
               </div>
 
-              {/* Content */}
-              <div className="flex-1 border border-input rounded-lg overflow-hidden bg-background shadow-sm">
+              <div className="flex-1">
                 <RichTextEditor
                   ref={editorRef}
                   value={data.document.content}
                   onChange={handleContentChange}
                   placeholder="Start writing your document..."
-                  className="h-full min-h-[calc(100vh-300px)]"
+                  className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
+                  textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
                 />
                 {errors['document.content'] && (
-                  <p className="text-sm text-destructive mt-2 px-6">{errors['document.content']}</p>
+                  <p className="text-sm text-destructive mt-2">{errors['document.content']}</p>
                 )}
               </div>
             </div>

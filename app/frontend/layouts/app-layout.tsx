@@ -4,8 +4,9 @@ import AppLayoutTemplate from "@/layouts/app/app-header-layout"
 
 interface AppLayoutProps {
   children: ReactNode
+  showHeader?: boolean
 }
 
-export default function AppLayout({ children }: AppLayoutProps) {
-  return <AppLayoutTemplate>{children}</AppLayoutTemplate>
+export default function AppLayout({ children, showHeader = true }: AppLayoutProps) {
+  return <AppLayoutTemplate showHeader={showHeader}>{children}</AppLayoutTemplate>
 }

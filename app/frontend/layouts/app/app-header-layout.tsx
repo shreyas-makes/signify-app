@@ -1,16 +1,19 @@
 import type { PropsWithChildren } from "react"
 
 import { AppContent } from "@/components/app-content"
+import { AppFooter } from "@/components/app-footer"
 import { AppHeader } from "@/components/app-header"
 import { AppShell } from "@/components/app-shell"
 
 export default function AppHeaderLayout({
   children,
-}: PropsWithChildren<{}>) {
+  showHeader = true,
+}: PropsWithChildren<{ showHeader?: boolean }>) {
   return (
     <AppShell>
-      <AppHeader />
+      {showHeader ? <AppHeader /> : null}
       <AppContent>{children}</AppContent>
+      <AppFooter />
     </AppShell>
   )
 }
