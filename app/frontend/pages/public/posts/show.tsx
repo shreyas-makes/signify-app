@@ -123,7 +123,7 @@ export default function PublicPostShow({ post, meta }: Props) {
                 {post.title}
               </h1>
               {post.subtitle && (
-                <p className="mt-4 text-base sm:text-lg text-[#6b5a41]">
+                <p className="mt-4 text-lg sm:text-xl text-[#6b5a41]">
                   {post.subtitle}
                 </p>
               )}

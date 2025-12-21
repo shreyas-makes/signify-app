@@ -191,7 +191,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                         {post.title}
                       </h2>
                       {post.subtitle && (
-                        <p className="text-sm text-muted-foreground/90 mb-2 leading-relaxed">
+                        <p className="text-base text-muted-foreground/90 mb-2 leading-relaxed">
                           {post.subtitle}
                         </p>
                       )}
