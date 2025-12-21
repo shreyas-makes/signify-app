@@ -274,9 +274,6 @@ export default function Welcome() {
                   <div className="max-w-none space-y-2 sm:max-w-2xl">
                     <span className="text-xs font-semibold uppercase tracking-widest text-primary">Immersive replays</span>
                     <h3 className="text-xl font-semibold text-foreground">Walk readers through every decision.</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Let collaborators scrub through the draft exactly as it unfolded&mdash;pauses, edits, corrections, and all.
-                    </p>
                   </div>
                   <KeystrokeReplay
                     keystrokes={replayDemoKeystrokes}
