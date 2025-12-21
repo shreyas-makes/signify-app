@@ -288,38 +288,12 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const canPublishNow = canPublish()
   const saveStatusLabel = autoSave.getSaveStatusText()
   const publishButtonLabel = isPublishing ? "Publishing..." : getPublishButtonText()
-  const saveStatusIndicator = (() => {
-    const status = autoSave.saveStatus
-    switch (status) {
-      case 'saved':
-        return {
-          label: 'Saved - Ready to publish',
-          indicatorClassName: "bg-emerald-400"
-        }
-      case 'saving':
-        return {
-          label: 'Saving...',
-          indicatorClassName: "bg-blue-400 animate-pulse"
-        }
-      case 'typing':
-        return {
-          label: 'Typing - Auto-save pending',
-          indicatorClassName: "bg-amber-400"
-        }
-      case 'error':
-        return {
-          label: 'Save failed - Click to retry',
-          indicatorClassName: "bg-red-400"
-        }
-      default:
-        return {
-          label: 'Unsaved changes',
-          indicatorClassName: "bg-amber-400"
-        }
-    }
-  })()
+  const isSaving = autoSave.saveStatus === 'saving'
+  const isTyping = autoSave.saveStatus === 'typing'
+  const isError = autoSave.saveStatus === 'error'
+  const isSaved = autoSave.saveStatus === 'saved'
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "w-full px-4 py-8 sm:py-12 gap-6"
+  const shellPaddingClass = "w-full px-4 pt-4 pb-8 sm:pt-6 sm:pb-10 gap-6"
   const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
     "sticky top-0 z-20 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
@@ -350,20 +324,23 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </Button>
                   <button
                     onClick={autoSave.saveStatus === 'error' ? () => void autoSave.retry() : undefined}
-                    aria-label={`${saveStatusIndicator.label} status`}
+                    aria-label={`Save status: ${saveStatusLabel}`}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-full border border-transparent bg-transparent px-2 py-1 text-xs font-medium text-[#5c4d35] transition-colors",
+                      "inline-flex items-center rounded-full border border-transparent bg-transparent px-1 py-1 text-xs font-medium text-[#5c4d35] transition-colors",
                       autoSave.saveStatus === 'error' ? "hover:bg-white/60 cursor-pointer" : "cursor-default"
                     )}
                   >
                     <span
                       aria-hidden
                       className={cn(
-                        "block h-2 w-2 rounded-full",
-                        saveStatusIndicator.indicatorClassName,
+                        "block h-2.5 w-2.5 rounded-full bg-amber-400",
+                        (isTyping || isSaving) && "bg-amber-400",
+                        isSaved && "bg-emerald-500",
+                        isError && "bg-red-500",
+                        isSaving && "animate-pulse"
                       )}
                     />
-                    <span>{saveStatusLabel}</span>
+                    <span className="sr-only">{saveStatusLabel}</span>
                   </button>
                   {publicPostUrl && (
                     <Button
@@ -408,8 +385,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
             </div>
 
             <div className={cn("flex flex-col mx-auto w-full max-w-4xl", shellPaddingClass)}>
-              <div className="mt-2 flex-1">
-                <div className="mt-6 space-y-6">
+              <div className="mt-1 flex-1">
+                <div className="mt-4 space-y-6">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     <Input
                       ref={titleInputRef}

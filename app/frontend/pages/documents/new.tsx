@@ -74,7 +74,7 @@ export default function DocumentsNew() {
 
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-8 sm:py-12">
+            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-4 pb-8 sm:pt-6 sm:pb-10">
               <div className="mb-6">
                 <Input
                   id="title"
