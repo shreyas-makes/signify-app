@@ -179,6 +179,10 @@
   }
 }
 
+.editor-body {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
 @layer utilities {
   .line-clamp-1 {
     overflow: hidden;

@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react"
 
+import AppLogo from "@/components/app-logo"
 import { publicPostsPath } from "@/routes"
 
 export function AppFooter() {
@@ -7,7 +8,12 @@ export function AppFooter() {
     <footer className="border-t border-border bg-background py-10 text-sm text-muted-foreground">
       <div className="mx-auto flex w-full flex-col gap-6 px-4 md:max-w-7xl sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-serif text-lg tracking-tight text-foreground">Signify</p>
+          <div className="flex items-center">
+            <AppLogo
+              showIcon={false}
+              labelClassName="font-serif text-base tracking-tight text-foreground"
+            />
+          </div>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Authenticity for writers</p>
         </div>
 

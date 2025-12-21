@@ -303,7 +303,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const metaAccentClass = "text-[#7a6a52]/70"
 
   return (
-    <div className="composer-theme min-h-screen bg-background">
+    <div className="composer-theme editor-body min-h-screen bg-background">
       <AppLayout showHeader={false}>
         <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
@@ -407,11 +407,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     )}
                   </div>
 
-                  <div className={cn(metaTextClass, "flex flex-wrap items-center gap-x-4 gap-y-2", contentInsetClass)}>
-                    <span>{wordCount} words</span>
-                    <span className="text-[#d0c3ae]">•</span>
-                    <span>{keystrokeCount} keystrokes</span>
-                    {pasteAttemptCount > 0 && (
+                  {pasteAttemptCount > 0 && (
+                    <div className={cn(metaTextClass, contentInsetClass)}>
                       <span
                         className={cn(
                           "font-semibold transition-opacity duration-500",
@@ -420,8 +417,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                       >
                         {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {showWelcome && isNewDocument && isFirstDocument && (
                     <div className={contentInsetClass}>

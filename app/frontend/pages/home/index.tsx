@@ -339,7 +339,12 @@ export default function Welcome() {
         <footer className="border-t border-border bg-background py-12 text-sm text-muted-foreground">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="font-serif text-lg tracking-tight text-foreground">Signify</p>
+              <div className="flex items-center">
+                <AppLogo
+                  showIcon={false}
+                  labelClassName="font-serif text-base tracking-tight text-foreground"
+                />
+              </div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Authenticity for writers</p>
             </div>
 

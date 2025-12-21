@@ -46,7 +46,7 @@ export default function DocumentsNew() {
     <AppLayout showHeader={false}>
       <Head title="New Document" />
 
-      <div className="min-h-svh flex flex-col bg-background">
+      <div className="editor-body min-h-svh flex flex-col bg-background">
         <div className="sticky top-0 z-10 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
             <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0 text-[#5c4d35]">
