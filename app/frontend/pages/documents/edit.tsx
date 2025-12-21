@@ -303,14 +303,14 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const metaAccentClass = "text-[#7a6a52]/70"
 
   return (
-    <div className="composer-theme editor-body min-h-screen bg-background">
+    <div className="composer-theme min-h-screen bg-background">
       <AppLayout showHeader={false}>
         <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
         <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
           <div className="flex-1 overflow-visible">
             <div className={cn(toolbarWrapperClass)}>
-              <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
+              <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3">
                   <Button
                     asChild
@@ -362,7 +362,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {document.status !== 'published' && autoSave.saveStatus === 'saved' && (
+                  {document.status !== 'published' && (
                     <Button
                       onClick={() => void handlePublish()}
                       disabled={!canPublishNow || isPublishing}
@@ -384,7 +384,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
               </div>
             </div>
 
-            <div className={cn("flex flex-col mx-auto w-full max-w-4xl", shellPaddingClass)}>
+            <div className={cn("flex flex-col w-full max-w-6xl", shellPaddingClass)}>
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-6">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
