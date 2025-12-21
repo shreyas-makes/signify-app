@@ -114,14 +114,14 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-background px-6 py-24 sm:px-12 lg:px-20 xl:px-28">
-        <div className="mx-auto w-full max-w-4xl">
-          <article className="rounded-[40px] bg-[#fdfaf2] px-8 py-14 shadow-[0_26px_60px_-34px_rgba(50,40,20,0.4)] sm:px-12 sm:py-24 lg:px-16 lg:py-28">
-            <header className="mb-12">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-[3rem] lg:text-[3.35rem] lg:leading-[1.05]">
+      <div className="min-h-screen bg-white py-16">
+        <div className="mx-auto w-full max-w-5xl px-4">
+          <article className="w-full">
+            <header className="mb-10">
+              <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
                 {post.title}
               </h1>
-              <p className="mt-3 text-sm font-medium uppercase tracking-[0.35em] text-muted-foreground/70">
+              <p className="mt-3 text-xs font-medium uppercase tracking-[0.35em] text-[#7a6a52]">
                 {post.reading_time_minutes} min{post.reading_time_minutes === 1 ? '' : 's'} read
               </p>
 
@@ -139,12 +139,13 @@ export default function PublicPostShow({ post, meta }: Props) {
 
             <div 
               className="prose prose-lg max-w-none text-[#3f3422]
-                prose-headings:font-semibold prose-headings:text-foreground
+                prose-headings:font-semibold prose-headings:text-[#322718]
+                prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]
                 prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422]
                 prose-strong:text-[#2d2518] whitespace-pre-line"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
-            <footer className="mt-16 border-t border-[#eadcc6] pt-9">
+            <footer className="mt-14 border-t border-[#eadcc6] pt-8">
               <Link
                 href={post.author.profile_url}
                 className="text-lg font-semibold text-[#322718] transition-colors hover:text-[#8a6d44]"

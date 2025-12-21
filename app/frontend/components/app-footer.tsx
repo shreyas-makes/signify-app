@@ -5,7 +5,7 @@ import { publicPostsPath } from "@/routes"
 
 export function AppFooter() {
   return (
-    <footer className="border-t border-border bg-background py-10 text-sm text-muted-foreground">
+    <footer className="border-t border-border bg-white py-10 text-sm text-muted-foreground">
       <div className="mx-auto flex w-full flex-col gap-6 px-4 md:max-w-7xl sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center">
