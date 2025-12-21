@@ -55,7 +55,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const [isPublishing, setIsPublishing] = useState(false)
   const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
-  const [showPasteNotice, setShowPasteNotice] = useState(false)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const editorRef = useRef<RichTextEditorRef>(null)
@@ -89,8 +88,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   // Paste prevention
   const { 
     attachToElement: attachPastePrevention, 
-    getPasteAttempts, 
-    pasteAttemptCount 
+    getPasteAttempts
   } = usePastePrevention({
     enabled: true,
     detectRapidInput: true,
@@ -186,15 +184,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     return () => clearTimeout(timer)
   }, [attachPastePrevention])
   
-  // Briefly surface paste warnings then fade them out
-  useEffect(() => {
-    if (pasteAttemptCount > 0) {
-      setShowPasteNotice(true)
-      const timer = setTimeout(() => setShowPasteNotice(false), 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [pasteAttemptCount])
-
   // Update auto-save when data changes
   useEffect(() => {
     autoSave.updateData({
@@ -315,13 +304,17 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const isError = autoSave.saveStatus === 'error'
   const isSaved = autoSave.saveStatus === 'saved'
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "w-full px-4 pt-4 pb-8 sm:pt-6 sm:pb-10 gap-6"
+  const shellPaddingClass = "w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10 gap-6"
   const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
     "sticky top-0 z-20 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
   )
+  const mobileToolbarWrapperClass = cn(
+    "fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80",
+    "sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0"
+  )
+  const mobileToolbarInnerClass = "mx-auto w-full max-w-6xl px-4 py-2 sm:px-0 sm:py-0"
   const contentInsetClass = "px-0"
-  const metaTextClass = "text-xs uppercase tracking-[0.18em] text-[#7a6a52]"
   const metaAccentClass = "text-[#7a6a52]/70"
   const previewClassName = cn(
     "prose prose-lg max-w-none text-[#3f3422]",
@@ -337,7 +330,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
         <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
           <div className="flex-1 overflow-visible">
             <div className={cn(toolbarWrapperClass)}>
-              <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3">
+              <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-3">
                   <Button
                     asChild
@@ -436,24 +429,28 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     {!isPreview && (
-                      <EditorToolbar
-                        editor={editor}
-                        className="mb-2"
-                      />
+                      <div className={mobileToolbarWrapperClass}>
+                        <div className={mobileToolbarInnerClass}>
+                          <EditorToolbar
+                            editor={editor}
+                            className="mb-0 sm:mb-2"
+                          />
+                        </div>
+                      </div>
                     )}
                     {isPreview ? (
-                      <div className="space-y-3">
-                        <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+                      <div className="space-y-1.5 mb-6">
+                        <h1 className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05]">
                           {data.document.title.trim() || "Untitled Document"}
                         </h1>
                         {data.document.subtitle.trim() && (
-                          <p className="text-lg sm:text-xl text-[#6b5a41]">
+                          <p className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41]">
                             {data.document.subtitle}
                           </p>
                         )}
                       </div>
                     ) : (
-                      <>
+                      <div className="space-y-1.5 mb-6">
                         <Input
                           ref={titleInputRef}
                           id="title"
@@ -463,7 +460,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                           onChange={(e) => setData('document.title', e.target.value)}
                           placeholder="Untitled Document"
                           className={cn(
-                            "text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
+                            "text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] md:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
                             "h-auto px-0 py-3 sm:py-4 shadow-none",
                             isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
                           )}
@@ -479,27 +476,14 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                           value={data.document.subtitle}
                           onChange={(e) => setData('document.subtitle', e.target.value)}
                           placeholder="Add a subtitle"
-                          className="text-lg sm:text-xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300 rounded-none shadow-none h-auto"
+                          className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300 rounded-none shadow-none h-auto"
                         />
                         {errors['document.subtitle'] && (
                           <p className="text-sm text-destructive">{errors['document.subtitle']}</p>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
-
-                  {pasteAttemptCount > 0 && (
-                    <div className={cn(metaTextClass, contentInsetClass)}>
-                      <span
-                        className={cn(
-                          "font-semibold transition-opacity duration-500",
-                          showPasteNotice ? "text-[#9a6b2f]" : "text-[#9a6b2f]/40"
-                        )}
-                      >
-                        {pasteAttemptCount} paste attempt{pasteAttemptCount !== 1 ? 's' : ''} blocked
-                      </span>
-                    </div>
-                  )}
 
                   {showWelcome && isNewDocument && isFirstDocument && (
                     <div className={contentInsetClass}>

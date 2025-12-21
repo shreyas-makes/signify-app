@@ -56,7 +56,7 @@ export default function DocumentsNew() {
 
       <div className="editor-body min-h-svh flex flex-col bg-background">
         <div className="sticky top-0 z-10 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
             <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0 text-[#5c4d35]">
               <a href={dashboardPath()}>
                 <ArrowLeft className="h-4 w-4" />
@@ -102,26 +102,31 @@ export default function DocumentsNew() {
 
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-4 pb-8 sm:pt-6 sm:pb-10">
+            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10">
               <div className="mb-2 space-y-2">
                 {!isPreview && (
-                  <EditorToolbar
-                    editor={editor}
-                  />
+                  <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0">
+                    <div className="mx-auto w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0">
+                      <EditorToolbar
+                        editor={editor}
+                        className="mb-0 sm:mb-2"
+                      />
+                    </div>
+                  </div>
                 )}
                 {isPreview ? (
-                  <div className="space-y-3">
-                    <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+                  <div className="space-y-1.5 mb-6">
+                    <h1 className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05]">
                       {data.document.title.trim() || "Untitled Document"}
                     </h1>
                     {data.document.subtitle.trim() && (
-                      <p className="text-lg sm:text-xl text-[#6b5a41]">
+                      <p className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41]">
                         {data.document.subtitle}
                       </p>
                     )}
                   </div>
                 ) : (
-                  <>
+                  <div className="space-y-1.5 mb-6">
                     <Input
                       id="title"
                       name="title"
@@ -131,7 +136,7 @@ export default function DocumentsNew() {
                       placeholder="Untitled Document"
                       required
                       autoFocus
-                      className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
+                      className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] md:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
                     />
                     {errors['document.title'] && (
                       <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
@@ -143,12 +148,12 @@ export default function DocumentsNew() {
                       value={data.document.subtitle}
                       onChange={(e) => setData('document.subtitle', e.target.value)}
                       placeholder="Add a subtitle"
-                      className="text-lg sm:text-xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] rounded-none shadow-none h-auto"
+                      className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] rounded-none shadow-none h-auto"
                     />
                     {errors['document.subtitle'] && (
                       <p className="text-sm text-destructive mt-2">{errors['document.subtitle']}</p>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
 
