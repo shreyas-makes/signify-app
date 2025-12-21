@@ -154,7 +154,7 @@ export default function Dashboard({
     <AppLayout>
       <Head title="Dashboard" />
 
-      <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-16">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="space-y-10">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
