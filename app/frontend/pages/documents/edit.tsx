@@ -246,7 +246,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
       
       router.post(`/documents/${document.id}/publish`, {}, {
         onSuccess: () => {
-          toast.success('Document published successfully!', { id: publishToastId })
+          toast.dismiss(publishToastId)
           // Will be redirected by the controller
         },
         onError: (errors) => {
