@@ -98,6 +98,7 @@ class Public::PostsController < InertiaController
       {
         id: post.id,
         title: post.title,
+        subtitle: post.subtitle,
         public_slug: post.public_slug,
         published_at: post.published_at.strftime("%B %d, %Y"),
         word_count: post.word_count,
@@ -119,6 +120,7 @@ class Public::PostsController < InertiaController
     {
       id: post.id,
       title: post.title,
+      subtitle: post.subtitle,
       content: post.content,
       public_slug: post.public_slug,
       published_at: post.published_at.strftime("%B %d, %Y at %I:%M %p"),

@@ -54,6 +54,7 @@ export interface Session {
 export interface Document {
   id: number
   title: string
+  subtitle?: string | null
   slug: string
   public_slug?: string
   status: 'draft' | 'ready_to_publish' | 'published'

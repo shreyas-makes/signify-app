@@ -140,10 +140,11 @@ class DocumentsController < InertiaController
   end
 
   def document_params
-    permitted = params.require(:document).permit(:title, :content, :status)
+    permitted = params.require(:document).permit(:title, :subtitle, :content, :status)
     
     # Sanitize input parameters
     permitted[:title] = sanitize_title(permitted[:title]) if permitted[:title]
+    permitted[:subtitle] = sanitize_subtitle(permitted[:subtitle]) if permitted[:subtitle]
     permitted[:content] = sanitize_content(permitted[:content]) if permitted[:content]
     permitted[:status] = sanitize_status(permitted[:status]) if permitted[:status]
     
@@ -153,6 +154,14 @@ class DocumentsController < InertiaController
   def sanitize_title(title)
     # Strip dangerous characters and limit length
     ActionController::Base.helpers.strip_tags(title.to_s)
+      .gsub(/[<>\"'&]/, '')
+      .strip
+      .truncate(255)
+  end
+
+  def sanitize_subtitle(subtitle)
+    # Strip dangerous characters and limit length
+    ActionController::Base.helpers.strip_tags(subtitle.to_s)
       .gsub(/[<>\"'&]/, '')
       .strip
       .truncate(255)
@@ -218,6 +227,7 @@ class DocumentsController < InertiaController
     {
       id: document.id,
       title: document.title,
+      subtitle: document.subtitle,
       slug: document.slug,
       public_slug: document.public_slug,
       status: document.status,
@@ -280,6 +290,7 @@ class DocumentsController < InertiaController
       document: {
         id: @document.id,
         title: @document.title,
+        subtitle: @document.subtitle,
         slug: @document.slug,
         public_slug: @document.public_slug,
         status: @document.status,

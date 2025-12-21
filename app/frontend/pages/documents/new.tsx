@@ -15,6 +15,7 @@ export default function DocumentsNew() {
   const { data, setData, post, processing, errors } = useForm({
     document: {
       title: '',
+      subtitle: '',
       content: '',
     },
   })
@@ -109,9 +110,16 @@ export default function DocumentsNew() {
                   />
                 )}
                 {isPreview ? (
-                  <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
-                    {data.document.title.trim() || "Untitled Document"}
-                  </h1>
+                  <div className="space-y-3">
+                    <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+                      {data.document.title.trim() || "Untitled Document"}
+                    </h1>
+                    {data.document.subtitle.trim() && (
+                      <p className="text-base sm:text-lg text-[#6b5a41]">
+                        {data.document.subtitle}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <Input
@@ -127,6 +135,18 @@ export default function DocumentsNew() {
                     />
                     {errors['document.title'] && (
                       <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
+                    )}
+                    <Input
+                      id="subtitle"
+                      name="subtitle"
+                      type="text"
+                      value={data.document.subtitle}
+                      onChange={(e) => setData('document.subtitle', e.target.value)}
+                      placeholder="Add a subtitle"
+                      className="text-base sm:text-lg text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
+                    />
+                    {errors['document.subtitle'] && (
+                      <p className="text-sm text-destructive mt-2">{errors['document.subtitle']}</p>
                     )}
                   </>
                 )}

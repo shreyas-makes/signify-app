@@ -47,6 +47,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const { data, setData, errors } = useForm({
     document: {
       title: document.title,
+      subtitle: document.subtitle ?? '',
       content: document.content,
     },
   })
@@ -59,6 +60,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   const [editor, setEditor] = useState<Editor | null>(null)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
+  const subtitleInputRef = useRef<HTMLInputElement>(null)
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
@@ -171,6 +173,18 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
     return () => clearTimeout(timer)
   }, [attachPastePrevention])
+
+  // Attach paste prevention to subtitle input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (subtitleInputRef.current) {
+        console.log('Attaching paste prevention to subtitle input')
+        attachPastePrevention(subtitleInputRef.current)
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [attachPastePrevention])
   
   // Briefly surface paste warnings then fade them out
   useEffect(() => {
@@ -186,12 +200,13 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     autoSave.updateData({
       document: {
         title: data.document.title,
+        subtitle: data.document.subtitle,
         content: data.document.content
       },
       keystrokes: getKeystrokesForTransmission(),
       paste_attempts: getPasteAttempts()
     })
-  }, [data.document.title, data.document.content])
+  }, [data.document.title, data.document.subtitle, data.document.content])
 
   // Update word count when content changes
   useEffect(() => {
@@ -224,6 +239,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
       await autoSave.save({
         document: {
           title: data.document.title,
+          subtitle: data.document.subtitle,
           content: data.document.content
         },
         keystrokes: keystrokeData,
@@ -426,9 +442,16 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                       />
                     )}
                     {isPreview ? (
-                      <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
-                        {data.document.title.trim() || "Untitled Document"}
-                      </h1>
+                      <div className="space-y-3">
+                        <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+                          {data.document.title.trim() || "Untitled Document"}
+                        </h1>
+                        {data.document.subtitle.trim() && (
+                          <p className="text-base sm:text-lg text-[#6b5a41]">
+                            {data.document.subtitle}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <>
                         <Input
@@ -447,6 +470,19 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                         />
                         {errors['document.title'] && (
                           <p className="text-sm text-destructive">{errors['document.title']}</p>
+                        )}
+                        <Input
+                          ref={subtitleInputRef}
+                          id="subtitle"
+                          name="subtitle"
+                          type="text"
+                          value={data.document.subtitle}
+                          onChange={(e) => setData('document.subtitle', e.target.value)}
+                          placeholder="Add a subtitle"
+                          className="text-base sm:text-lg text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300"
+                        />
+                        {errors['document.subtitle'] && (
+                          <p className="text-sm text-destructive">{errors['document.subtitle']}</p>
                         )}
                       </>
                     )}

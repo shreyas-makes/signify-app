@@ -23,6 +23,7 @@ interface Verification {
 interface Post {
   id: number
   title: string
+  subtitle?: string | null
   content: string
   public_slug: string
   published_at: string
@@ -121,6 +122,11 @@ export default function PublicPostShow({ post, meta }: Props) {
               <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
                 {post.title}
               </h1>
+              {post.subtitle && (
+                <p className="mt-4 text-base sm:text-lg text-[#6b5a41]">
+                  {post.subtitle}
+                </p>
+              )}
               <p className="mt-3 text-xs font-medium uppercase tracking-[0.35em] text-[#7a6a52]">
                 {post.reading_time_minutes} min{post.reading_time_minutes === 1 ? '' : 's'} read
               </p>

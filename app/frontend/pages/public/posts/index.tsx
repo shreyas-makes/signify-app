@@ -16,6 +16,7 @@ interface Author {
 interface Post {
   id: number
   title: string
+  subtitle?: string | null
   public_slug: string
   published_at: string
   word_count: number
@@ -189,6 +190,11 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                       <h2 className="text-base sm:text-lg font-medium text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">
                         {post.title}
                       </h2>
+                      {post.subtitle && (
+                        <p className="text-sm text-muted-foreground/90 mb-2 leading-relaxed">
+                          {post.subtitle}
+                        </p>
+                      )}
                       
                       <p className="text-muted-foreground text-sm mb-3 leading-relaxed line-clamp-2">
                         {post.excerpt}

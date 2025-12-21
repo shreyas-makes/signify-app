@@ -7,6 +7,7 @@ class Document < ApplicationRecord
   enum :status, {draft: 0, ready_to_publish: 1, published: 2}
 
   validates :title, presence: true, length: {maximum: 255}
+  validates :subtitle, length: {maximum: 255}, allow_blank: true
   validates :slug, presence: true, uniqueness: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :public_slug, uniqueness: true, allow_nil: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :status, presence: true

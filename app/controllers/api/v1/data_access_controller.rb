@@ -62,6 +62,7 @@ class Api::V1::DataAccessController < ApplicationController
       document: {
         id: @post.id,
         title: @post.title,
+        subtitle: @post.subtitle,
         public_slug: @post.public_slug,
         published_at: @post.published_at.iso8601,
         word_count: @post.word_count,

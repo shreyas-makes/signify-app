@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_17_211532) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_18_120000) do
   create_table "documents", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_17_211532) do
     t.integer "word_count", default: 0
     t.integer "reading_time_minutes", default: 0
     t.integer "keystroke_count", default: 0
+    t.string "subtitle"
     t.index ["public_slug"], name: "index_documents_on_public_slug", unique: true, where: "public_slug IS NOT NULL"
     t.index ["published_at"], name: "index_documents_on_published_at"
     t.index ["slug"], name: "index_documents_on_slug", unique: true
