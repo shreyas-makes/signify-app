@@ -433,7 +433,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
 
             <div className={cn("flex flex-col w-full max-w-6xl", shellPaddingClass)}>
               <div className="mt-1 flex-1">
-                <div className="mt-4 space-y-6">
+                <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     {!isPreview && (
                       <EditorToolbar
@@ -447,7 +447,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                           {data.document.title.trim() || "Untitled Document"}
                         </h1>
                         {data.document.subtitle.trim() && (
-                          <p className="text-base sm:text-lg text-[#6b5a41]">
+                          <p className="text-lg sm:text-xl text-[#6b5a41]">
                             {data.document.subtitle}
                           </p>
                         )}
@@ -479,7 +479,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                           value={data.document.subtitle}
                           onChange={(e) => setData('document.subtitle', e.target.value)}
                           placeholder="Add a subtitle"
-                          className="text-base sm:text-lg text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300"
+                          className="text-lg sm:text-xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300 rounded-none shadow-none h-auto"
                         />
                         {errors['document.subtitle'] && (
                           <p className="text-sm text-destructive">{errors['document.subtitle']}</p>

@@ -103,7 +103,7 @@ export default function DocumentsNew() {
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
             <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-4 pb-8 sm:pt-6 sm:pb-10">
-              <div className="mb-6 space-y-2">
+              <div className="mb-2 space-y-2">
                 {!isPreview && (
                   <EditorToolbar
                     editor={editor}
@@ -115,7 +115,7 @@ export default function DocumentsNew() {
                       {data.document.title.trim() || "Untitled Document"}
                     </h1>
                     {data.document.subtitle.trim() && (
-                      <p className="text-base sm:text-lg text-[#6b5a41]">
+                      <p className="text-lg sm:text-xl text-[#6b5a41]">
                         {data.document.subtitle}
                       </p>
                     )}
@@ -143,7 +143,7 @@ export default function DocumentsNew() {
                       value={data.document.subtitle}
                       onChange={(e) => setData('document.subtitle', e.target.value)}
                       placeholder="Add a subtitle"
-                      className="text-base sm:text-lg text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
+                      className="text-lg sm:text-xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] rounded-none shadow-none h-auto"
                     />
                     {errors['document.subtitle'] && (
                       <p className="text-sm text-destructive mt-2">{errors['document.subtitle']}</p>

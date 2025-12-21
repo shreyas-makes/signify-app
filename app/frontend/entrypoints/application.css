@@ -223,6 +223,16 @@
   padding-left: 1.6rem;
 }
 
+.ProseMirror ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
 .ProseMirror mark {
   background-color: #f6e2a4;
   border-radius: 0.2rem;
