@@ -1,23 +1,12 @@
 import { Head, router, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  Loader2,
-  Pencil,
-  Play,
-  Sparkles,
-} from "lucide-react"
+import { ArrowLeft, Eye, Loader2, Pencil, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Input } from "@/components/ui/input"
-import { KeystrokeReplay } from "@/components/ui/keystroke-replay"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
@@ -27,23 +16,12 @@ import { cn } from "@/lib/utils"
 import { dashboardPath, documentPath } from "@/routes"
 import type { Document } from "@/types"
 
-interface KeystrokeEvent {
-  id: number
-  event_type: 'keydown' | 'keyup'
-  key_code: number
-  character: string | null
-  timestamp: string
-  sequence_number: number
-  document_position?: number
-}
-
 interface DocumentsEditProps {
   document: Document
   documents: Document[]
-  keystrokes?: KeystrokeEvent[]
 }
 
-export default function DocumentsEdit({ document, documents, keystrokes = [] }: DocumentsEditProps) {
+export default function DocumentsEdit({ document, documents }: DocumentsEditProps) {
   const { data, setData, errors } = useForm({
     document: {
       title: document.title,
@@ -53,7 +31,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
   })
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
   const [isPublishing, setIsPublishing] = useState(false)
-  const [showKeystrokeReplay, setShowKeystrokeReplay] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
@@ -313,9 +290,8 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
     "fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80",
     "sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0"
   )
-  const mobileToolbarInnerClass = "mx-auto w-full max-w-6xl px-4 py-2 sm:px-0 sm:py-0"
+  const mobileToolbarInnerClass = "w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0"
   const contentInsetClass = "px-0"
-  const metaAccentClass = "text-[#7a6a52]/70"
   const previewClassName = cn(
     "prose prose-lg max-w-none text-[#3f3422]",
     "prose-headings:font-semibold prose-headings:text-[#322718]",
@@ -330,7 +306,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
         <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
           <div className="flex-1 overflow-visible">
             <div className={cn(toolbarWrapperClass)}>
-              <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+              <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-3">
                   <Button
                     asChild
@@ -362,46 +338,43 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                     />
                     <span className="sr-only">{saveStatusLabel}</span>
                   </button>
-                  {publicPostUrl && (
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {publicPostUrl ? (
                     <Button
                       asChild
                       size="sm"
                       variant="ghost"
-                      className="h-7 px-2 text-xs font-medium text-[#5c4d35]"
+                      className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
                     >
-                      <a
-                        href={publicPostUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="View post"
-                      >
-                        View
-                      </a>
-                    </Button>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Button
-                    type="button"
-                    onClick={() => setIsPreview((prev) => !prev)}
-                    size="sm"
-                    variant="ghost"
-                    aria-pressed={isPreview}
-                    className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
-                  >
-                    {isPreview ? (
-                      <>
-                        <Pencil className="mr-1 h-3.5 w-3.5" />
-                        Edit
-                      </>
-                    ) : (
-                      <>
+                      <a href={publicPostUrl} aria-label="Preview public post">
                         <Eye className="mr-1 h-3.5 w-3.5" />
                         Preview
-                      </>
-                    )}
-                  </Button>
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => setIsPreview((prev) => !prev)}
+                      size="sm"
+                      variant="ghost"
+                      aria-pressed={isPreview}
+                      className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
+                    >
+                      {isPreview ? (
+                        <>
+                          <Pencil className="mr-1 h-3.5 w-3.5" />
+                          Edit
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="mr-1 h-3.5 w-3.5" />
+                          Preview
+                        </>
+                      )}
+                    </Button>
+                  )}
                   {document.status !== 'published' && (
                     <Button
                       onClick={() => void handlePublish()}
@@ -424,7 +397,7 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
               </div>
             </div>
 
-            <div className={cn("flex flex-col w-full max-w-6xl", shellPaddingClass)}>
+            <div className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}>
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
@@ -549,35 +522,6 @@ export default function DocumentsEdit({ document, documents, keystrokes = [] }: 
                   </div>
                   {errors['document.content'] && (
                     <p className={cn("text-sm text-destructive", contentInsetClass)}>{errors['document.content']}</p>
-                  )}
-
-                  {keystrokes.length > 0 && (
-                    <div className="border-t border-[#eadcc6] pt-6">
-                      <Collapsible open={showKeystrokeReplay} onOpenChange={setShowKeystrokeReplay}>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" className="flex h-auto items-center gap-2 p-0 text-left text-[#3f3422] hover:bg-transparent">
-                            {showKeystrokeReplay ? (
-                              <ChevronDown className="h-4 w-4" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4" />
-                            )}
-                            <Play className="h-4 w-4" />
-                            <span className="font-medium">Keystroke Replay</span>
-                            <span className={cn("text-sm", metaAccentClass)}>
-                              ({keystrokes.length} keystrokes recorded)
-                            </span>
-                          </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="mt-4">
-                          <KeystrokeReplay
-                            keystrokes={keystrokes}
-                            title={data.document.title || "Untitled Document"}
-                            finalContent={data.document.content}
-                            className="max-w-none"
-                          />
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </div>
                   )}
                 </div>
               </div>

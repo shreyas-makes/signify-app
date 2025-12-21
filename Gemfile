@@ -52,6 +52,10 @@ gem "authentication-zero"
 # Brings Rails named routes to javascript
 gem "js-routes"
 
+# Error monitoring
+gem "sentry-rails"
+gem "sentry-ruby"
+
 # Rate limiting and security
 gem "rack-attack"
 

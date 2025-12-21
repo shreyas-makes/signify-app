@@ -102,11 +102,11 @@ export default function DocumentsNew() {
 
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10">
+            <div className="flex-1 flex flex-col max-w-4xl w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10">
               <div className="mb-2 space-y-2">
                 {!isPreview && (
                   <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0">
-                    <div className="mx-auto w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0">
+                    <div className="w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0">
                       <EditorToolbar
                         editor={editor}
                         className="mb-0 sm:mb-2"

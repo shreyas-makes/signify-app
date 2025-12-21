@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { MiniGitGraph } from '@/components/ui/mini-git-graph'
 import AppLayout from '@/layouts/app-layout'
 import { PublicPostFooter } from '@/components/public-post-footer'
+import AppLogo from '@/components/app-logo'
+import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
 import type { Keystroke, PageProps } from '@/types'
 
 
@@ -57,13 +59,13 @@ interface Props {
 
 export default function PublicPostShow({ post, meta }: Props) {
   const { auth } = usePage<PageProps>().props
+  const isSignedIn = Boolean(auth?.user)
   const keystrokeUrl = `/posts/${post.public_slug}/keystrokes`
   const authorDescription = post.author.bio?.trim()
     ? post.author.bio
     : "The author has not added a description yet."
   const canEdit = Boolean(post.can_edit)
   const editUrl = canEdit ? `/documents/${post.id}/edit` : null
-
   const pageContent = (
     <>
       <Head title={meta.title}>
@@ -115,8 +117,52 @@ export default function PublicPostShow({ post, meta }: Props) {
         }} />
       </Head>
       
-      <div className="min-h-screen bg-white py-16">
-        <div className="mx-auto w-full max-w-5xl px-4">
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-20 w-full border-b border-border/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+            <Link href="/" className="flex items-center gap-3">
+              <AppLogo
+                showIcon={false}
+                labelClassName="font-serif text-xl tracking-tight"
+              />
+            </Link>
+
+            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
+                Explore Library
+              </Link>
+              {!isSignedIn && (
+                <>
+                  <Link href="/#features" className="transition-colors hover:text-foreground">
+                    Platform
+                  </Link>
+                  <Link href="/#get-started" className="transition-colors hover:text-foreground">
+                    Get started
+                  </Link>
+                </>
+              )}
+            </nav>
+
+            <div className="flex items-center gap-2">
+              {isSignedIn ? (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={dashboardPath()}>Dashboard</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={signInPath()}>Sign in</Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <Link href={signUpPath()}>Start for free</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <div className="mx-auto w-full max-w-6xl px-4 py-16">
           <article className="w-full">
             <header className="mb-10">
               <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
@@ -131,7 +177,7 @@ export default function PublicPostShow({ post, meta }: Props) {
                 {post.reading_time_minutes} min{post.reading_time_minutes === 1 ? '' : 's'} read
               </p>
 
-              {post.verification.keystroke_verified && (
+              {post.sample_keystrokes.length > 0 && (
                 <MiniGitGraph 
                   keystrokes={post.sample_keystrokes}
                   height={52}
@@ -185,7 +231,7 @@ export default function PublicPostShow({ post, meta }: Props) {
   )
 
   return auth?.user ? (
-    <AppLayout>
+    <AppLayout showHeader={false} contentClassName="max-w-none px-0">
       {pageContent}
     </AppLayout>
   ) : pageContent

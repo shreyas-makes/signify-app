@@ -14,7 +14,7 @@ export function AppFooter() {
               labelClassName="font-serif text-base tracking-tight text-foreground"
             />
           </div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Authenticity for writers</p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Human only stories, and ideas</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -32,9 +32,7 @@ export function AppFooter() {
           </a>
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Signify. Proof that every story is human.
-        </p>
+        <p className="text-xs text-muted-foreground">© 2025 Signify</p>
       </div>
     </footer>
   )

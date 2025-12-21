@@ -8,11 +8,12 @@ import { AppShell } from "@/components/app-shell"
 export default function AppHeaderLayout({
   children,
   showHeader = true,
-}: PropsWithChildren<{ showHeader?: boolean }>) {
+  contentClassName,
+}: PropsWithChildren<{ showHeader?: boolean; contentClassName?: string }>) {
   return (
     <AppShell>
       {showHeader ? <AppHeader /> : null}
-      <AppContent>{children}</AppContent>
+      <AppContent className={contentClassName}>{children}</AppContent>
       <AppFooter />
     </AppShell>
   )
