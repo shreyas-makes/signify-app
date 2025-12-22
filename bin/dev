@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
 export PORT="${PORT:-3000}"
+export SSL_CERT_FILE="${SSL_CERT_FILE:-/etc/ssl/cert.pem}"
 
 if command -v overmind 1> /dev/null 2>&1
 then
