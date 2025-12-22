@@ -112,8 +112,8 @@ builder:
   # remote: ssh://docker@docker-builder-server
   #
   # # Pass arguments and secrets to the Docker build process
-  # args:
-  #   RUBY_VERSION: ruby-3.4.5
+  args:
+    VITE_GOOGLE_CLIENT_ID: 508809201168-gog7ljot0m384epsesoke66358m1ir9r.apps.googleusercontent.com
   # secrets:
   #   - GITHUB_TOKEN
   #   - RAILS_MASTER_KEY
