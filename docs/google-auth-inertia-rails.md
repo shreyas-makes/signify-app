@@ -32,6 +32,32 @@ Export a client ID for GIS:
 export VITE_GOOGLE_CLIENT_ID="YOUR_CLIENT_ID.apps.googleusercontent.com"
 ```
 
+#### Production build (Kamal + Docker)
+
+Vite reads `VITE_` variables at build time, so the production image must receive
+the client ID during the Docker build.
+
+1) Add the build arg in `config/deploy.yml`:
+
+```yaml
+builder:
+  args:
+    VITE_GOOGLE_CLIENT_ID: "YOUR_CLIENT_ID.apps.googleusercontent.com"
+```
+
+2) Ensure the Docker build accepts it (already wired in `Dockerfile`):
+
+```dockerfile
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+```
+
+3) Redeploy so assets are rebuilt with the value:
+
+```sh
+bin/kamal redeploy
+```
+
 ### Backend (Rails credentials)
 
 Edit credentials:
@@ -179,3 +205,5 @@ export OPENSSL_CONF=/etc/ssl/openssl.cnf
 - Use the same OAuth client ID for production domains.
 - Add production domains to Authorized JavaScript origins.
 - Avoid dev-only SSL workarounds in production.
+- If the login page shows "Google sign-in is not configured," the production build
+  is missing `VITE_GOOGLE_CLIENT_ID`. Confirm the build arg and redeploy.

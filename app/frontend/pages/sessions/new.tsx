@@ -48,6 +48,10 @@ export default function Login() {
       attempts += 1
       const google = window.google?.accounts?.id
       if (google && googleButtonRef.current) {
+        const buttonWidth = Math.max(
+          320,
+          Math.round(googleButtonRef.current.getBoundingClientRect().width),
+        )
         google.initialize({
           client_id: googleClientId,
           callback: (response) => {
@@ -71,7 +75,7 @@ export default function Login() {
         google.renderButton(googleButtonRef.current, {
           theme: "outline",
           size: "large",
-          width: "100%",
+          width: buttonWidth,
           text: "continue_with",
         })
         googleInitialized.current = true
