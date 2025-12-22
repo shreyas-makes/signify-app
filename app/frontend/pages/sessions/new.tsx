@@ -168,7 +168,10 @@ export default function Login() {
 
             <div className="grid gap-3">
               {googleClientId ? (
-                <div ref={googleButtonRef} className="min-h-[44px] w-full" />
+                <div
+                  ref={googleButtonRef}
+                  className="google-signin-button min-h-[44px] w-full"
+                />
               ) : (
                 <div className="rounded-md border border-dashed px-3 py-2 text-center text-xs text-muted-foreground">
                   Google sign-in is not configured.

@@ -218,6 +218,12 @@
   color: #5c4d35;
 }
 
+.google-signin-button,
+.google-signin-button > div,
+.google-signin-button iframe {
+  width: 100% !important;
+}
+
 .ProseMirror ul,
 .ProseMirror ol {
   padding-left: 1.6rem;
