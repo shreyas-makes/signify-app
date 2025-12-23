@@ -186,9 +186,6 @@ export default function PublicPostShow({ post, meta }: Props) {
             <Link href="/#features" className="transition-colors hover:text-foreground">
               Platform
             </Link>
-            <Link href="/#get-started" className="transition-colors hover:text-foreground">
-              Get started
-            </Link>
           </nav>
 
           <div className="flex items-center gap-2">

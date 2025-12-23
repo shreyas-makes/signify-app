@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { useAutoSave } from "@/hooks/useAutoSave"
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
@@ -37,6 +38,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
+  const keyboardOffset = useKeyboardOffset()
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
@@ -402,11 +404,15 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     {!isPreview && (
-                      <div className={mobileToolbarWrapperClass}>
+                      <div
+                        className={cn(mobileToolbarWrapperClass, "transition-transform duration-200")}
+                        style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
+                      >
                         <div className={mobileToolbarInnerClass}>
                           <EditorToolbar
                             editor={editor}
-                            className="mb-0 sm:mb-2"
+                            layout="scroll"
+                            className="mb-0 gap-1 sm:mb-2 sm:gap-2"
                           />
                         </div>
                       </div>
@@ -516,6 +522,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                         placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
                         className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
                         textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                        placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                         onEditorReady={setEditor}
                       />
                     )}

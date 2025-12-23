@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils"
 interface EditorToolbarProps {
   editor: Editor | null
   className?: string
+  layout?: "wrap" | "scroll"
 }
 
 interface MarkAction {
@@ -30,7 +31,7 @@ interface MarkAction {
   isActive?: () => boolean
 }
 
-export function EditorToolbar({ editor, className }: EditorToolbarProps) {
+export function EditorToolbar({ editor, className, layout = "wrap" }: EditorToolbarProps) {
   const [, forceUpdate] = useState(0)
 
   useEffect(() => {
@@ -123,12 +124,20 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
 
   const actionButtonClass = (active?: boolean) =>
     cn(
-      "h-8 w-8 p-0 text-[#5c4d35]",
+      "h-7 w-7 shrink-0 p-0 text-[#5c4d35] sm:h-8 sm:w-8",
       active && "bg-[#eadcc6]/70 text-[#2b2417]"
     )
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-2 text-[#5c4d35]", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-2 text-[#5c4d35]",
+        layout === "scroll"
+          ? "flex-nowrap overflow-x-auto whitespace-nowrap pb-1 sm:flex-wrap sm:overflow-visible sm:whitespace-normal"
+          : "flex-wrap",
+        className
+      )}
+    >
       {inlineActions.map((action) => (
         <Button
           key={action.ariaLabel}
@@ -139,11 +148,11 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           className={actionButtonClass(action.isActive?.())}
           onClick={action.action}
         >
-          <action.icon className="h-4 w-4" aria-hidden />
+          <action.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
         </Button>
       ))}
 
-      <span className="h-4 w-px bg-[#eadcc6]" aria-hidden />
+      <span className="h-3.5 w-px shrink-0 bg-[#eadcc6] sm:h-4" aria-hidden />
 
       {blockActions.map((action) => (
         <Button
@@ -155,11 +164,11 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           className={actionButtonClass(action.isActive?.())}
           onClick={action.action}
         >
-          <action.icon className="h-4 w-4" aria-hidden />
+          <action.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
         </Button>
       ))}
 
-      <span className="h-4 w-px bg-[#eadcc6]" aria-hidden />
+      <span className="h-3.5 w-px shrink-0 bg-[#eadcc6] sm:h-4" aria-hidden />
 
       {listActions.map((action) => (
         <Button
@@ -171,7 +180,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           className={actionButtonClass(action.isActive?.())}
           onClick={action.action}
         >
-          <action.icon className="h-4 w-4" aria-hidden />
+          <action.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
         </Button>
       ))}
     </div>

@@ -46,8 +46,6 @@ export function usePastePrevention(options: UsePastePreventionOptions = {}) {
       pasteAttempts.current = pasteAttempts.current.slice(-50)
     }
 
-    console.warn('Paste attempt blocked:', attempt)
-    
     if (onPasteAttempt) {
       const syntheticEvent = new CustomEvent('paste-attempt', { detail: attempt })
       onPasteAttempt(syntheticEvent)

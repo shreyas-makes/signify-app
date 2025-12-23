@@ -1,11 +1,14 @@
-import { Head, router, usePage } from '@inertiajs/react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
 import { Search, Verified, Clock3, FileText, X } from 'lucide-react'
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react'
 
+import AppLogo from '@/components/app-logo'
+import { PublicPostFooter } from '@/components/public-post-footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import AppLayout from '@/layouts/app-layout'
+import { publicPostsPath, signInPath, signUpPath } from '@/routes'
 import type { PageProps } from '@/types'
 
 
@@ -92,157 +95,192 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
     }
   }, [searchQuery, search])
 
-  const pageContent = (
-    <>
-      <Head title="Discover - Signify" />
-      
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto w-full px-4 py-8 sm:px-6 sm:py-12">
-          {/* Header */}
-          <div className="mb-8 sm:mb-12">
-            <div className="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-medium text-foreground mb-2">
-                  Discover
-                </h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Latest verified human-written posts
-                </p>
-              </div>
-              
-              {/* Search Toggle */}
-              <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-                {!isSearchExpanded ? (
+  const headMarkup = <Head title="Discover - Signify" />
+
+  const listContent = (
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
+      {/* Header */}
+      <div className="mb-8 sm:mb-12">
+        <div className="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-medium text-foreground mb-2">
+              Discover
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Latest verified human-written posts
+            </p>
+          </div>
+
+          {/* Search Toggle */}
+          <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
+            {!isSearchExpanded ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSearch}
+                className="h-9 w-9 p-0"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            ) : (
+              <div className="flex w-full items-center gap-2 sm:w-auto">
+                <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search posts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-full sm:w-64 text-sm border-muted"
+                    onBlur={(e) => {
+                      // Only collapse if no search query and not clicking on clear button
+                      if (!searchQuery && e.relatedTarget?.getAttribute('data-search-action') !== 'clear') {
+                        setIsSearchExpanded(false)
+                      }
+                    }}
+                  />
+                </form>
+                {searchQuery && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={toggleSearch}
+                    onClick={clearSearch}
                     className="h-9 w-9 p-0"
+                    data-search-action="clear"
                   >
-                    <Search className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                   </Button>
-                ) : (
-                  <div className="flex w-full items-center gap-2 sm:w-auto">
-                    <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                      <Input
-                        ref={searchInputRef}
-                        type="text"
-                        placeholder="Search posts..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 w-full sm:w-64 text-sm border-muted"
-                        onBlur={(e) => {
-                          // Only collapse if no search query and not clicking on clear button
-                          if (!searchQuery && e.relatedTarget?.getAttribute('data-search-action') !== 'clear') {
-                            setIsSearchExpanded(false)
-                          }
-                        }}
-                      />
-                    </form>
-                    {searchQuery && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearSearch}
-                        className="h-9 w-9 p-0"
-                        data-search-action="clear"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Posts */}
-          {posts.length === 0 ? (
-            <div className="text-center py-16">
-              <FileText className="mx-auto h-8 w-8 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                {search ? 'No posts found' : 'No posts yet'}
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                {search 
-                  ? 'Try adjusting your search terms.'
-                  : 'Check back later for published content.'
-                }
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6 sm:space-y-8">
-              {posts.map((post, index) => (
-                <article 
-                  key={post.id} 
-                  className="group cursor-pointer border-b border-border pb-6 sm:pb-8 last:border-b-0"
-                  onClick={() => visitPost(post.public_slug)}
-                >
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="flex-shrink-0 w-5 sm:w-6 text-right">
-                      <span className="text-xs sm:text-sm text-muted-foreground font-mono">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-base sm:text-lg font-medium text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">
-                        {post.title}
-                      </h2>
-                      {post.subtitle && (
-                        <p className="text-base text-muted-foreground/90 mb-2 leading-relaxed">
-                          {post.subtitle}
-                        </p>
-                      )}
-                      
-                      <p className="text-muted-foreground text-sm mb-3 leading-relaxed line-clamp-2">
-                        {post.excerpt}
-                      </p>
-                      
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
-                        <span className="font-medium">{post.author.display_name}</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="hidden sm:inline">{post.published_at}</span>
-                        <span className="hidden sm:inline">•</span>
-                        <div className="flex items-center gap-1">
-                          <Clock3 className="h-3 w-3" />
-                          <span>{post.reading_time_minutes}m</span>
-                        </div>
-                        <span className="hidden sm:inline">•</span>
-                        <div className="flex items-center gap-1">
-                          <Verified className="h-3 w-3 text-green-600" />
-                          <span>Verified</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-          
-          {/* Footer */}
-          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-border">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground">
-              <Button 
-                variant="ghost" 
-                onClick={() => router.visit('/')}
-                className="text-muted-foreground hover:text-foreground px-0 self-start"
-              >
-                ← Back to Home
-              </Button>
-              <span className="text-xs sm:text-sm">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>
-            </div>
+            )}
           </div>
         </div>
       </div>
-    </>
+
+      {/* Posts */}
+      {posts.length === 0 ? (
+        <div className="text-center py-16">
+          <FileText className="mx-auto h-8 w-8 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            {search ? 'No posts found' : 'No posts yet'}
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            {search
+              ? 'Try adjusting your search terms.'
+              : 'Check back later for published content.'
+            }
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-6 sm:space-y-8">
+          {posts.map((post, index) => (
+            <article
+              key={post.id}
+              className="group cursor-pointer border-b border-border pb-6 sm:pb-8 last:border-b-0"
+              onClick={() => visitPost(post.public_slug)}
+            >
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="flex-shrink-0 w-5 sm:w-6 text-right">
+                  <span className="text-xs sm:text-sm text-muted-foreground font-mono">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-base sm:text-lg font-medium text-foreground mb-2 group-hover:text-primary transition-colors leading-snug">
+                    {post.title}
+                  </h2>
+                  {post.subtitle && (
+                    <p className="text-base text-muted-foreground/90 mb-2 leading-relaxed">
+                      {post.subtitle}
+                    </p>
+                  )}
+
+                  <p className="text-muted-foreground text-sm mb-3 leading-relaxed line-clamp-2">
+                    {post.excerpt}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                    <span className="font-medium">{post.author.display_name}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">{post.published_at}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <div className="flex items-center gap-1">
+                      <Clock3 className="h-3 w-3" />
+                      <span>{post.reading_time_minutes}m</span>
+                    </div>
+                    <span className="hidden sm:inline">•</span>
+                    <div className="flex items-center gap-1">
+                      <Verified className="h-3 w-3 text-green-600" />
+                      <span>Verified</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground">
+          <Button
+            variant="ghost"
+            onClick={() => router.visit('/')}
+            className="text-muted-foreground hover:text-foreground px-0 self-start"
+          >
+            ← Back to Home
+          </Button>
+          <span className="text-xs sm:text-sm">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+    </div>
   )
 
   return auth?.user ? (
-    <AppLayout>
-      {pageContent}
+    <AppLayout contentClassName="max-w-none px-0">
+      {headMarkup}
+      <div className="min-h-screen bg-background">
+        {listContent}
+      </div>
     </AppLayout>
-  ) : pageContent
+  ) : (
+    <>
+      {headMarkup}
+      <div className="min-h-screen bg-white text-foreground">
+        <header className="sticky top-0 z-20 w-full border-b border-border/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+            <Link href="/" className="flex items-center gap-3">
+              <AppLogo
+                showIcon={false}
+                labelClassName="font-serif text-xl tracking-tight"
+              />
+            </Link>
+
+            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
+                Explore Library
+              </Link>
+              <Link href="/#features" className="transition-colors hover:text-foreground">
+                Platform
+              </Link>
+            </nav>
+
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={signInPath()}>Sign in</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href={signUpPath()}>Start for free</Link>
+              </Button>
+            </div>
+          </div>
+        </header>
+        {listContent}
+      </div>
+      <PublicPostFooter />
+    </>
+  )
 }

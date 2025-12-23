@@ -14,6 +14,7 @@ interface RichTextEditorProps {
   className?: string
   disabled?: boolean
   textareaClassName?: string
+  placeholderClassName?: string
   onEditorReady?: (editor: Editor) => void
 }
 
@@ -34,6 +35,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       className,
       disabled,
       textareaClassName,
+      placeholderClassName,
       onEditorReady,
     },
     ref
@@ -127,7 +129,12 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     return (
       <div className={cn("relative", className)}>
         {isEmpty && placeholder && (
-          <div className="pointer-events-none absolute left-6 top-6 text-lg text-muted-foreground/50">
+          <div
+            className={cn(
+              "pointer-events-none absolute left-6 top-6 text-lg text-muted-foreground/50",
+              placeholderClassName
+            )}
+          >
             {placeholder}
           </div>
         )}

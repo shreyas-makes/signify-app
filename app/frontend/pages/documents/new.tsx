@@ -8,6 +8,7 @@ import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import AppLayout from "@/layouts/app-layout"
 import { dashboardPath, documentsPath } from "@/routes"
 
@@ -24,6 +25,7 @@ export default function DocumentsNew() {
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const editorRef = useRef<RichTextEditorRef>(null)
+  const keyboardOffset = useKeyboardOffset()
 
   // Update word count when content changes
   useEffect(() => {
@@ -105,11 +107,15 @@ export default function DocumentsNew() {
             <div className="flex-1 flex flex-col max-w-4xl w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10">
               <div className="mb-2 space-y-2">
                 {!isPreview && (
-                  <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0">
+                  <div
+                    className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0"
+                    style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
+                  >
                     <div className="w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0">
                       <EditorToolbar
                         editor={editor}
-                        className="mb-0 sm:mb-2"
+                        layout="scroll"
+                        className="mb-0 gap-1 sm:mb-2 sm:gap-2"
                       />
                     </div>
                   </div>
@@ -174,6 +180,7 @@ export default function DocumentsNew() {
                     placeholder="Start writing your document..."
                     className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
                     textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                    placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                     onEditorReady={setEditor}
                   />
                 )}

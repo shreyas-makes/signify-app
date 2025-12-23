@@ -163,9 +163,6 @@ export default function Welcome() {
               <a href="#features" className="transition-colors hover:text-foreground">
                 Platform
               </a>
-              <a href="#get-started" className="transition-colors hover:text-foreground">
-                Get started
-              </a>
             </nav>
 
             <div className="flex items-center gap-2">
@@ -306,33 +303,6 @@ export default function Welcome() {
                     />
                   </div>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            id="get-started"
-            className="relative overflow-hidden border-t border-border bg-gradient-to-br from-primary/10 via-muted/70 to-accent/15 py-20"
-          >
-            <div className="pointer-events-none absolute inset-x-0 -top-32 z-0 flex justify-center blur-3xl">
-              <div className="h-[220px] w-[420px] bg-gradient-to-r from-primary/40 via-accent/30 to-chart-2/25 opacity-75 blur-3xl blob-drift-2 sm:h-[300px] sm:w-[640px]" />
-            </div>
-            <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center gap-8 px-4 text-center">
-              <Badge
-                variant="outline"
-                className="w-fit text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Join the proof
-              </Badge>
-              <h2 className="font-serif text-3xl leading-tight text-foreground sm:text-4xl">
-                Ready to start publishing essays?
-              </h2>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <Button size="lg" asChild>
-                  <Link href={auth.user ? dashboardPath() : signUpPath()}>
-                    {auth.user ? 'Go to dashboard' : 'Start writing'}
-                  </Link>
-                </Button>
               </div>
             </div>
           </section>
