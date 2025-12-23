@@ -49,6 +49,11 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           disabled ? "pointer-events-none opacity-50" : "",
           textareaClassName,
         ),
+        autocomplete: "off",
+        autocorrect: "off",
+        autocapitalize: "off",
+        spellcheck: "true",
+        inputmode: "text",
         style: [
           "font-family: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
           "font-size: 18px",
