@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Head, Link, usePage } from '@inertiajs/react'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { GitCommitGraph } from '@/components/ui/git-commit-graph'
 import { KeystrokeBarcode } from '@/components/ui/keystroke-barcode'
 import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
-import { VerifiedSessionCard } from '@/components/verified-session-card'
 import AppLogo from '@/components/app-logo'
 import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
 import type { Keystroke, SharedData } from '@/types'
@@ -216,12 +216,61 @@ export default function Features() {
               </div>
 
               <div className="relative w-full min-w-0 max-w-full">
-                <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
-                <VerifiedSessionCard
-                  initials="SJ"
-                  sessionMeta="3 min ago | 1,348 keystrokes"
-                  className="w-full max-w-full"
-                />
+                <div className="relative space-y-5 rounded-[32px] border border-border/70 bg-card/90 p-6 shadow-[0_30px_70px_rgba(18,18,23,0.18)] editorial-collage-frame sm:p-8">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Keystrokes are analyzed to generate a signature that is uniquely yours.
+                  </p>
+
+                  <div className="space-y-4 rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm paper-grain">
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                      <span>Keystroke cadence</span>
+                      <span className="font-mono text-[10px]">Live</span>
+                    </div>
+                    <div className="relative h-24 overflow-hidden rounded-xl border border-border/50 bg-background/90 p-4 keystroke-grid">
+                      <div className="flex h-full items-end justify-between gap-2">
+                        {Array.from({ length: 10 }).map((_, index) => (
+                          <span
+                            key={`stroke-${index}`}
+                            className="keystroke-bar"
+                            style={{ '--delay': `${index * 0.18}s` } as CSSProperties}
+                          />
+                        ))}
+                      </div>
+                      <div className="absolute right-4 top-3 rounded-full border border-border/60 bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                        Typing
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                      <span>Signature</span>
+                      <span className="font-mono text-[10px]">Generated</span>
+                    </div>
+                    <div className="mt-4 rounded-xl border border-border/50 bg-background/90 p-4">
+                      <svg viewBox="0 0 260 60" className="h-12 w-full text-foreground/70" aria-hidden="true">
+                        <path
+                          className="signature-path"
+                          d="M10 40C30 20 46 52 64 38C82 24 92 20 108 34C124 48 140 18 156 32C172 46 186 14 202 28C218 42 232 24 248 18"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <p className="mt-2 text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+                        Unique rhythm imprint
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end">
+                    <span className="rounded-full border border-foreground/20 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/70 stamp-ring stamp-in">
+                      100% Human
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
