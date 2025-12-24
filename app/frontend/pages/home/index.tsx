@@ -1,148 +1,21 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { GitCommitGraph } from '@/components/ui/git-commit-graph'
-import { KeystrokeBarcode } from '@/components/ui/keystroke-barcode'
-import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
-import { VerifiedSessionCard } from '@/components/verified-session-card'
 import AppLogo from '@/components/app-logo'
 import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
-import type { Keystroke, SharedData } from '@/types'
-
-interface DemoAction {
-  type: 'char' | 'backspace'
-  value?: string
-  delay: number
-}
-
-const demoBaseTimestamp = Date.parse('2024-01-04T16:00:00Z')
-
-function buildHumanDemoActions(): DemoAction[] {
-  const actions: DemoAction[] = []
-  const jitterPattern = [-18, -8, 0, 6, 14, -5, 11, -12, 4, 0]
-  let actionIndex = 0
-  let delayBoost = 0
-
-  const pushChar = (character: string) => {
-    let delay = 90
-
-    if (character === ' ') {
-      delay = 135
-    } else if (',;:'.includes(character)) {
-      delay = 210
-    } else if ('.!?'.includes(character)) {
-      delay = 320
-    } else if (character === '\n') {
-      delay = 360
-    }
-
-    delay += jitterPattern[actionIndex % jitterPattern.length]
-
-    if (delayBoost > 0) {
-      delay += delayBoost
-      delayBoost = 0
-    }
-
-    actions.push({ type: 'char', value: character, delay: Math.max(40, delay) })
-    actionIndex += 1
-  }
-
-  const pushText = (text: string) => {
-    for (const character of text) {
-      pushChar(character)
-    }
-  }
-
-  const addPause = (durationMs: number) => {
-    delayBoost += durationMs
-  }
-
-  const addBackspaces = (count: number, delay = 120) => {
-    for (let i = 0; i < count; i += 1) {
-      const jitter = jitterPattern[actionIndex % jitterPattern.length]
-      actions.push({ type: 'backspace', delay: Math.max(45, delay + jitter) })
-      actionIndex += 1
-    }
-  }
-
-  pushText('It was the best of times, ')
-  addPause(420)
-  pushText('it was the ')
-  pushText('worsst')
-  addBackspaces(3)
-  pushText('st')
-  addPause(380)
-  pushText(' of times. ')
-  addPause(620)
-  pushText('It is a truth universallyy')
-  addBackspaces(1)
-  pushText(' acknowledged, that a single man in possession of a good fortune, must be in want of a wife. ')
-  addPause(520)
-  pushText('All happy families are alike; each unhappy family is unhappy in its own way.')
-
-  return actions
-}
-
-const demoActions: DemoAction[] = buildHumanDemoActions()
-
-const {
-  keystrokes: replayDemoKeystrokes,
-  finalContent: replayDemoFinalContent,
-} = buildDemoKeystrokes(demoActions, demoBaseTimestamp)
-
-const analyticsDemoKeystrokes = buildAnalyticsDemoKeystrokes(replayDemoKeystrokes, 4, 14000)
-const dnaDemoKeystrokes = analyticsDemoKeystrokes.slice(0, 220)
+import type { SharedData } from '@/types'
 
 export default function Welcome() {
   const page = usePage<SharedData>()
   const { auth } = page.props
-  const analyticsGraphRef = useRef<HTMLDivElement | null>(null)
-  const [analyticsGraphWidth, setAnalyticsGraphWidth] = useState(880)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const element = analyticsGraphRef.current
-    if (!element) {
-      return
-    }
-
-    const updateWidth = (nextWidth: number) => {
-      const normalizedWidth = Math.max(1, Math.floor(nextWidth || 0))
-      setAnalyticsGraphWidth((prev) => (Math.abs(prev - normalizedWidth) > 1 ? normalizedWidth : prev))
-    }
-
-    updateWidth(element.clientWidth)
-
-    if ('ResizeObserver' in window && typeof window.ResizeObserver === 'function') {
-      const observer = new window.ResizeObserver((entries) => {
-        for (const entry of entries) {
-          updateWidth(entry.contentRect.width)
-        }
-      })
-
-      observer.observe(element)
-      return () => observer.disconnect()
-    }
-
-    const handleResize = () => updateWidth(element.clientWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const analyticsGraphHeight = analyticsGraphWidth < 520 ? 220 : 280
 
   return (
     <>
-      <Head title="Signify - Prove Your Words">
+      <Head title="Signify - Human Stories & Ideas">
         <meta
           name="description"
-          content="The writing platform that proves human authorship through keystroke verification. Write, publish, and share with complete authenticity."
+          content="A home for human stories and ideas. Share your voice, earn trust, and build a readership that knows your words are real."
         />
       </Head>
 
@@ -160,9 +33,9 @@ export default function Welcome() {
               <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
                 Explore Library
               </Link>
-              <a href="#features" className="transition-colors hover:text-foreground">
-                Platform
-              </a>
+              <Link href="/features" className="transition-colors hover:text-foreground">
+                Features
+              </Link>
             </nav>
 
             <div className="flex items-center gap-2">
@@ -186,127 +59,105 @@ export default function Welcome() {
 
         <main>
           <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15">
-            <div className="pointer-events-none absolute inset-x-0 -top-40 z-0 flex justify-center blur-3xl">
-              <div className="h-[260px] w-[420px] bg-gradient-to-r from-primary/30 via-accent/25 to-chart-2/20 opacity-60 blur-3xl blob-drift-1 sm:h-[400px] sm:w-[720px]" />
-            </div>
-            <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
-              <div className="min-w-0 space-y-4">
-                <Badge
-                  variant="secondary"
-                  className="w-fit gap-2 text-xs font-semibold uppercase tracking-wide shadow-sm ring-1 ring-primary/15"
-                >
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Verified human authorship
-                </Badge>
+            <div className="pointer-events-none absolute -top-32 left-[-10%] h-[260px] w-[260px] rounded-full bg-primary/20 blur-3xl blob-drift-1 sm:h-[360px] sm:w-[360px]" />
+            <div className="pointer-events-none absolute bottom-0 right-[-12%] h-[280px] w-[280px] rounded-full bg-accent/35 blur-3xl blob-drift-2 sm:h-[380px] sm:w-[380px]" />
+            <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-12 md:min-h-[78vh] md:grid-cols-[minmax(0,1.05fr)_0.95fr] md:pt-20">
+              <div className="min-w-0 space-y-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  Human-only publishing
+                </div>
                 <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                  Prove every word you publish is unmistakably yours.
+                  Human (only) stories, and ideas.
                 </h1>
                 <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                 Publish with a shareable proof that shows exactly how your story came to life—no AI, just you.
+                  Publish your stories and protect your voice from algorithmic sameness.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <Button size="lg" asChild className="group flex w-full items-center justify-center gap-2 px-6 py-3 text-base sm:w-auto">
+                  <Button size="lg" asChild className="group w-full gap-2 rounded-full sm:w-auto">
                     <Link href={auth.user ? dashboardPath() : signUpPath()}>
-                      {auth.user ? "Open dashboard" : "Start writing now"}
+                      {auth.user ? 'Open dashboard' : 'Start writing'}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   </Button>
-                  
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="w-full rounded-full sm:w-auto"
+                  >
+                    <Link href={publicPostsPath()}>Explore the library</Link>
+                  </Button>
                 </div>
-
+                
               </div>
 
-              <div className="relative w-full min-w-0 max-w-full">
-                <div className="absolute inset-0 -translate-x-6 rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/30 to-foreground/10 blur-3xl" />
-                <VerifiedSessionCard
-                  initials="SJ"
-                  sessionMeta="3 min ago | 1,348 keystrokes"
-                  className="w-full max-w-full"
-                />
-              </div>
-            </div>
-          </section>
+              <div className="relative mx-auto w-full max-w-[520px]">
+                <div className="absolute -left-6 top-8 h-16 w-16 rotate-6 rounded-2xl border border-border/60 bg-card shadow-sm" />
+                <div className="absolute -right-8 bottom-12 h-20 w-20 rounded-full bg-accent/40 shadow-sm" />
+                <div className="relative overflow-hidden rounded-[32px] border border-border/70 bg-card/90 p-8 shadow-[0_24px_60px_rgba(18,18,23,0.15)]">
+                  <div className="absolute -right-6 -top-8 h-28 w-28">
+                    <svg viewBox="0 0 120 120" className="h-full w-full text-primary" aria-hidden="true">
+                      <g fill="currentColor" fillOpacity="0.9">
+                        <circle cx="60" cy="20" r="20" />
+                        <circle cx="95" cy="45" r="20" />
+                        <circle cx="85" cy="85" r="20" />
+                        <circle cx="35" cy="85" r="20" />
+                        <circle cx="25" cy="45" r="20" />
+                      </g>
+                      <circle cx="60" cy="60" r="12" fill="hsl(var(--background))" />
+                    </svg>
+                  </div>
 
-          <section
-            id="features"
-            className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15 py-20"
-          >
-            <div className="pointer-events-none absolute -top-24 left-[-6%] z-0 h-[200px] w-[320px] -rotate-6 rounded-full bg-gradient-to-r from-primary/40 via-accent/30 to-chart-2/25 opacity-85 blur-3xl blob-drift-1 sm:h-[260px] sm:w-[420px]" />
-            <div className="pointer-events-none absolute top-28 right-[-8%] z-0 h-[220px] w-[360px] rotate-3 rounded-full bg-gradient-to-r from-accent/40 via-primary/30 to-chart-2/25 opacity-75 blur-3xl blob-drift-2 sm:h-[300px] sm:w-[480px]" />
-            <div className="pointer-events-none absolute bottom-10 left-[18%] z-0 h-[180px] w-[300px] -rotate-2 rounded-full bg-gradient-to-r from-chart-2/35 via-accent/30 to-primary/25 opacity-80 blur-3xl blob-drift-3 sm:h-[240px] sm:w-[380px]" />
-            <div className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-16 px-4 sm:max-w-6xl">
-              <div className="max-w-none space-y-4 sm:max-w-2xl">
-                <Badge
-                  variant="outline"
-                  className="w-fit text-xs font-semibold uppercase tracking-wider text-primary"
-                >
-                  Why teams choose Signify
-                </Badge>
-                <h2 className="font-serif text-3xl leading-tight sm:text-4xl">
-                  100% human authorship for your published essays
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Capture the nuance of human drafting, verify originality in real time, and share transparent proof bundles with one link.
-                </p>
-              </div>
+                  <div className="absolute right-6 top-8 h-24 w-32 text-foreground/30">
+                    <svg viewBox="0 0 140 110" className="h-full w-full" aria-hidden="true">
+                      <path
+                        d="M8 86L42 52L74 64L108 30L132 36"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <circle cx="8" cy="86" r="4" fill="currentColor" />
+                      <circle cx="42" cy="52" r="4" fill="currentColor" />
+                      <circle cx="74" cy="64" r="4" fill="currentColor" />
+                      <circle cx="108" cy="30" r="4" fill="currentColor" />
+                      <circle cx="132" cy="36" r="4" fill="currentColor" />
+                    </svg>
+                  </div>
 
-              <div className="grid gap-10 lg:grid-cols-12">
-                <div className="min-w-0 lg:col-span-4">
-                  <div className="flex h-full w-full min-w-0 flex-col gap-6 overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-5 shadow-sm backdrop-blur sm:p-6">
-                    <div className="space-y-2">
-                      <span className="text-xs font-semibold uppercase tracking-widest text-primary">Keystroke DNA</span>
-                      <h3 className="text-xl font-semibold text-foreground">See the human fingerprint in every draft.</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Keystroke telemetry renders an immutable barcode of the writing session so reviewers can spot real authorship at a glance.
-                      </p>
+                  <div className="relative z-10 space-y-6">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      No AI generated stories
                     </div>
-                    <KeystrokeBarcode
-                      keystrokes={dnaDemoKeystrokes}
-                      className="w-full max-w-full rounded-2xl shadow-sm"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Sample session | {dnaDemoKeystrokes.length.toLocaleString()} keystrokes captured across focused drafting bursts.
+                    <p className="font-serif text-3xl leading-tight text-foreground">
+                      Stories shaped by lived experience, not prompts.
                     </p>
-                  </div>
-                </div>
-
-                <div className="min-w-0 space-y-6 lg:col-span-8">
-                  <div className="max-w-none space-y-2 sm:max-w-2xl">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-primary">Immersive replays</span>
-                    <h3 className="text-xl font-semibold text-foreground">Walk readers through every decision.</h3>
-                  </div>
-                  <KeystrokeReplay
-                    keystrokes={replayDemoKeystrokes}
-                    finalContent={replayDemoFinalContent}
-                    title="Demo draft: human hands draft every line"
-                    autoPlayOnView
-                    showStats={false}
-                    className="w-full max-h-[340px] overflow-hidden border border-border/60 bg-background/95 shadow-md ring-1 ring-border/40 sm:max-h-[360px] md:max-h-[420px] lg:max-h-none"
-                  />
-                </div>
-
-                <div className="min-w-0 space-y-6 lg:col-span-12">
-                  <div className="max-w-none space-y-2 sm:max-w-3xl">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-primary">Live analytics</span>
-                    <h3 className="text-xl font-semibold text-foreground">Spot authenticity trends in real time.</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Aggregate keystroke evidence to surface writing velocity, focus breaks, and correction patterns across your entire team.
-                    </p>
-                  </div>
-                  <div ref={analyticsGraphRef} className="w-full min-w-0">
-                    <GitCommitGraph
-                      keystrokes={analyticsDemoKeystrokes}
-                      width={analyticsGraphWidth}
-                      height={analyticsGraphHeight}
-                      interactive={false}
-                      className="shadow-md ring-1 ring-border/40"
-                    />
+                    <div className="relative h-40 overflow-hidden rounded-[24px] bg-primary">
+                      <svg viewBox="0 0 220 140" className="h-full w-full" aria-hidden="true">
+                        <path
+                          d="M30 110C60 70 90 90 120 60C150 30 185 50 200 20"
+                          fill="none"
+                          stroke="hsl(var(--background))"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M20 95C40 80 70 80 90 65C110 50 140 55 170 35"
+                          fill="none"
+                          stroke="hsl(var(--background))"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeOpacity="0.7"
+                        />
+                        <circle cx="40" cy="38" r="6" fill="hsl(var(--background))" fillOpacity="0.9" />
+                        <circle cx="70" cy="30" r="4" fill="hsl(var(--background))" fillOpacity="0.7" />
+                        <circle cx="170" cy="80" r="5" fill="hsl(var(--background))" fillOpacity="0.8" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </section>
-
         </main>
 
         <footer className="border-t border-border bg-background py-12 text-sm text-muted-foreground">
@@ -342,100 +193,4 @@ export default function Welcome() {
       </div>
     </>
   )
-}
-
-function buildDemoKeystrokes(actions: DemoAction[], baseTimestamp: number): {
-  keystrokes: Keystroke[]
-  finalContent: string
-} {
-  const keystrokes: Keystroke[] = []
-  let timestamp = baseTimestamp
-  let sequence = 1
-  let content = ''
-
-  for (const action of actions) {
-    timestamp += Math.max(action.delay, 16)
-
-    if (action.type === 'char' && typeof action.value === 'string') {
-      const cursorPosition = content.length
-      keystrokes.push({
-        id: sequence,
-        event_type: 'keydown',
-        key_code: charToKeyCode(action.value),
-        character: action.value,
-        timestamp,
-        cursor_position: cursorPosition,
-        sequence_number: sequence,
-      })
-      content = content.slice(0, cursorPosition) + action.value + content.slice(cursorPosition)
-      sequence += 1
-      continue
-    }
-
-    if (action.type === 'backspace') {
-      const cursorPosition = Math.max(0, content.length)
-      keystrokes.push({
-        id: sequence,
-        event_type: 'keydown',
-        key_code: 8,
-        character: '\b',
-        timestamp,
-        cursor_position: cursorPosition,
-        sequence_number: sequence,
-      })
-      if (cursorPosition > 0) {
-        content = content.slice(0, cursorPosition - 1) + content.slice(cursorPosition)
-      }
-      sequence += 1
-    }
-  }
-
-  return { keystrokes, finalContent: content }
-}
-
-function buildAnalyticsDemoKeystrokes(
-  baseKeystrokes: Keystroke[],
-  loops = 3,
-  spacingMs = 12000,
-): Keystroke[] {
-  if (baseKeystrokes.length === 0) {
-    return []
-  }
-
-  const expanded: Keystroke[] = []
-  let sequence = 1
-  const baseStart = baseKeystrokes[0].timestamp
-
-  for (let loop = 0; loop < loops; loop += 1) {
-    const speedMultiplier = 1 + loop * 0.25
-    const offset = loop * spacingMs
-
-    for (const base of baseKeystrokes) {
-      const offsetFromStart = base.timestamp - baseStart
-      const scaledOffset = Math.round(offsetFromStart / speedMultiplier)
-      expanded.push({
-        ...base,
-        id: sequence,
-        sequence_number: sequence,
-        timestamp: baseStart + offset + scaledOffset,
-      })
-      sequence += 1
-    }
-  }
-
-  return expanded
-}
-
-function charToKeyCode(character: string): number {
-  if (!character) {
-    return 0
-  }
-
-  if (character === ' ') return 32
-  if (character === '.') return 190
-  if (character === ',') return 188
-  if (character === '-') return 189
-
-  const upper = character.toUpperCase()
-  return upper.charCodeAt(0)
 }
