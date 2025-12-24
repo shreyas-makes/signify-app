@@ -48,6 +48,7 @@ interface MetaTags {
   og_title: string
   og_description: string
   og_url: string
+  og_image: string
   og_type: string
   twitter_card: string
 }
@@ -89,6 +90,7 @@ export default function PublicPostShow({ post, meta }: Props) {
       <meta property="og:title" content={meta.og_title} />
       <meta property="og:description" content={meta.og_description} />
       <meta property="og:url" content={meta.og_url} />
+      <meta property="og:image" content={meta.og_image} />
       <meta property="og:type" content={meta.og_type} />
       <meta property="article:published_time" content={meta.published_time} />
       <meta property="article:author" content={meta.author} />
@@ -97,6 +99,7 @@ export default function PublicPostShow({ post, meta }: Props) {
       <meta name="twitter:card" content={meta.twitter_card} />
       <meta name="twitter:title" content={meta.og_title} />
       <meta name="twitter:description" content={meta.og_description} />
+      <meta name="twitter:image" content={meta.og_image} />
 
       {/* Structured data */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{

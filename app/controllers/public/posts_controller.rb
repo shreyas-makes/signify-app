@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
+require "net/http"
+
 class Public::PostsController < InertiaController
-  skip_before_action :authenticate, only: [:index, :show, :keystrokes]
+  skip_before_action :authenticate, only: [:index, :show, :keystrokes, :og_image]
   before_action :perform_authentication, only: [:index, :show, :keystrokes]
-  before_action :set_post, only: [:show, :keystrokes]
+  before_action :set_post, only: [:show, :keystrokes, :og_image]
 
   def index
     @posts = Document.published
@@ -87,6 +89,25 @@ class Public::PostsController < InertiaController
     end
   end
 
+  def og_image
+    unless @post
+      render plain: "Post not found", status: :not_found
+      return
+    end
+
+    @excerpt = truncate_content(ActionController::Base.helpers.strip_tags(@post.content), 180)
+    @published_date = @post.published_at.strftime("%B %d, %Y")
+
+    html = render_to_string(formats: [:html], layout: false)
+    image_url = html2png_url(html)
+
+    if image_url.present?
+      redirect_to image_url, allow_other_host: true
+    else
+      render plain: "OG image unavailable", status: :service_unavailable
+    end
+  end
+
   private
 
   def set_post
@@ -153,6 +174,7 @@ class Public::PostsController < InertiaController
       og_title: post.title,
       og_description: truncate_content(ActionController::Base.helpers.strip_tags(post.content), 200),
       og_url: public_post_url(post.public_slug),
+      og_image: public_post_og_image_url(post.public_slug),
       og_type: "article",
       twitter_card: "summary_large_image"
     }
@@ -196,5 +218,31 @@ class Public::PostsController < InertiaController
     else
       stripped
     end
+  end
+
+  def html2png_url(html)
+    uri = URI("https://html2png.dev/api/convert")
+    uri.query = {
+      width: 1200,
+      height: 630,
+      format: "png",
+      deviceScaleFactor: 2
+    }.to_query
+
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "text/html; charset=UTF-8"
+    request.body = html
+
+    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+      http.request(request)
+    end
+
+    return unless response.is_a?(Net::HTTPSuccess)
+
+    body = JSON.parse(response.body)
+    body["url"]
+  rescue JSON::ParserError, SocketError, Errno::ECONNREFUSED, Timeout::Error => error
+    Rails.logger.warn("html2png conversion failed: #{error.class} #{error.message}")
+    nil
   end
 end
