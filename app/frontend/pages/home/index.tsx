@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { Head, Link, usePage } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
 
@@ -90,67 +89,21 @@ export default function Welcome() {
                 
               </div>
 
-                <div className="relative mx-auto w-full max-w-[560px]">
-                  <div className="relative space-y-5 rounded-[32px] border border-border/70 bg-card/90 p-6 shadow-[0_30px_70px_rgba(18,18,23,0.18)] editorial-collage-frame sm:p-8">
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      Keystrokes are analyzed in real time to create a signature that only a human can
-                      produce.
-                    </p>
+              <div className="relative mx-auto w-full max-w-[560px]" aria-hidden="true">
+                <div className="relative overflow-hidden rounded-[32px] border border-border/70 bg-card/90 p-6 shadow-[0_30px_70px_rgba(18,18,23,0.18)] editorial-hero-board sm:p-8">
+                  <div className="pointer-events-none absolute -left-12 top-6 h-[220px] w-[220px] rounded-full bg-primary/15 blur-3xl editorial-ink-pulse" />
+                  <div className="pointer-events-none absolute bottom-0 right-[-18%] h-[240px] w-[240px] rounded-full bg-accent/35 blur-3xl editorial-ink-pulse-delayed" />
 
-                    <div className="space-y-4 rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm paper-grain">
-                      <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                        <span>Keystroke cadence</span>
-                        <span className="font-mono text-[10px]">Live</span>
-                      </div>
-                      <div className="relative h-24 overflow-hidden rounded-xl border border-border/50 bg-background/90 p-4 keystroke-grid">
-                        <div className="flex h-full items-end justify-between gap-2">
-                          {Array.from({ length: 10 }).map((_, index) => (
-                            <span
-                              key={`stroke-${index}`}
-                              className="keystroke-bar"
-                              style={{ '--delay': `${index * 0.18}s` } as CSSProperties}
-                            />
-                          ))}
-                        </div>
-                        <div className="absolute right-4 top-3 rounded-full border border-border/60 bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                          Typing
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
-                      <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                        <span>Signature</span>
-                        <span className="font-mono text-[10px]">Generated</span>
-                      </div>
-                      <div className="mt-4 rounded-xl border border-border/50 bg-background/90 p-4">
-                        <svg viewBox="0 0 260 60" className="h-12 w-full text-foreground/70" aria-hidden="true">
-                          <path
-                            className="signature-path"
-                            d="M10 40C30 20 46 52 64 38C82 24 92 20 108 34C124 48 140 18 156 32C172 46 186 14 202 28C218 42 232 24 248 18"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <p className="mt-2 text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-                          Unique rhythm imprint
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/80 px-4 py-3 shadow-sm">
-                      <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-                        Certified
-                      </span>
-                      <span className="rounded-full border border-foreground/20 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/70 stamp-ring stamp-in">
-                        100% Human
-                      </span>
-                    </div>
+                  <div className="relative h-[360px] overflow-hidden rounded-[24px] sm:h-[420px]">
+                    <img
+                      src="/cover-pic.png"
+                      alt="Hand-drawn cover illustration"
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
                 </div>
+              </div>
             </div>
           </section>
         </main>

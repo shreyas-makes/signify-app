@@ -101,6 +101,67 @@
   background-size: 100% 1.35rem;
 }
 
+.editorial-hero-board {
+  background-image:
+    linear-gradient(135deg, var(--card), var(--muted)),
+    radial-gradient(var(--border) 0.6px, transparent 0.6px);
+  background-size: 100% 100%, 12px 12px;
+}
+
+.editorial-paper {
+  background-image:
+    linear-gradient(160deg, var(--background), var(--card)),
+    radial-gradient(var(--border) 0.6px, transparent 0.6px),
+    linear-gradient(transparent 0, transparent 72%, rgba(15, 23, 42, 0.06) 74%);
+  background-size: 100% 100%, 9px 9px, 100% 1.35rem;
+}
+
+.editorial-cover {
+  background-image:
+    linear-gradient(160deg, var(--card), var(--accent)),
+    radial-gradient(var(--border) 0.7px, transparent 0.7px);
+  background-size: 100% 100%, 11px 11px;
+}
+
+.editorial-fingerprint {
+  background-image: repeating-radial-gradient(circle at center, currentColor 0 1px, transparent 1px 4px);
+  opacity: 0.4;
+  filter: blur(0.2px);
+}
+
+.editorial-tape {
+  box-shadow: 0 18px 30px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.editorial-float {
+  animation: editorial-float 9s ease-in-out infinite;
+}
+
+.editorial-float-delayed {
+  animation: editorial-float 11s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+.editorial-sway {
+  animation: editorial-sway 6s ease-in-out infinite;
+}
+
+.editorial-ink-pulse {
+  animation: editorial-ink-pulse 12s ease-in-out infinite;
+}
+
+.editorial-ink-pulse-delayed {
+  animation: editorial-ink-pulse 14s ease-in-out infinite;
+  animation-delay: -6s;
+}
+
+.editorial-arrow-path {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: editorial-draw 8s ease-in-out infinite;
+}
+
 .stamp-ring {
   box-shadow:
     inset 0 0 0 2px rgba(15, 23, 42, 0.08),
@@ -177,6 +238,64 @@
   100% {
     stroke-dashoffset: 0;
     opacity: 0.9;
+  }
+}
+
+@keyframes editorial-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes editorial-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+@keyframes editorial-ink-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate3d(14px, -12px, 0) scale(1.08);
+  }
+}
+
+@keyframes editorial-draw {
+  0% {
+    opacity: 0.2;
+    stroke-dashoffset: 420;
+  }
+  45% {
+    opacity: 0.7;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    opacity: 0.7;
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editorial-float,
+  .editorial-float-delayed,
+  .editorial-sway,
+  .editorial-ink-pulse,
+  .editorial-ink-pulse-delayed,
+  .editorial-arrow-path {
+    animation: none;
   }
 }
 
