@@ -266,11 +266,6 @@ export default function Features() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end">
-                    <span className="rounded-full border border-foreground/20 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/70 stamp-ring stamp-in">
-                      100% Human
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -348,6 +343,10 @@ export default function Features() {
                       width={analyticsGraphWidth}
                       height={analyticsGraphHeight}
                       interactive={false}
+                      showTimelineGraph={false}
+                      showLegend={false}
+                      showTimelineSummary={false}
+                      showInsights={false}
                       className="shadow-md ring-1 ring-border/40"
                     />
                   </div>

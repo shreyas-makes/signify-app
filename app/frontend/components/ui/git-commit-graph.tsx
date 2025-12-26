@@ -97,6 +97,10 @@ export function GitCommitGraph({
   height = 280,
   interactive = true,
   showStats = true,
+  showTimelineGraph = true,
+  showLegend = true,
+  showTimelineSummary = true,
+  showInsights = true,
   className = '',
 }: {
   keystrokes: Keystroke[]
@@ -104,6 +108,10 @@ export function GitCommitGraph({
   height?: number
   interactive?: boolean
   showStats?: boolean
+  showTimelineGraph?: boolean
+  showLegend?: boolean
+  showTimelineSummary?: boolean
+  showInsights?: boolean
   className?: string
 }) {
   if (keystrokes.length === 0) {
@@ -142,17 +150,29 @@ export function GitCommitGraph({
           <HeatmapView keystrokes={analysis.sortedKeystrokes} />
         </section>
         {showStats && <StatsGrid analysis={analysis} />}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
-          <TimelineGraph
-            commits={analysis.commits}
-            branches={analysis.branches}
-            width={width}
-            height={height}
-            interactive={interactive}
-            timeline={analysis.timeline}
-          />
-          <PatternInsights insights={analysis.insights} />
-        </div>
+        {showTimelineGraph || showInsights ? (
+          <div
+            className={
+              showTimelineGraph && showInsights
+                ? 'grid gap-6 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]'
+                : 'grid gap-6'
+            }
+          >
+            {showTimelineGraph ? (
+              <TimelineGraph
+                commits={analysis.commits}
+                branches={analysis.branches}
+                width={width}
+                height={height}
+                interactive={interactive}
+                timeline={analysis.timeline}
+                showLegend={showLegend}
+                showTimelineSummary={showTimelineSummary}
+              />
+            ) : null}
+            {showInsights ? <PatternInsights insights={analysis.insights} /> : null}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )
@@ -279,6 +299,8 @@ function TimelineGraph({
   height,
   interactive,
   timeline,
+  showLegend,
+  showTimelineSummary,
 }: {
   commits: GitCommit[]
   branches: GitBranch[]
@@ -289,6 +311,8 @@ function TimelineGraph({
     start: number
     end: number
   }
+  showLegend: boolean
+  showTimelineSummary: boolean
 }) {
   const [activeCommit, setActiveCommit] = useState<GitCommit | null>(commits[0] ?? null)
 
@@ -840,140 +864,144 @@ function TimelineGraph({
             )
           })}
         </svg>
-        <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-wide text-muted-foreground">
-          <span className="flex items-center gap-2">
-            <span className="h-[3px] w-6 rounded-full bg-gradient-to-r from-muted-foreground/60 via-muted-foreground/30 to-muted-foreground/0" />
-            Pace Line
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-6 rounded-full border border-muted-foreground/30 bg-muted-foreground/10" />
-            Pause Span
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-foreground" />
-            Burst
-          </span>
+        {showLegend ? (
+          <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="h-[3px] w-6 rounded-full bg-gradient-to-r from-muted-foreground/60 via-muted-foreground/30 to-muted-foreground/0" />
+              Pace Line
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-6 rounded-full border border-muted-foreground/30 bg-muted-foreground/10" />
+              Pause Span
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-foreground" />
+              Burst
+            </span>
+          </div>
+        ) : null}
+      </div>
+      {showTimelineSummary ? (
+        <div className="rounded-lg border bg-muted/20 p-3 text-xs sm:text-sm">
+          {interactive && (activePause || activeCommit) ? (
+            activePause ? (
+              <div className="grid gap-y-2 gap-x-6 sm:grid-cols-3 lg:grid-cols-4 text-foreground">
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Pause Window
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    Burst {activePause.fromIndex + 1} → {activePause.toIndex + 1}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Idle Time
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatDuration(activePause.pause)}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Resume Pace
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {Math.round(activePauseResumePace || 0)} wpm
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Next Burst Load
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {activePause.to.keystrokes} keys ·{' '}
+                    {formatDuration(getDisplayDuration(activePause.to.duration, activePause.to.keystrokes))}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Resume Time
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {new Date(activePause.to.timestamp).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+              </div>
+            ) : activeCommit ? (
+              <div className="grid gap-y-2 gap-x-6 sm:grid-cols-3 lg:grid-cols-4 text-foreground">
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Burst</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {activeBurstLabel}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Output
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {activeCommit.keystrokes} keys
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Active Time
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatDuration(getDisplayDuration(activeCommit.duration, activeCommit.keystrokes))}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Pace
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {Math.round(activePace || 0)} wpm
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Pause Before
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatDuration(pauseBeforeActive)}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Corrections
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {Math.round(activeCorrectionRatio * 100)}%
+                    {estimatedBackspaces > 0 ? ` · ~${estimatedBackspaces}` : ''}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Started
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {new Date(activeCommit.timestamp).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+              </div>
+            ) : null
+          ) : (
+            <span className="text-muted-foreground">
+              {interactive
+                ? 'Hover over each point to inspect writing bursts and pauses.'
+                : 'Writing bursts visualized along the session timeline.'}
+            </span>
+          )}
         </div>
-      </div>
-      <div className="rounded-lg border bg-muted/20 p-3 text-xs sm:text-sm">
-        {interactive && (activePause || activeCommit) ? (
-          activePause ? (
-            <div className="grid gap-y-2 gap-x-6 sm:grid-cols-3 lg:grid-cols-4 text-foreground">
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Pause Window
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  Burst {activePause.fromIndex + 1} → {activePause.toIndex + 1}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Idle Time
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {formatDuration(activePause.pause)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Resume Pace
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {Math.round(activePauseResumePace || 0)} wpm
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Next Burst Load
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {activePause.to.keystrokes} keys ·{' '}
-                  {formatDuration(getDisplayDuration(activePause.to.duration, activePause.to.keystrokes))}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Resume Time
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {new Date(activePause.to.timestamp).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            </div>
-          ) : activeCommit ? (
-            <div className="grid gap-y-2 gap-x-6 sm:grid-cols-3 lg:grid-cols-4 text-foreground">
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Burst</span>
-                <span className="text-sm font-semibold text-foreground">
-                  {activeBurstLabel}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Output
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {activeCommit.keystrokes} keys
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Active Time
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {formatDuration(getDisplayDuration(activeCommit.duration, activeCommit.keystrokes))}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Pace
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {Math.round(activePace || 0)} wpm
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Pause Before
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {formatDuration(pauseBeforeActive)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Corrections
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {Math.round(activeCorrectionRatio * 100)}%
-                  {estimatedBackspaces > 0 ? ` · ~${estimatedBackspaces}` : ''}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Started
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {new Date(activeCommit.timestamp).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            </div>
-          ) : null
-        ) : (
-          <span className="text-muted-foreground">
-            {interactive
-              ? 'Hover over each point to inspect writing bursts and pauses.'
-              : 'Writing bursts visualized along the session timeline.'}
-          </span>
-        )}
-      </div>
+      ) : null}
     </div>
   )
 }
