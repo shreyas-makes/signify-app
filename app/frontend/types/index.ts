@@ -35,6 +35,7 @@ export interface User {
   email: string
   avatar?: string
   avatar_url?: string | null
+  avatar_image_url?: string | null
   display_name: string
   bio?: string | null
   verified: boolean

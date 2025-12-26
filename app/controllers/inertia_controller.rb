@@ -4,7 +4,12 @@ class InertiaController < ApplicationController
   inertia_config default_render: true
   inertia_share flash: -> { flash.to_hash },
       auth: {
-        user: -> { Current.user&.as_json(only: %i[id name email display_name verified admin created_at updated_at avatar_url bio onboarded_at]) },
+        user: -> {
+          Current.user&.as_json(
+            only: %i[id name email display_name verified admin created_at updated_at avatar_url bio onboarded_at],
+            methods: [:avatar_image_url],
+          )
+        },
         session: -> { Current.session&.as_json(only: %i[id]) }
       }
 

@@ -70,17 +70,20 @@ export default function Profile() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="avatar_url">Gravatar image URL</Label>
+                  <Label htmlFor="avatar_url">Profile image</Label>
                   <Input
                     id="avatar_url"
                     name="avatar_url"
                     className="mt-1 block w-full"
                     defaultValue={auth.user.avatar_url ?? ""}
                     inputMode="url"
-                    placeholder="https://www.gravatar.com/avatar/..."
+                    placeholder="Paste an image link or your Gravatar profile link"
                   />
                   <p className="text-sm text-muted-foreground">
-                    Paste your Gravatar image URL to keep your profile picture in sync.
+                    Use a direct image URL (ends in .jpg/.png) or your Gravatar profile link (gravatar.com/yourname).
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    New to Gravatar? Go to gravatar.com, upload a photo, then paste your profile link here.
                   </p>
                   <InputError className="mt-2" message={errors.avatar_url} />
                 </div>
