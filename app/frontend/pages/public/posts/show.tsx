@@ -159,24 +159,24 @@ export default function PublicPostShow({ post, meta }: Props) {
   )
 
   const articleContent = (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <article className="mx-auto flex w-full max-w-3xl flex-col items-center">
         <header className="flex w-full flex-col items-center text-center">
-          <Avatar className="h-16 w-16 overflow-hidden border border-[#e3d6c3] shadow-[0_12px_30px_rgba(52,40,21,0.08)]">
+          <Avatar className="h-14 w-14 overflow-hidden border border-[#e3d6c3] shadow-[0_12px_30px_rgba(52,40,21,0.08)] sm:h-16 sm:w-16">
             <AvatarImage src={post.author.avatar_url ?? undefined} alt={post.author.display_name} />
             <AvatarFallback className="bg-[#f3ede0] text-xs font-semibold text-[#7c6b51]">
               {authorInitials}
             </AvatarFallback>
           </Avatar>
-          <p className="mt-6 text-[0.62rem] font-semibold uppercase tracking-[0.45em] text-[#8a7a60]">
+          <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.4em] text-[#8a7a60] sm:mt-6 sm:text-[0.62rem] sm:tracking-[0.45em]">
             {post.author.display_name}
           </p>
-          <p className="mt-2 text-sm text-[#9a8a73]">{publishedDate}</p>
-          <h1 className="mt-8 text-[2.6rem] font-semibold leading-[1.1] text-[#2f2416] sm:text-[3.1rem] lg:text-[3.4rem]">
+          <p className="mt-1 text-sm text-[#9a8a73] sm:mt-2">{publishedDate}</p>
+          <h1 className="mt-5 text-[2.2rem] font-semibold leading-[1.1] text-[#2f2416] sm:mt-8 sm:text-[3.1rem] lg:text-[3.4rem]">
             {post.title}
           </h1>
           {post.subtitle && (
-            <p className="mt-4 max-w-2xl text-lg text-[#6b5a41] sm:text-xl">
+            <p className="mt-3 max-w-2xl text-lg text-[#6b5a41] sm:mt-4 sm:text-xl">
               {post.subtitle}
             </p>
           )}
@@ -186,7 +186,7 @@ export default function PublicPostShow({ post, meta }: Props) {
               height={52}
               label="Keystroke activity"
               ctaText="View timeline ↗"
-              className="mt-8 w-full max-w-sm cursor-pointer rounded-[12px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab]"
+              className="mt-5 w-full max-w-sm cursor-pointer rounded-[12px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab] sm:mt-8"
               graphClassName="rounded-[14px] border border-[#eadfce] bg-[#fffdf6]"
               keystrokeUrl={keystrokeUrl}
               ariaLabel="View keystroke timeline"
@@ -205,14 +205,14 @@ export default function PublicPostShow({ post, meta }: Props) {
           />
         </div>
 
-        <div className="mt-10 w-full text-center">
+        <div className="mt-6 w-full text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#9b8a70]">
             About {post.author.display_name}
           </p>
           <p className="mx-auto mt-3 max-w-2xl text-lg leading-relaxed text-[#5c4d35]">
             {authorDescription}
           </p>
-          <div className="mx-auto mt-6 h-px w-24 bg-[#eadcc6]" />
+          <div className="mx-auto mt-3 h-px w-24 bg-[#eadcc6]" />
         </div>
       </article>
     </div>
@@ -221,8 +221,8 @@ export default function PublicPostShow({ post, meta }: Props) {
   const publicShell = (
     <div className="min-h-screen bg-white">
       {articleContent}
-      <div className="pb-6">
-        <div className="mx-auto mt-4 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
+      <div className="pb-4">
+        <div className="mx-auto mt-2 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
           <Link href="/" className="transition hover:text-[#8a6d44]">
             Sent to the world with Signify
           </Link>
@@ -270,8 +270,8 @@ export default function PublicPostShow({ post, meta }: Props) {
       {signedInNav}
       <div className="min-h-screen bg-background">
         {articleContent}
-        <div className="pb-6">
-          <div className="mx-auto mt-4 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
+        <div className="pb-4">
+          <div className="mx-auto mt-2 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
             <Link href="/" className="transition hover:text-[#8a6d44]">
               Sent to the world with Signify
             </Link>
