@@ -70,17 +70,17 @@ export default function Profile() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="avatar_url">Profile picture URL</Label>
+                  <Label htmlFor="avatar_url">Gravatar image URL</Label>
                   <Input
                     id="avatar_url"
                     name="avatar_url"
                     className="mt-1 block w-full"
                     defaultValue={auth.user.avatar_url ?? ""}
                     inputMode="url"
-                    placeholder="https://"
+                    placeholder="https://www.gravatar.com/avatar/..."
                   />
                   <p className="text-sm text-muted-foreground">
-                    Provide a square image hosted online. We recommend 512×512 pixels.
+                    Paste your Gravatar image URL to keep your profile picture in sync.
                   </p>
                   <InputError className="mt-2" message={errors.avatar_url} />
                 </div>

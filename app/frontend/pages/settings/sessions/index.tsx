@@ -22,48 +22,49 @@ export default function Sessions({ sessions }: SessionsProps) {
       <Head title={pageTitle} />
 
       <SettingsLayout>
-        <div className="space-y-6">
+        <div className="space-y-6 pb-10">
           <HeadingSmall
             title="Sessions"
             description="Manage your active sessions across devices"
           />
 
-          <div className="space-y-4">
+          <div className="divide-y rounded-2xl border bg-card/60">
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex flex-col space-y-2 rounded-lg border p-4"
+                className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:justify-between"
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-1 min-w-0">
-                    <p className="font-medium break-words">
-                      {session.user_agent}
-                      {session.id === auth.session.id && (
-                        <Badge variant="secondary" className="ml-2">
-                          Current
-                        </Badge>
-                      )}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      IP: {session.ip_address}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      Active since:{" "}
-                      {new Date(session.created_at).toLocaleString()}
-                    </p>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium break-words">{session.user_agent}</p>
+                    {session.id === auth.session.id && (
+                      <Badge variant="secondary">Current</Badge>
+                    )}
                   </div>
-                  {session.id !== auth.session.id && (
-                    <Button variant="destructive" asChild className="self-start sm:self-center">
-                      <Link
-                        method="delete"
-                        href={sessionPath({ id: session.id })}
-                        as="button"
-                      >
-                        Log out
-                      </Link>
-                    </Button>
-                  )}
+                  <p className="text-muted-foreground text-sm">
+                    IP: {session.ip_address}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Active since:{" "}
+                    {new Date(session.created_at).toLocaleString()}
+                  </p>
                 </div>
+                {session.id !== auth.session.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="self-start sm:self-center"
+                  >
+                    <Link
+                      method="delete"
+                      href={sessionPath({ id: session.id })}
+                      as="button"
+                    >
+                      Sign out
+                    </Link>
+                  </Button>
+                )}
               </div>
             ))}
           </div>

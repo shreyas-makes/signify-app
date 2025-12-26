@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import {
-  settingsAppearancePath,
   settingsEmailPath,
   settingsPasswordPath,
   settingsProfilePath,
@@ -33,11 +32,6 @@ const sidebarNavItems: NavItem[] = [
   {
     title: "Sessions",
     href: settingsSessionsPath(),
-    icon: null,
-  },
-  {
-    title: "Appearance",
-    href: settingsAppearancePath(),
     icon: null,
   },
 ]
@@ -75,8 +69,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
         <Separator className="my-6 md:hidden" />
 
-        <div className="flex-1 md:max-w-2xl">
-          <section className="max-w-xl space-y-12">{children}</section>
+        <div className="flex-1 md:max-w-3xl">
+          <section className="max-w-2xl space-y-12">{children}</section>
         </div>
       </div>
     </div>
