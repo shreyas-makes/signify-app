@@ -162,7 +162,7 @@ export default function Features() {
                 Home
               </Link>
               <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Explore Library
+                Discover
               </Link>
             </nav>
 

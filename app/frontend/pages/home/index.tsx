@@ -20,10 +20,8 @@ export default function Welcome() {
       </Head>
 
       <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-gradient-to-br from-primary/10 via-background to-accent/15 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
-          <div className="pointer-events-none absolute left-0 top-0 h-24 w-40 bg-primary/10 blur-2xl" />
-          <div className="pointer-events-none absolute right-[-6%] top-[-20%] h-28 w-28 rounded-full bg-accent/20 blur-3xl" />
-          <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+        <header className="fixed inset-x-0 top-4 z-50 w-full px-4">
+          <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between rounded-[36px] border border-border/70 bg-background/90 px-4 py-3 shadow-[0_20px_50px_rgba(15,15,20,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
             <Link href="/" className="flex items-center">
               <AppLogo
                 showIcon
@@ -61,7 +59,7 @@ export default function Welcome() {
         </header>
 
         <main>
-          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15">
+          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15 pt-20 sm:pt-24">
             <div className="pointer-events-none absolute -top-32 left-[-10%] h-[260px] w-[260px] rounded-full bg-primary/20 blur-3xl blob-drift-1 sm:h-[360px] sm:w-[360px]" />
             <div className="pointer-events-none absolute bottom-0 right-[-12%] h-[280px] w-[280px] rounded-full bg-accent/35 blur-3xl blob-drift-2 sm:h-[380px] sm:w-[380px]" />
             <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-12 md:min-h-[78vh] md:grid-cols-[minmax(0,1.05fr)_0.95fr] md:pt-20">
