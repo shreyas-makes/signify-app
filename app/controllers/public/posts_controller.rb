@@ -150,6 +150,7 @@ class Public::PostsController < InertiaController
       keystroke_count: post.keystroke_count,
       author: {
         id: post.user.id,
+        name: post.user.name,
         display_name: post.user.display_name,
         avatar_url: post.user.avatar_image_url,
         bio: post.user.bio,

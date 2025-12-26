@@ -13,6 +13,7 @@ import type { Keystroke, PageProps } from '@/types'
 
 interface Author {
   id: number
+  name: string
   display_name: string
   avatar_url?: string | null
   bio?: string | null
@@ -73,7 +74,8 @@ export default function PublicPostShow({ post, meta }: Props) {
   const [isNavHovered, setIsNavHovered] = useState(false)
   const [isNavScrolled, setIsNavScrolled] = useState(false)
   const navVisible = isNavHovered || isNavScrolled
-  const authorInitials = useMemo(() => getInitials(post.author.display_name), [getInitials, post.author.display_name])
+  const authorHeaderName = post.author.name?.trim() ? post.author.name : post.author.display_name
+  const authorInitials = useMemo(() => getInitials(authorHeaderName), [getInitials, authorHeaderName])
   const publishedDate = useMemo(() => {
     if (!meta?.published_time) {
       return post.published_at
@@ -163,13 +165,13 @@ export default function PublicPostShow({ post, meta }: Props) {
       <article className="mx-auto flex w-full max-w-3xl flex-col items-center">
         <header className="flex w-full flex-col items-center text-center">
           <Avatar className="h-14 w-14 overflow-hidden border border-[#e3d6c3] shadow-[0_12px_30px_rgba(52,40,21,0.08)] sm:h-16 sm:w-16">
-            <AvatarImage src={post.author.avatar_url ?? undefined} alt={post.author.display_name} />
+            <AvatarImage src={post.author.avatar_url ?? undefined} alt={authorHeaderName} />
             <AvatarFallback className="bg-[#f3ede0] text-xs font-semibold text-[#7c6b51]">
               {authorInitials}
             </AvatarFallback>
           </Avatar>
           <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.4em] text-[#8a7a60] sm:mt-6 sm:text-[0.62rem] sm:tracking-[0.45em]">
-            {post.author.display_name}
+            {authorHeaderName}
           </p>
           <p className="mt-1 text-sm text-[#9a8a73] sm:mt-2">{publishedDate}</p>
           <h1 className="mt-5 text-[2.2rem] font-semibold leading-[1.1] text-[#2f2416] sm:mt-8 sm:text-[3.1rem] lg:text-[3.4rem]">
