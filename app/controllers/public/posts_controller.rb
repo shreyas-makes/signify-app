@@ -151,7 +151,7 @@ class Public::PostsController < InertiaController
       author: {
         id: post.user.id,
         display_name: post.user.display_name,
-        avatar_url: post.user.avatar_url,
+        avatar_url: post.user.avatar_image_url,
         bio: post.user.bio,
         profile_url: public_author_path(post.user)
       },

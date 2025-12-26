@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "digest/sha2"
+require "uri"
+
 class User < ApplicationRecord
   has_secure_password
 
@@ -38,5 +41,69 @@ class User < ApplicationRecord
 
   def make_admin!
     update!(admin: true)
+  end
+
+  def avatar_image_url
+    normalized = avatar_url.to_s.strip
+    if normalized.match?(/\Ahttps?:\/\//i)
+      if gravatar_profile_url?(normalized)
+        avatar_from_profile = gravatar_avatar_from_profile(normalized)
+        return avatar_from_profile if avatar_from_profile.present?
+        return
+      end
+      return normalized
+    end
+
+    gravatar_id = gravatar_id_from(normalized) || gravatar_id_from(email.to_s)
+
+    return gravatar_url(gravatar_id) if gravatar_id.present?
+    return if normalized.blank?
+
+    normalized
+  end
+
+  private
+
+  def gravatar_id_from(value)
+    cleaned = value.strip.downcase
+    return if cleaned.blank?
+    return cleaned if cleaned.match?(/\A[0-9a-f]{32}\z/) || cleaned.match?(/\A[0-9a-f]{64}\z/)
+    return Digest::SHA256.hexdigest(cleaned) if cleaned.include?("@")
+
+    nil
+  end
+
+  def gravatar_url(hash)
+    "https://www.gravatar.com/avatar/#{hash}?d=identicon"
+  end
+
+  def gravatar_profile_url?(value)
+    uri = URI.parse(value)
+    return false unless uri.host&.include?("gravatar.com")
+
+    path = uri.path.to_s
+    !path.start_with?("/avatar/")
+  rescue URI::InvalidURIError
+    false
+  end
+
+  def gravatar_avatar_from_profile(value)
+    slug = gravatar_profile_slug(value)
+    return if slug.blank?
+
+    Gravatar::ProfileLookup.new(slug).avatar_url
+  end
+
+  def gravatar_profile_slug(value)
+    uri = URI.parse(value)
+    return if uri.host.blank?
+
+    host = uri.host.downcase
+    return unless host.end_with?("gravatar.com")
+
+    slug = uri.path.to_s.sub(%r{\A/}, "")
+    slug.presence
+  rescue URI::InvalidURIError
+    nil
   end
 end
