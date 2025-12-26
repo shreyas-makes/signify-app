@@ -187,9 +187,8 @@ export default function Features() {
 
         <main>
           <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15">
-            <div className="pointer-events-none absolute inset-x-0 -top-40 z-0 flex justify-center blur-3xl">
-              <div className="h-[260px] w-[420px] bg-gradient-to-r from-primary/30 via-accent/25 to-chart-2/20 opacity-60 blur-3xl blob-drift-1 sm:h-[400px] sm:w-[720px]" />
-            </div>
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(15,23,42,0.05),transparent_45%)]" />
+            <div className="pointer-events-none absolute inset-0 opacity-70 mix-blend-multiply [background-image:linear-gradient(transparent_0,transparent_31px,rgba(15,23,42,0.04)_32px),linear-gradient(90deg,transparent_0,transparent_31px,rgba(15,23,42,0.04)_32px)] [background-size:32px_32px]" />
             <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-[minmax(0,1.1fr)_1fr] md:pt-16 lg:gap-16">
               <div className="min-w-0 space-y-4">
                 <Badge
@@ -217,33 +216,49 @@ export default function Features() {
               </div>
 
               <div className="relative w-full min-w-0 max-w-full">
-                <div className="relative space-y-5 rounded-[32px] border border-border/70 bg-card/90 p-6 shadow-[0_30px_70px_rgba(18,18,23,0.18)] editorial-collage-frame sm:p-8">
+                <div className="relative space-y-5 rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur sm:p-8">
                   <p className="text-sm leading-relaxed text-muted-foreground">
                     Keystrokes are analyzed to generate a signature that is uniquely yours.
                   </p>
 
-                  <div className="space-y-4 rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm paper-grain">
-                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                      <span>Keystroke cadence</span>
-                      <span className="font-mono text-[10px]">Live</span>
+                  <div className="scroll-preview h-[240px] rounded-2xl border border-border/60 bg-background/85 p-4 shadow-sm sm:h-[280px] md:h-[320px]">
+                    <div className="relative z-10 -mx-4 -mt-4 flex items-center justify-between border-b border-border/60 bg-background/95 px-4 py-3 backdrop-blur">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-gradient-to-r from-primary/15 via-background/95 to-accent/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80 shadow-xs">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+                        Draft essay
+                      </div>
+                      <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500/80" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                        </span>
+                        Live
+                      </span>
                     </div>
-                    <div className="relative h-24 overflow-hidden rounded-xl border border-border/50 bg-background/90 p-4 keystroke-grid">
-                      <div className="flex h-full items-end justify-between gap-2">
-                        {Array.from({ length: 10 }).map((_, index) => (
-                          <span
-                            key={`stroke-${index}`}
-                            className="keystroke-bar"
-                            style={{ '--delay': `${index * 0.18}s` } as CSSProperties}
-                          />
-                        ))}
-                      </div>
-                      <div className="absolute right-4 top-3 rounded-full border border-border/60 bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                        Typing
-                      </div>
+                    <div className="scroll-preview-inner relative z-0 mt-2 text-sm leading-relaxed text-foreground/80">
+                      {Array.from({ length: 2 }).map((_, segmentIndex) => (
+                        <div key={`draft-${segmentIndex}`} className="scroll-preview-segment">
+                          <p>
+                            In the quiet hours between edits, the draft becomes a map of intent—sentences
+                            rerouted, verbs tightened, the cadence returning to something unmistakably human.
+                          </p>
+                          <p>
+                            Each revision leaves a visible trace, a rhythm of decisions that can be replayed and
+                            verified without losing the intimacy of the original voice.
+                          </p>
+                          <p>
+                            Margins fill with alternate lines, and the story learns its shape through small
+                            reversals, pauses, and a renewed confidence in the final cadence.
+                          </p>
+                          <p>
+                            What remains is a story built by hand: imperfect, deliberate, and undeniably yours.
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
+                  <div className="rounded-2xl border border-border/60 bg-background/85 p-4 shadow-sm">
                     <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                       <span>Signature</span>
                       <span className="font-mono text-[10px]">Generated</span>
