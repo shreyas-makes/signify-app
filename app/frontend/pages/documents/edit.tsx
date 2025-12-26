@@ -1,6 +1,6 @@
 import { Head, router, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
-import { ArrowLeft, Eye, Loader2, Pencil, Sparkles } from "lucide-react"
+import { ArrowLeft, Eye, Loader2, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -33,7 +33,6 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const [wordCount, setWordCount] = useState<number>(document.word_count || 0)
   const [isPublishing, setIsPublishing] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
-  const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const [documentMeta, setDocumentMeta] = useState({
     status: document.status,
@@ -317,12 +316,6 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   )
   const mobileToolbarInnerClass = "w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0"
   const contentInsetClass = "px-0"
-  const previewClassName = cn(
-    "prose prose-lg max-w-none text-[#3f3422]",
-    "prose-headings:font-semibold prose-headings:text-[#322718]",
-    "prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
-  )
-
   return (
     <div className="composer-theme min-h-screen bg-background">
       <AppLayout showHeader={false}>
@@ -378,28 +371,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                         Preview
                       </a>
                     </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={() => setIsPreview((prev) => !prev)}
-                      size="sm"
-                      variant="ghost"
-                      aria-pressed={isPreview}
-                      className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
-                    >
-                      {isPreview ? (
-                        <>
-                          <Pencil className="mr-1 h-3.5 w-3.5" />
-                          Edit
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="mr-1 h-3.5 w-3.5" />
-                          Preview
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  ) : null}
                   <Button
                     onClick={() => void handlePublish()}
                     disabled={!canPublishNow || isPublishing}
@@ -424,65 +396,50 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
-                    {!isPreview && (
-                      <div
-                        className={cn(mobileToolbarWrapperClass, "transition-transform duration-200")}
-                        style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
-                      >
-                        <div className={mobileToolbarInnerClass}>
-                          <EditorToolbar
-                            editor={editor}
-                            layout="scroll"
-                            className="mb-0 gap-1 sm:mb-2 sm:gap-2"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {isPreview ? (
-                      <div className="space-y-1.5 mb-6">
-                        <h1 className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05]">
-                          {data.document.title.trim() || "Untitled Document"}
-                        </h1>
-                        {data.document.subtitle.trim() && (
-                          <p className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41]">
-                            {data.document.subtitle}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5 mb-6">
-                        <Input
-                          ref={titleInputRef}
-                          id="title"
-                          name="title"
-                          type="text"
-                          value={data.document.title}
-                          onChange={(e) => setData('document.title', e.target.value)}
-                          placeholder="Untitled Document"
-                          className={cn(
-                            "text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] md:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
-                            "h-auto px-0 py-3 sm:py-4 shadow-none",
-                            isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
-                          )}
+                    <div
+                      className={cn(mobileToolbarWrapperClass, "transition-transform duration-200")}
+                      style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
+                    >
+                      <div className={mobileToolbarInnerClass}>
+                        <EditorToolbar
+                          editor={editor}
+                          layout="scroll"
+                          className="mb-0 gap-1 sm:mb-2 sm:gap-2"
                         />
-                        {errors['document.title'] && (
-                          <p className="text-sm text-destructive">{errors['document.title']}</p>
-                        )}
-                        <Input
-                          ref={subtitleInputRef}
-                          id="subtitle"
-                          name="subtitle"
-                          type="text"
-                          value={data.document.subtitle}
-                          onChange={(e) => setData('document.subtitle', e.target.value)}
-                          placeholder="Add a subtitle"
-                          className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300 rounded-none shadow-none h-auto"
-                        />
-                        {errors['document.subtitle'] && (
-                          <p className="text-sm text-destructive">{errors['document.subtitle']}</p>
-                        )}
                       </div>
-                    )}
+                    </div>
+                    <div className="space-y-1.5 mb-6">
+                      <Input
+                        ref={titleInputRef}
+                        id="title"
+                        name="title"
+                        type="text"
+                        value={data.document.title}
+                        onChange={(e) => setData('document.title', e.target.value)}
+                        placeholder="Untitled Document"
+                        className={cn(
+                          "text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] md:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] touch-manipulation transition-all duration-300",
+                          "h-auto px-0 py-3 sm:py-4 shadow-none",
+                          isNewDocument && data.document.title === 'Untitled Document' && isFirstDocument && "rounded-md px-2 -mx-2",
+                        )}
+                      />
+                      {errors['document.title'] && (
+                        <p className="text-sm text-destructive">{errors['document.title']}</p>
+                      )}
+                      <Input
+                        ref={subtitleInputRef}
+                        id="subtitle"
+                        name="subtitle"
+                        type="text"
+                        value={data.document.subtitle}
+                        onChange={(e) => setData('document.subtitle', e.target.value)}
+                        placeholder="Add a subtitle"
+                        className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] transition-all duration-300 rounded-none shadow-none h-auto"
+                      />
+                      {errors['document.subtitle'] && (
+                        <p className="text-sm text-destructive">{errors['document.subtitle']}</p>
+                      )}
+                    </div>
                   </div>
 
                   {showWelcome && isNewDocument && isFirstDocument && (
@@ -527,26 +484,16 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                   )}
 
                   <div className={cn(editorSurfaceClass, "min-h-[420px] px-0 py-0 sm:px-0 sm:py-0", contentInsetClass)}>
-                    {isPreview ? (
-                      <div className={previewClassName}>
-                        {data.document.content.trim() ? (
-                          <div dangerouslySetInnerHTML={{ __html: data.document.content }} />
-                        ) : (
-                          <p className="text-[#a89a86]">Nothing to preview yet.</p>
-                        )}
-                      </div>
-                    ) : (
-                      <RichTextEditor
-                        ref={editorRef}
-                        value={data.document.content}
-                        onChange={handleContentChange}
-                        placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
-                        className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                        textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
-                        placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
-                        onEditorReady={setEditor}
-                      />
-                    )}
+                    <RichTextEditor
+                      ref={editorRef}
+                      value={data.document.content}
+                      onChange={handleContentChange}
+                      placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
+                      className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
+                      textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                      placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
+                      onEditorReady={setEditor}
+                    />
                   </div>
                   {errors['document.content'] && (
                     <p className={cn("text-sm text-destructive", contentInsetClass)}>{errors['document.content']}</p>

@@ -90,7 +90,7 @@ class DocumentsController < InertiaController
     end
 
     if @document.published? && @document.published_at.present? && @document.updated_at <= @document.published_at
-      redirect_to edit_document_path(@document), notice: "Document is already published."
+      redirect_to public_post_path(public_slug: @document.public_slug), notice: "Document is already published."
       return
     end
 
@@ -103,7 +103,7 @@ class DocumentsController < InertiaController
       end
     end
 
-    redirect_to edit_document_path(@document), notice: "Document published successfully! Your keystroke-verified post is now live."
+    redirect_to public_post_path(public_slug: @document.public_slug), notice: "Document published successfully! Your keystroke-verified post is now live."
   rescue ActiveRecord::RecordInvalid => e
     redirect_to edit_document_path(@document), alert: "Publishing failed: #{e.record.errors.full_messages.join(', ')}"
   end
