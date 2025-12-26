@@ -37,7 +37,7 @@ const mainNavItems: NavItem[] = [
     icon: LayoutGrid,
   },
   {
-    title: "Published Posts",
+    title: "Discover",
     href: "/posts",
     icon: Newspaper,
   },

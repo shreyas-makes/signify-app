@@ -34,7 +34,7 @@ export default function Welcome() {
 
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Explore Library
+                Discover
               </Link>
               <Link href="/features" className="transition-colors hover:text-foreground">
                 Features
@@ -86,7 +86,7 @@ export default function Welcome() {
                     asChild
                     className="w-full rounded-full sm:w-auto"
                   >
-                    <Link href={publicPostsPath()}>Explore the library</Link>
+                    <Link href={publicPostsPath()}>Discover</Link>
                   </Button>
                 </div>
                 
