@@ -211,10 +211,10 @@ export default function PublicPostShow({ post, meta }: Props) {
       <Button
         asChild
         size="icon"
-        className="h-14 w-14 rounded-full border border-[#d6c7ab] bg-white/95 text-[#3f3422] shadow-lg transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+        className="h-11 w-11 rounded-full border border-black bg-black text-white shadow-lg transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black"
       >
         <Link href={editUrl} aria-label="Edit in Composer">
-          <SquarePen className="h-6 w-6" />
+          <SquarePen className="h-5 w-5" />
         </Link>
       </Button>
     </div>
