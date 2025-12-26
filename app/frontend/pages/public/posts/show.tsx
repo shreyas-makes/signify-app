@@ -1,18 +1,20 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import { SquarePen } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { AppHeader } from '@/components/app-header'
 import { Button } from '@/components/ui/button'
 import { MiniGitGraph } from '@/components/ui/mini-git-graph'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useInitials } from '@/hooks/use-initials'
 import AppLayout from '@/layouts/app-layout'
-import { PublicPostFooter } from '@/components/public-post-footer'
-import AppLogo from '@/components/app-logo'
-import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
 import type { Keystroke, PageProps } from '@/types'
 
 
 interface Author {
   id: number
   display_name: string
+  avatar_url?: string | null
   bio?: string | null
   profile_url: string
 }
@@ -61,12 +63,48 @@ interface Props {
 export default function PublicPostShow({ post, meta }: Props) {
   const { auth } = usePage<PageProps>().props
   const isSignedIn = Boolean(auth?.user)
+  const getInitials = useInitials()
   const keystrokeUrl = `/posts/${post.public_slug}/keystrokes`
   const authorDescription = post.author.bio?.trim()
     ? post.author.bio
     : "The author has not added a description yet."
   const canEdit = Boolean(post.can_edit)
   const editUrl = canEdit ? `/documents/${post.id}/edit` : null
+  const [isNavHovered, setIsNavHovered] = useState(false)
+  const [isNavScrolled, setIsNavScrolled] = useState(false)
+  const navVisible = isNavHovered || isNavScrolled
+  const authorInitials = useMemo(() => getInitials(post.author.display_name), [getInitials, post.author.display_name])
+  const publishedDate = useMemo(() => {
+    if (!meta?.published_time) {
+      return post.published_at
+    }
+
+    const parsed = new Date(meta.published_time)
+    if (Number.isNaN(parsed.valueOf())) {
+      return post.published_at
+    }
+
+    return parsed.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }, [meta?.published_time, post.published_at])
+
+  useEffect(() => {
+    if (!isSignedIn || typeof window === 'undefined') {
+      return
+    }
+
+    const handleScroll = () => {
+      setIsNavScrolled(window.scrollY > 16)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isSignedIn])
   const headMarkup = (
     <Head title={meta.title}>
       <meta name="description" content={meta.description} />
@@ -121,25 +159,33 @@ export default function PublicPostShow({ post, meta }: Props) {
   )
 
   const articleContent = (
-    <div className="mx-auto w-full max-w-6xl px-4 py-16">
-      <article className="w-full">
-        <header className="mb-10">
-          <h1 className="text-[2.5rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.12] sm:leading-[1.05]">
+    <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+      <article className="mx-auto flex w-full max-w-3xl flex-col items-center">
+        <header className="flex w-full flex-col items-center text-center">
+          <Avatar className="h-16 w-16 overflow-hidden border border-[#e3d6c3] shadow-[0_12px_30px_rgba(52,40,21,0.08)]">
+            <AvatarImage src={post.author.avatar_url ?? undefined} alt={post.author.display_name} />
+            <AvatarFallback className="bg-[#f3ede0] text-xs font-semibold text-[#7c6b51]">
+              {authorInitials}
+            </AvatarFallback>
+          </Avatar>
+          <p className="mt-6 text-[0.62rem] font-semibold uppercase tracking-[0.45em] text-[#8a7a60]">
+            {post.author.display_name}
+          </p>
+          <p className="mt-2 text-sm text-[#9a8a73]">{publishedDate}</p>
+          <h1 className="mt-8 text-[2.6rem] font-semibold leading-[1.1] text-[#2f2416] sm:text-[3.1rem] lg:text-[3.4rem]">
             {post.title}
           </h1>
           {post.subtitle && (
-            <p className="mt-4 text-lg sm:text-xl text-[#6b5a41]">
+            <p className="mt-4 max-w-2xl text-lg text-[#6b5a41] sm:text-xl">
               {post.subtitle}
             </p>
           )}
-          <p className="mt-3 text-xs font-medium uppercase tracking-[0.35em] text-[#7a6a52]">
-            {post.reading_time_minutes} min{post.reading_time_minutes === 1 ? '' : 's'} read
-          </p>
-
           {post.sample_keystrokes.length > 0 && (
             <MiniGitGraph
               keystrokes={post.sample_keystrokes}
               height={52}
+              label="Keystroke activity"
+              ctaText="View timeline ↗"
               className="mt-8 w-full max-w-sm cursor-pointer rounded-[12px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab]"
               graphClassName="rounded-[14px] border border-[#eadfce] bg-[#fffdf6]"
               keystrokeUrl={keystrokeUrl}
@@ -148,61 +194,59 @@ export default function PublicPostShow({ post, meta }: Props) {
           )}
         </header>
 
-        <div
-          className="prose prose-lg max-w-none text-[#3f3422]
-            prose-headings:font-semibold prose-headings:text-[#322718]
-            prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]
-            prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422]
-            prose-strong:text-[#2d2518] whitespace-pre-line"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-        <footer className="mt-14 border-t border-[#eadcc6] pt-8">
-          <Link
-            href={post.author.profile_url}
-            className="text-lg font-semibold text-[#322718] transition-colors hover:text-[#8a6d44]"
-          >
-            {post.author.display_name}
-          </Link>
-          <p className="mt-3 text-sm leading-relaxed text-[#5c4d35]">
+        <div className="mt-12 w-full text-left">
+          <div
+            className="prose prose-lg max-w-none text-[#3f3422]
+              prose-headings:font-semibold prose-headings:text-[#322718]
+              prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]
+              prose-p:text-[1.05rem] prose-p:leading-[1.85] prose-p:text-[#3f3422]
+              prose-strong:text-[#2d2518] whitespace-pre-line"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        </div>
+
+        <div className="mt-10 w-full text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#9b8a70]">
+            About {post.author.display_name}
+          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-lg leading-relaxed text-[#5c4d35]">
             {authorDescription}
           </p>
-        </footer>
+          <div className="mx-auto mt-6 h-px w-24 bg-[#eadcc6]" />
+        </div>
       </article>
     </div>
   )
 
   const publicShell = (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-20 w-full border-b border-border/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <AppLogo
-              showIcon={false}
-              labelClassName="font-serif text-xl tracking-tight"
-            />
-          </Link>
-
-          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-              Explore Library
-            </Link>
-            <Link href="/#features" className="transition-colors hover:text-foreground">
-              Platform
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={signInPath()}>Sign in</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href={signUpPath()}>Start for free</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {articleContent}
+      <div className="pb-6">
+        <div className="mx-auto mt-4 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
+          <Link href="/" className="transition hover:text-[#8a6d44]">
+            Sent to the world with Signify
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+
+  const signedInNav = (
+    <div
+      className="fixed left-0 right-0 top-0 z-40"
+      onMouseEnter={() => setIsNavHovered(true)}
+      onMouseLeave={() => setIsNavHovered(false)}
+    >
+      <div
+        className={[
+          'transition-all duration-300',
+          navVisible ? 'translate-y-0 opacity-100' : '-translate-y-3 opacity-0',
+        ].join(' ')}
+      >
+        <div className="bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+          <AppHeader />
+        </div>
+      </div>
     </div>
   )
 
@@ -221,10 +265,18 @@ export default function PublicPostShow({ post, meta }: Props) {
   ) : null
 
   return isSignedIn ? (
-    <AppLayout contentClassName="max-w-none px-0">
+    <AppLayout showHeader={false} showFooter={false} contentClassName="max-w-none px-0">
       {headMarkup}
+      {signedInNav}
       <div className="min-h-screen bg-background">
         {articleContent}
+        <div className="pb-6">
+          <div className="mx-auto mt-4 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
+            <Link href="/" className="transition hover:text-[#8a6d44]">
+              Sent to the world with Signify
+            </Link>
+          </div>
+        </div>
       </div>
       {editButton}
     </AppLayout>
@@ -232,7 +284,6 @@ export default function PublicPostShow({ post, meta }: Props) {
     <>
       {headMarkup}
       {publicShell}
-      <PublicPostFooter />
       {editButton}
     </>
   )
