@@ -11,7 +11,7 @@ class Public::AuthorsController < ApplicationController
     end
 
     posts = @author.documents
-                   .published
+                   .public_visible
                    .where.not(public_slug: nil)
                    .order(published_at: :desc)
 

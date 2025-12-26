@@ -23,7 +23,7 @@ class Api::V1::VerificationController < ApplicationController
   private
 
   def set_post
-    @post = Document.published.find_by(public_slug: params[:public_slug])
+    @post = Document.public_visible.find_by(public_slug: params[:public_slug])
   end
 
   def apply_rate_limiting

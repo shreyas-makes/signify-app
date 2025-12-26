@@ -8,7 +8,7 @@ class Public::PostsController < InertiaController
   before_action :set_post, only: [:show, :keystrokes, :og_image]
 
   def index
-    @posts = Document.published
+    @posts = Document.public_visible
                      .includes(:user)
                      .order(published_at: :desc)
                      .limit(20)
@@ -111,7 +111,7 @@ class Public::PostsController < InertiaController
   private
 
   def set_post
-    @post = Document.published.find_by(public_slug: params[:public_slug])
+    @post = Document.public_visible.find_by(public_slug: params[:public_slug])
   end
 
   def posts_json(posts)

@@ -3,8 +3,7 @@
 class Admin::DashboardController < Admin::BaseController
   def index
     @users = User.includes(:documents, :sessions).order(created_at: :desc).limit(50)
-    @documents = Document.includes(:user).order(updated_at: :desc)
-    @recent_posts = Document.published.includes(:user).order(published_at: :desc).limit(20)
+    @documents = Document.published.includes(:user).order(published_at: :desc)
     
     @stats = {
       total_users: User.count,
@@ -19,7 +18,6 @@ class Admin::DashboardController < Admin::BaseController
     render inertia: "admin/dashboard", props: {
       users: @users.map { |user| admin_user_json(user) },
       documents: @documents.map { |doc| admin_document_json(doc) },
-      recent_posts: @recent_posts.map { |post| admin_post_json(post) },
       stats: @stats
     }
   end
@@ -49,6 +47,7 @@ class Admin::DashboardController < Admin::BaseController
       slug: document.slug,
       public_slug: document.public_slug,
       status: document.status,
+      hidden_from_public: document.hidden_from_public,
       word_count: document.word_count,
       keystroke_count: document.keystroke_count,
       created_at: document.created_at,
@@ -58,21 +57,6 @@ class Admin::DashboardController < Admin::BaseController
         id: document.user.id,
         name: document.user.name,
         display_name: document.user.display_name
-      }
-    }
-  end
-
-  def admin_post_json(post)
-    {
-      id: post.id,
-      title: post.title,
-      public_slug: post.public_slug,
-      word_count: post.word_count,
-      keystroke_count: post.keystroke_count,
-      published_at: post.published_at,
-      user: {
-        id: post.user.id,
-        display_name: post.user.display_name
       }
     }
   end

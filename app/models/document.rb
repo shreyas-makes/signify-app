@@ -24,6 +24,7 @@ class Document < ApplicationRecord
   before_save :update_content_statistics
 
   scope :published, -> { where(status: :published) }
+  scope :public_visible, -> { published.where(hidden_from_public: false) }
   scope :drafts, -> { where(status: :draft) }
   scope :ready_to_publish, -> { where(status: :ready_to_publish) }
 

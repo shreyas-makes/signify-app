@@ -80,6 +80,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#index"
     get :dashboard, to: "dashboard#index"
+    resources :documents, only: [:update]
   end
 
   get "features", to: "features#index"

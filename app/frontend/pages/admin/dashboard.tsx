@@ -1,18 +1,11 @@
-import {
-  Calendar,
-  Eye, 
-  FileText, 
-  Globe, 
-  Keyboard,
-  Shield, 
-  TrendingUp, 
-  Users
-} from "lucide-react"
+import { router } from "@inertiajs/react"
+import { FileText, Globe, Keyboard, Shield, Users } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import AppLayout from "@/layouts/app-layout"
 
 interface User {
   id: number
@@ -34,6 +27,7 @@ interface Document {
   slug: string
   public_slug: string | null
   status: string
+  hidden_from_public: boolean
   word_count: number
   keystroke_count: number
   created_at: string
@@ -42,19 +36,6 @@ interface Document {
   user: {
     id: number
     name: string
-    display_name: string
-  }
-}
-
-interface Post {
-  id: number
-  title: string
-  public_slug: string
-  word_count: number
-  keystroke_count: number
-  published_at: string
-  user: {
-    id: number
     display_name: string
   }
 }
@@ -72,11 +53,10 @@ interface Stats {
 interface Props {
   users: User[]
   documents: Document[]
-  recent_posts: Post[]
   stats: Stats
 }
 
-export default function AdminDashboard({ users, documents, recent_posts, stats }: Props) {
+export default function AdminDashboard({ users, documents, stats }: Props) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()
   }
@@ -85,21 +65,24 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
     return num.toLocaleString()
   }
 
+  const togglePublicVisibility = (document: Document) => {
+    router.patch(
+      `/admin/documents/${document.id}`,
+      { hidden_from_public: !document.hidden_from_public },
+      { preserveScroll: true }
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <Shield className="h-6 w-6" />
-              Admin Dashboard
-            </h1>
-            <Badge variant="destructive">Admin Access</Badge>
-          </div>
-        </div>
-      </header>
-      
+    <AppLayout>
       <main className="container mx-auto px-4 py-8 space-y-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            Admin Dashboard
+          </h1>
+      
+        </div>
+
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
@@ -155,95 +138,69 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Recent Users */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Recent Users
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {users.slice(0, 10).map((user) => (
-                  <div key={user.id} className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="font-medium">{user.display_name}</p>
-                      <p className="break-words text-sm text-muted-foreground">{user.email}</p>
-                      <div className="flex gap-2 mt-1">
-                        {user.verified && <Badge variant="default" className="text-xs">Verified</Badge>}
-                        {user.admin && <Badge variant="destructive" className="text-xs">Admin</Badge>}
-                      </div>
-                    </div>
-                    <div className="text-left text-sm sm:text-right">
-                      <p>{user.documents_count} docs</p>
-                      <p className="text-muted-foreground">{formatDate(user.created_at)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="space-y-8">
           {/* All Documents */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                All Documents
-              </CardTitle>
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  All Documents
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Curate which published posts appear on the public library.
+                </p>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {formatNumber(documents.length)} total
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               {documents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No documents have been created yet.</p>
+                <p className="text-sm text-muted-foreground">No published documents yet.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table className="min-w-[720px]">
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <Table className="min-w-[760px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Title</TableHead>
                         <TableHead>Author</TableHead>
-                        <TableHead>Status</TableHead>
                         <TableHead>Words</TableHead>
-                        <TableHead>Keystrokes</TableHead>
-                        <TableHead>Created</TableHead>
                         <TableHead>Updated</TableHead>
-                        <TableHead className="text-right">Public Link</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {documents.map((document) => (
                         <TableRow key={document.id}>
-                          <TableCell className="font-medium max-w-[220px] truncate">
+                          <TableCell className="py-4 font-medium max-w-[260px] truncate">
                             {document.title || "Untitled Document"}
                           </TableCell>
-                          <TableCell>{document.user.display_name}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={document.status === "published" ? "default" : "secondary"}
-                              className="capitalize"
-                            >
-                              {document.status.replace(/_/g, " ")}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{formatNumber(document.word_count)}</TableCell>
-                          <TableCell>{formatNumber(document.keystroke_count)}</TableCell>
-                          <TableCell>{formatDate(document.created_at)}</TableCell>
-                          <TableCell>{formatDate(document.updated_at)}</TableCell>
-                          <TableCell className="text-right">
-                            {document.public_slug ? (
-                              <a
-                                href={`/posts/${document.public_slug}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-primary hover:underline"
+                          <TableCell className="py-4">{document.user.display_name}</TableCell>
+                          <TableCell className="py-4">{formatNumber(document.word_count)}</TableCell>
+                          <TableCell className="py-4">{formatDate(document.updated_at)}</TableCell>
+                          <TableCell className="py-4 text-right">
+                            <div className="flex items-center justify-end gap-4">
+                              {document.public_slug ? (
+                                <a
+                                  href={`/posts/${document.public_slug}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-primary hover:underline text-sm"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                              <Button
+                                size="sm"
+                                variant={document.hidden_from_public ? "default" : "outline"}
+                                onClick={() => togglePublicVisibility(document)}
                               >
-                                View
-                              </a>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
+                                {document.hidden_from_public ? "Show on public" : "Hide from public"}
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -253,68 +210,40 @@ export default function AdminDashboard({ users, documents, recent_posts, stats }
               )}
             </CardContent>
           </Card>
+
+          {/* Recent Users */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Recent Users
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-y divide-border/60">
+                {users.slice(0, 10).map((user) => (
+                  <div key={user.id} className="py-4 first:pt-0 last:pb-0">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-medium">{user.display_name}</p>
+                        <p className="break-words text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>{user.documents_count} docs</span>
+                        <span>{formatDate(user.created_at)}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {user.verified && <Badge className="text-xs">Verified</Badge>}
+                      {user.admin && <Badge variant="destructive" className="text-xs">Admin</Badge>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Recent Published Posts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Recently Published Posts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {recent_posts.map((post) => (
-                <div key={post.id} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex-1">
-                    <p className="font-medium">{post.title}</p>
-                    <p className="text-sm text-muted-foreground">by {post.user.display_name}</p>
-                    <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-                      <span>{formatNumber(post.word_count)} words</span>
-                      <span>{formatNumber(post.keystroke_count)} keystrokes</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-                    <Button size="sm" variant="outline" asChild className="w-full sm:w-auto">
-                      <a href={`/posts/${post.public_slug}`} target="_blank" rel="noreferrer">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </a>
-                    </Button>
-                    <div className="text-left text-sm sm:text-right">
-                      <p className="text-muted-foreground">{formatDate(post.published_at)}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-              <Button variant="outline" className="h-20 flex flex-col gap-2">
-                <TrendingUp className="h-6 w-6" />
-                View Analytics
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col gap-2">
-                <FileText className="h-6 w-6" />
-                Export Data
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col gap-2">
-                <Calendar className="h-6 w-6" />
-                View Logs
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </main>
-    </div>
+    </AppLayout>
   )
 }
