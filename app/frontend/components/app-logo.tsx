@@ -18,7 +18,9 @@ export default function AppLogo({
   return (
     <>
       {showIcon ? (
-        <AppLogoIcon className={cn("size-8 object-contain", iconClassName)} />
+        <AppLogoIcon
+          className={cn("size-8 shrink-0 object-contain", iconClassName)}
+        />
       ) : null}
       <div
         className={cn(

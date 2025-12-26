@@ -252,10 +252,11 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
       <div className="min-h-screen bg-white text-foreground">
         <header className="sticky top-0 z-20 w-full border-b border-border/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center">
               <AppLogo
-                showIcon={false}
-                labelClassName="font-serif text-xl tracking-tight"
+                showIcon
+                iconClassName="size-7"
+                labelClassName="font-serif text-xl leading-tight tracking-tight"
               />
             </Link>
 

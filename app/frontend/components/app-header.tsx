@@ -71,10 +71,11 @@ export function AppHeader() {
                 className="bg-sidebar flex h-full w-64 flex-col items-stretch justify-between"
               >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <SheetHeader className="flex justify-start text-left">
+                <SheetHeader className="flex items-center justify-start text-left">
                   <AppLogo
-                    showIcon={false}
-                    labelClassName="font-serif text-lg tracking-tight"
+                    showIcon
+                    iconClassName="size-7"
+                    labelClassName="font-serif text-lg leading-tight tracking-tight"
                   />
                 </SheetHeader>
                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
@@ -103,11 +104,12 @@ export function AppHeader() {
           <Link
             href={dashboardPath()}
             prefetch
-            className="flex items-center space-x-2"
+            className="flex items-center"
           >
             <AppLogo
-              showIcon={false}
-              labelClassName="font-serif text-lg tracking-tight"
+              showIcon
+              iconClassName="size-7"
+              labelClassName="font-serif text-lg leading-tight tracking-tight"
             />
           </Link>
 

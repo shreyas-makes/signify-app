@@ -20,12 +20,15 @@ export default function Welcome() {
       </Head>
 
       <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-            <Link href="/" className="flex items-center gap-3">
+        <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-gradient-to-br from-primary/10 via-background to-accent/15 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
+          <div className="pointer-events-none absolute left-0 top-0 h-24 w-40 bg-primary/10 blur-2xl" />
+          <div className="pointer-events-none absolute right-[-6%] top-[-20%] h-28 w-28 rounded-full bg-accent/20 blur-3xl" />
+          <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+            <Link href="/" className="flex items-center">
               <AppLogo
-                showIcon={false}
-                labelClassName="font-serif text-xl tracking-tight"
+                showIcon
+                iconClassName="size-7"
+                labelClassName="font-serif text-xl leading-tight tracking-tight"
               />
             </Link>
 
@@ -108,15 +111,14 @@ export default function Welcome() {
           </section>
         </main>
 
-        <footer className="border-t border-border bg-background py-12 text-sm text-muted-foreground">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
+        <footer className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/15 py-12 text-sm text-muted-foreground">
+          <div className="pointer-events-none absolute -left-24 top-8 h-[240px] w-[240px] rounded-full bg-primary/15 blur-3xl blob-drift-1" />
+          <div className="pointer-events-none absolute bottom-[-10%] right-[-12%] h-[260px] w-[260px] rounded-full bg-accent/30 blur-3xl blob-drift-2" />
+          <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="flex items-center">
-                <AppLogo
-                  showIcon={false}
-                  labelClassName="font-serif text-base tracking-tight text-foreground"
-                />
-              </div>
+              <p className="font-serif text-lg font-semibold tracking-tight text-foreground">
+                Signify
+              </p>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Human only stories, and ideas</p>
             </div>
 

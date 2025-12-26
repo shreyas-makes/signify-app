@@ -5,15 +5,12 @@ import { publicPostsPath } from "@/routes"
 
 export function AppFooter() {
   return (
-    <footer className="border-t border-border bg-white py-8 text-sm text-muted-foreground">
+    <footer className="bg-white py-8 text-sm text-muted-foreground">
       <div className="mx-auto flex w-full flex-col gap-4 px-4 md:max-w-7xl sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center">
-            <AppLogo
-              showIcon={false}
-              labelClassName="font-serif text-lg font-semibold tracking-tight text-foreground"
-            />
-          </div>
+          <p className="font-serif text-xl font-semibold tracking-tight text-foreground">
+            Signify
+          </p>
           <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">Human only stories, and ideas</p>
         </div>
 
