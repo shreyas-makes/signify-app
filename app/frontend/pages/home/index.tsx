@@ -49,7 +49,7 @@ export default function Welcome() {
                   <Button variant="ghost" size="sm" asChild>
                     <Link href={signInPath()}>Sign in</Link>
                   </Button>
-                  <Button size="sm" asChild>
+                  <Button size="landing" asChild>
                     <Link href={signUpPath()}>Start for free</Link>
                   </Button>
                 </>
