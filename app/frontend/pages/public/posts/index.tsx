@@ -262,10 +262,10 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
 
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Explore Library
+                Discover
               </Link>
-              <Link href="/#features" className="transition-colors hover:text-foreground">
-                Platform
+              <Link href="/features" className="transition-colors hover:text-foreground">
+                Features
               </Link>
             </nav>
 
