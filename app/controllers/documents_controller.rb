@@ -83,20 +83,24 @@ class DocumentsController < InertiaController
   end
 
   def publish
-    if @document.published?
-      redirect_to edit_document_path(@document), alert: "Document is already published."
-      return
-    end
-
     # Validate publishing requirements
     unless valid_for_publishing?
       redirect_to edit_document_path(@document), alert: "Document doesn't meet publishing requirements."
       return
     end
 
+    if @document.published? && @document.published_at.present? && @document.updated_at <= @document.published_at
+      redirect_to edit_document_path(@document), notice: "Document is already published."
+      return
+    end
+
     Document.transaction do
-      # Create immutable snapshot by updating status
-      @document.update!(status: :published)
+      if @document.published?
+        @document.update!(published_at: Time.current)
+      else
+        # Create immutable snapshot by updating status
+        @document.update!(status: :published)
+      end
     end
 
     redirect_to edit_document_path(@document), notice: "Document published successfully! Your keystroke-verified post is now live."

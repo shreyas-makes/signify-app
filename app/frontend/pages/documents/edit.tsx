@@ -35,6 +35,11 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const [showWelcome, setShowWelcome] = useState(false)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
+  const [documentMeta, setDocumentMeta] = useState({
+    status: document.status,
+    updated_at: document.updated_at,
+    published_at: document.published_at ?? null
+  })
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
@@ -42,6 +47,14 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
+
+  useEffect(() => {
+    setDocumentMeta({
+      status: document.status,
+      updated_at: document.updated_at,
+      published_at: document.published_at ?? null
+    })
+  }, [document.id, document.published_at, document.status, document.updated_at])
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
@@ -93,8 +106,15 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
         })
         
         if (response.ok) {
-          const result = await response.json() as unknown
+          const result = await response.json() as { document?: { updated_at?: string; published_at?: string | null; status?: Document["status"] } }
           console.log('Document saved successfully:', result)
+          if (result.document) {
+            setDocumentMeta((prev) => ({
+              status: result.document?.status ?? prev.status,
+              updated_at: result.document?.updated_at ?? prev.updated_at,
+              published_at: result.document?.published_at ?? prev.published_at
+            }))
+          }
           if (saveData.keystrokes && Array.isArray(saveData.keystrokes)) {
             console.log(`Transmitted ${saveData.keystrokes.length} keystrokes`)
           }
@@ -222,13 +242,17 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     }
   }
 
+  const totalKeystrokes = Math.max(keystrokeCount, document.keystroke_count ?? 0)
+  const hasPublishableChanges = documentMeta.status !== 'published' || (
+    documentMeta.published_at &&
+    new Date(documentMeta.updated_at).getTime() > new Date(documentMeta.published_at).getTime()
+  )
   const canPublish = () => {
     const hasTitle = data.document.title.trim().length > 0
     const hasContent = data.document.content.trim().length > 0
-    const hasKeystrokes = keystrokeCount > 0
-    const isNotPublished = document.status !== 'published'
+    const hasKeystrokes = totalKeystrokes > 0
     
-    return hasTitle && hasContent && hasKeystrokes && isNotPublished
+    return hasTitle && hasContent && hasKeystrokes
   }
 
   const handlePublish = async () => {
@@ -268,14 +292,13 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   }
 
   const getPublishButtonText = () => {
-    if (document.status === 'published') return 'Published'
+    if (document.status === 'published' && !hasPublishableChanges) return 'Published'
     if (!data.document.title.trim()) return 'Add title to publish'
     if (!data.document.content.trim()) return 'Add content to publish'
-    if (keystrokeCount === 0) return 'No keystrokes recorded'
     return 'Publish'
   }
 
-  const canPublishNow = canPublish()
+  const canPublishNow = canPublish() && hasPublishableChanges
   const saveStatusLabel = autoSave.getSaveStatusText()
   const publishButtonLabel = isPublishing ? "Publishing..." : getPublishButtonText()
   const isSaving = autoSave.saveStatus === 'saving'
@@ -377,24 +400,22 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                       )}
                     </Button>
                   )}
-                  {document.status !== 'published' && (
-                    <Button
-                      onClick={() => void handlePublish()}
-                      disabled={!canPublishNow || isPublishing}
-                      size="sm"
-                      aria-label={publishButtonLabel}
-                      className="rounded-full bg-[#2b2417] px-4 text-xs font-semibold text-white hover:bg-[#2b2417]/90"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                          Publishing...
-                        </>
-                      ) : (
-                        "Publish"
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => void handlePublish()}
+                    disabled={!canPublishNow || isPublishing}
+                    size="sm"
+                    aria-label={publishButtonLabel}
+                    className="rounded-full bg-[#2b2417] px-4 text-xs font-semibold text-white hover:bg-[#2b2417]/90 disabled:opacity-80"
+                  >
+                    {isPublishing ? (
+                      <>
+                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      publishButtonLabel
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>

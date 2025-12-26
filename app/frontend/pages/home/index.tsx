@@ -65,7 +65,7 @@ export default function Welcome() {
               <div className="min-w-0 space-y-6">
             
                 <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                  Human (only) stories, and ideas.
+                  Human written stories, and ideas.
                 </h1>
                 <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                    No AI generated stories. Just original work and lived ideas.
