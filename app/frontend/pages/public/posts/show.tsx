@@ -171,7 +171,7 @@ export default function PublicPostShow({ post, meta }: Props) {
               {authorInitials}
             </AvatarFallback>
           </Avatar>
-          <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.4em] text-[#8a7a60] sm:mt-6 sm:text-[0.62rem] sm:tracking-[0.45em]">
+          <p className="mt-4 text-[0.7rem] font-semibold uppercase tracking-[0.4em] text-[#8a7a60] sm:mt-6 sm:text-[0.75rem] sm:tracking-[0.45em]">
             {authorHeaderName}
           </p>
           <p className="mt-1 text-sm text-[#9a8a73] sm:mt-2">{publishedDate}</p>
@@ -189,7 +189,7 @@ export default function PublicPostShow({ post, meta }: Props) {
               height={52}
               label="Keystroke activity"
               ctaText="View timeline ↗"
-              className="mt-5 w-full max-w-sm cursor-pointer rounded-[12px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab] sm:mt-8"
+              className="mt-5 w-full max-w-[18rem] cursor-pointer rounded-[12px] border border-[#e8dfcf] bg-[#f6f1e4]/70 px-2 py-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-[#d6c7ab] sm:mt-8 sm:max-w-sm sm:px-3 sm:py-3"
               graphClassName="rounded-[14px] border border-[#eadfce] bg-[#fffdf6]"
               keystrokeUrl={keystrokeUrl}
               ariaLabel="View keystroke timeline"
