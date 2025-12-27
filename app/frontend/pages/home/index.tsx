@@ -21,10 +21,10 @@ export default function Welcome() {
 
       <PublicLayout footerVariant="gradient">
         <main>
-          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15 pt-20 sm:pt-24">
+          <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15 pt-6 sm:pt-10">
             <div className="pointer-events-none absolute -top-32 left-[-10%] h-[260px] w-[260px] rounded-full bg-primary/20 blur-3xl blob-drift-1 sm:h-[360px] sm:w-[360px]" />
             <div className="pointer-events-none absolute bottom-0 right-[-12%] h-[280px] w-[280px] rounded-full bg-accent/35 blur-3xl blob-drift-2 sm:h-[380px] sm:w-[380px]" />
-            <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-12 md:min-h-[78vh] md:grid-cols-[minmax(0,1.05fr)_0.95fr] md:pt-20">
+            <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-6 md:min-h-[62vh] md:grid-cols-[minmax(0,1.05fr)_0.95fr] md:pt-8">
               <div className="min-w-0 space-y-6">
             
                 <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl">
