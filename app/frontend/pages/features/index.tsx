@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 import { GitCommitGraph } from '@/components/ui/git-commit-graph'
 import { KeystrokeBarcode } from '@/components/ui/keystroke-barcode'
 import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
-import AppLogo from '@/components/app-logo'
-import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
+import PublicLayout from '@/layouts/public-layout'
+import { dashboardPath, signInPath, signUpPath } from '@/routes'
 import type { Keystroke, SharedData } from '@/types'
 
 interface DemoAction {
@@ -146,45 +146,7 @@ export default function Features() {
         />
       </Head>
 
-      <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-            <Link href="/" className="flex items-center">
-              <AppLogo
-                showIcon
-                iconClassName="size-7"
-                labelClassName="font-serif text-xl leading-tight tracking-tight"
-              />
-            </Link>
-
-            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-              <Link href="/" className="transition-colors hover:text-foreground">
-                Home
-              </Link>
-              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Discover
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-2">
-              {auth.user ? (
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={dashboardPath()}>Dashboard</Link>
-                </Button>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={signInPath()}>Sign in</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link href={signUpPath()}>Start for free</Link>
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </header>
-
+      <PublicLayout>
         <main>
           <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(15,23,42,0.05),transparent_45%)]" />
@@ -371,35 +333,7 @@ export default function Features() {
           </section>
 
         </main>
-
-        <footer className="bg-background py-12 text-sm text-muted-foreground">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-serif text-lg font-semibold tracking-tight text-foreground">
-                Signify
-              </p>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Human only stories, and ideas</p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Explore
-              </Link>
-              <a href="/legal/privacy" className="transition-colors hover:text-foreground">
-                Privacy
-              </a>
-              <a href="/legal/terms" className="transition-colors hover:text-foreground">
-                Terms
-              </a>
-              <a href="/support/contact" className="transition-colors hover:text-foreground">
-                Contact
-              </a>
-            </div>
-
-            <p className="text-xs text-muted-foreground">© 2025 Signify</p>
-          </div>
-        </footer>
-      </div>
+      </PublicLayout>
     </>
   )
 }

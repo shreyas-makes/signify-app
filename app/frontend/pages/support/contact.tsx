@@ -1,5 +1,6 @@
 import { Bug, HelpCircle, Mail, MessageCircle } from "lucide-react"
 
+import PublicLayout from "@/layouts/public-layout"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,13 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 export default function Contact() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-semibold">Signify</h1>
-        </div>
-      </header>
-      
+    <PublicLayout>
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center">
@@ -195,6 +190,6 @@ export default function Contact() {
           </Card>
         </div>
       </main>
-    </div>
+    </PublicLayout>
   )
 }

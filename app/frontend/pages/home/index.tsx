@@ -2,7 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import AppLogo from '@/components/app-logo'
+import PublicLayout from '@/layouts/public-layout'
 import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
 import type { SharedData } from '@/types'
 
@@ -19,45 +19,7 @@ export default function Welcome() {
         />
       </Head>
 
-      <div className="min-h-screen bg-background text-foreground">
-        <header className="fixed inset-x-0 top-4 z-50 w-full px-4">
-          <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between rounded-[36px] border border-border/70 bg-background/90 px-4 py-3 shadow-[0_20px_50px_rgba(15,15,20,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
-            <Link href="/" className="flex items-center">
-              <AppLogo
-                showIcon
-                iconClassName="size-7"
-                labelClassName="font-serif text-xl leading-tight tracking-tight"
-              />
-            </Link>
-
-            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Discover
-              </Link>
-              <Link href="/features" className="transition-colors hover:text-foreground">
-                Features
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-2">
-              {auth.user ? (
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={dashboardPath()}>Dashboard</Link>
-                </Button>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={signInPath()}>Sign in</Link>
-                  </Button>
-                  <Button size="landing" asChild>
-                    <Link href={signUpPath()}>Start for free</Link>
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </header>
-
+      <PublicLayout footerVariant="gradient">
         <main>
           <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/15 pt-20 sm:pt-24">
             <div className="pointer-events-none absolute -top-32 left-[-10%] h-[260px] w-[260px] rounded-full bg-primary/20 blur-3xl blob-drift-1 sm:h-[360px] sm:w-[360px]" />
@@ -108,37 +70,7 @@ export default function Welcome() {
             </div>
           </section>
         </main>
-
-        <footer className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/15 py-12 text-sm text-muted-foreground">
-          <div className="pointer-events-none absolute -left-24 top-8 h-[240px] w-[240px] rounded-full bg-primary/15 blur-3xl blob-drift-1" />
-          <div className="pointer-events-none absolute bottom-[-10%] right-[-12%] h-[260px] w-[260px] rounded-full bg-accent/30 blur-3xl blob-drift-2" />
-          <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-serif text-lg font-semibold tracking-tight text-foreground">
-                Signify
-              </p>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Human only stories, and ideas</p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Explore
-              </Link>
-              <a href="/legal/privacy" className="transition-colors hover:text-foreground">
-                Privacy
-              </a>
-              <a href="/legal/terms" className="transition-colors hover:text-foreground">
-                Terms
-              </a>
-              <a href="/support/contact" className="transition-colors hover:text-foreground">
-                Contact
-              </a>
-            </div>
-
-            <p className="text-xs text-muted-foreground">© 2025 Signify</p>
-          </div>
-        </footer>
-      </div>
+      </PublicLayout>
     </>
   )
 }

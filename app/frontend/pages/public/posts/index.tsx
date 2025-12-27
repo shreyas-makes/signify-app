@@ -3,12 +3,10 @@ import { Search, Verified, Clock3, FileText, X } from 'lucide-react'
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react'
 
-import AppLogo from '@/components/app-logo'
-import { PublicPostFooter } from '@/components/public-post-footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import AppLayout from '@/layouts/app-layout'
-import { publicPostsPath, signInPath, signUpPath } from '@/routes'
+import PublicLayout from '@/layouts/public-layout'
 import type { PageProps } from '@/types'
 
 
@@ -249,39 +247,9 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
   ) : (
     <>
       {headMarkup}
-      <div className="min-h-screen bg-white text-foreground">
-        <header className="sticky top-0 z-20 w-full border-b border-border/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-            <Link href="/" className="flex items-center">
-              <AppLogo
-                showIcon
-                iconClassName="size-7"
-                labelClassName="font-serif text-xl leading-tight tracking-tight"
-              />
-            </Link>
-
-            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-              <Link href={publicPostsPath()} className="transition-colors hover:text-foreground">
-                Discover
-              </Link>
-              <Link href="/features" className="transition-colors hover:text-foreground">
-                Features
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={signInPath()}>Sign in</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href={signUpPath()}>Start for free</Link>
-              </Button>
-            </div>
-          </div>
-        </header>
+      <PublicLayout>
         {listContent}
-      </div>
-      <PublicPostFooter />
+      </PublicLayout>
     </>
   )
 }

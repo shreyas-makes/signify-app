@@ -1,14 +1,9 @@
+import PublicLayout from "@/layouts/public-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function Terms() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-semibold">Signify</h1>
-        </div>
-      </header>
-      
+    <PublicLayout>
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <Card>
@@ -110,6 +105,6 @@ export default function Terms() {
           </Card>
         </div>
       </main>
-    </div>
+    </PublicLayout>
   )
 }
