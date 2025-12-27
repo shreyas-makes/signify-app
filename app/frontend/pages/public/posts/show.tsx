@@ -207,29 +207,45 @@ export default function PublicPostShow({ post, meta }: Props) {
           />
         </div>
 
-        <div className="mt-6 w-full text-center">
+        <div className="mt-12 w-full text-center">
+          <a
+            href="http://www.signifywriting.com"
+            className="text-sm font-medium text-[#8f7d61] transition hover:text-[#8a6d44]"
+          >
+            This post was written by a human
+          </a>
+          <div className="mx-auto mt-5 h-px w-28 bg-[#eadcc6]" />
+        </div>
+
+        <div className="mt-10 w-full text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#9b8a70]">
             About {post.author.display_name}
           </p>
           <p className="mx-auto mt-3 max-w-2xl text-lg leading-relaxed text-[#5c4d35]">
             {authorDescription}
           </p>
-          <div className="mx-auto mt-3 h-px w-24 bg-[#eadcc6]" />
         </div>
       </article>
+    </div>
+  )
+
+  const postFooter = (
+    <div className="pb-6">
+      <div className="mx-auto mt-10 w-full max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto h-px w-24 bg-[#eadcc6]" />
+        <div className="mt-4 text-xs text-[#8f7d61]">
+          <Link href="/" className="transition hover:text-[#8a6d44]">
+            Sent to the world with Signify
+          </Link>
+        </div>
+      </div>
     </div>
   )
 
   const publicShell = (
     <div className="min-h-screen bg-white">
       {articleContent}
-      <div className="pb-4">
-        <div className="mx-auto mt-2 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
-          <Link href="/" className="transition hover:text-[#8a6d44]">
-            Sent to the world with Signify
-          </Link>
-        </div>
-      </div>
+      {postFooter}
     </div>
   )
 
@@ -272,13 +288,7 @@ export default function PublicPostShow({ post, meta }: Props) {
       {signedInNav}
       <div className="min-h-screen bg-background">
         {articleContent}
-        <div className="pb-4">
-          <div className="mx-auto mt-2 w-full max-w-3xl px-4 text-center text-xs text-[#8f7d61] sm:px-6 lg:px-8">
-            <Link href="/" className="transition hover:text-[#8a6d44]">
-              Sent to the world with Signify
-            </Link>
-          </div>
-        </div>
+        {postFooter}
       </div>
       {editButton}
     </AppLayout>
