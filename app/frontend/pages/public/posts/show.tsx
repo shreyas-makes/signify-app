@@ -3,6 +3,7 @@ import { SquarePen } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { AppHeader } from '@/components/app-header'
+import { PublicPostFooter } from '@/components/public-post-footer'
 import { Button } from '@/components/ui/button'
 import { MiniGitGraph } from '@/components/ui/mini-git-graph'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -229,23 +230,10 @@ export default function PublicPostShow({ post, meta }: Props) {
     </div>
   )
 
-  const postFooter = (
-    <div className="pb-6">
-      <div className="mx-auto mt-10 w-full max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto h-px w-24 bg-[#eadcc6]" />
-        <div className="mt-4 text-xs text-[#8f7d61]">
-          <Link href="/" className="transition hover:text-[#8a6d44]">
-            Sent to the world with Signify
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-
   const publicShell = (
     <div className="min-h-screen bg-white">
       {articleContent}
-      {postFooter}
+      <PublicPostFooter />
     </div>
   )
 
@@ -288,7 +276,7 @@ export default function PublicPostShow({ post, meta }: Props) {
       {signedInNav}
       <div className="min-h-screen bg-background">
         {articleContent}
-        {postFooter}
+        <PublicPostFooter />
       </div>
       {editButton}
     </AppLayout>
