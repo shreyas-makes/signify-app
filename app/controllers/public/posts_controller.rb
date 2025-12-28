@@ -35,9 +35,11 @@ class Public::PostsController < InertiaController
       return
     end
 
+    @meta = post_meta_tags(@post)
+
     render inertia: "public/posts/show", props: {
       post: detailed_post_json(@post),
-      meta: post_meta_tags(@post)
+      meta: @meta
     }
   end
 
@@ -75,10 +77,11 @@ class Public::PostsController < InertiaController
       }
     else
       # Handle initial page load with Inertia
+      @meta = keystroke_meta_tags(@post)
       render inertia: "public/posts/keystrokes", props: {
         post: detailed_post_json(@post),
         keystrokes: keystrokes_json(keystrokes),
-        meta: keystroke_meta_tags(@post),
+        meta: @meta,
         pagination: {
           current_page: page,
           has_more: has_more,
