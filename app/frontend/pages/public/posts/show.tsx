@@ -179,7 +179,7 @@ export default function PublicPostShow({ post, meta }: Props) {
             {post.title}
           </h1>
           {post.subtitle && (
-            <p className="mt-3 max-w-2xl text-lg text-[#6b5a41] sm:mt-4 sm:text-xl">
+            <p className="mt-3 max-w-2xl text-[1.05rem] leading-[1.85] text-[#6b5a41] sm:mt-4">
               {post.subtitle}
             </p>
           )}
@@ -222,7 +222,7 @@ export default function PublicPostShow({ post, meta }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#9b8a70]">
             About {post.author.display_name}
           </p>
-          <p className="mx-auto mt-3 max-w-2xl text-lg leading-relaxed text-[#5c4d35]">
+          <p className="mx-auto mt-3 max-w-2xl text-[1.05rem] leading-[1.85] text-[#5c4d35]">
             {authorDescription}
           </p>
         </div>
