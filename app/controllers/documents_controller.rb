@@ -103,6 +103,10 @@ class DocumentsController < InertiaController
       end
     end
 
+    unless OgImageService.generate_for_post(@document)
+      Rails.logger.warn("OG image generation skipped or failed for document #{@document.id}")
+    end
+
     redirect_to public_post_path(public_slug: @document.public_slug), notice: "Document published successfully! Your keystroke-verified post is now live."
   rescue ActiveRecord::RecordInvalid => e
     redirect_to edit_document_path(@document), alert: "Publishing failed: #{e.record.errors.full_messages.join(', ')}"

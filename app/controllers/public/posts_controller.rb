@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "net/http"
-
 class Public::PostsController < InertiaController
   skip_before_action :authenticate, only: [:index, :show, :keystrokes, :og_image]
   before_action :perform_authentication, only: [:index, :show, :keystrokes]
@@ -98,14 +96,11 @@ class Public::PostsController < InertiaController
       return
     end
 
-    @excerpt = truncate_content(ActionController::Base.helpers.strip_tags(@post.content), 180)
-    @published_date = @post.published_at.strftime("%B %d, %Y")
+    storage_path = OgImageService.storage_path_for(@post)
+    OgImageService.generate_for_post(@post) unless File.exist?(storage_path)
 
-    html = render_to_string(formats: [:html], layout: false)
-    image_url = html2png_url(html)
-
-    if image_url.present?
-      redirect_to image_url, allow_other_host: true
+    if File.exist?(storage_path)
+      send_file storage_path, type: "image/png", disposition: "inline"
     else
       render plain: "OG image unavailable", status: :service_unavailable
     end
@@ -225,29 +220,4 @@ class Public::PostsController < InertiaController
     end
   end
 
-  def html2png_url(html)
-    uri = URI("https://html2png.dev/api/convert")
-    uri.query = {
-      width: 1200,
-      height: 630,
-      format: "png",
-      deviceScaleFactor: 2
-    }.to_query
-
-    request = Net::HTTP::Post.new(uri)
-    request["Content-Type"] = "text/html; charset=UTF-8"
-    request.body = html
-
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-      http.request(request)
-    end
-
-    return unless response.is_a?(Net::HTTPSuccess)
-
-    body = JSON.parse(response.body)
-    body["url"]
-  rescue JSON::ParserError, SocketError, Errno::ECONNREFUSED, Timeout::Error => error
-    Rails.logger.warn("html2png conversion failed: #{error.class} #{error.message}")
-    nil
-  end
 end
