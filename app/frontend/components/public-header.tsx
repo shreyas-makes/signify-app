@@ -20,12 +20,12 @@ export function PublicHeader({ navItems = defaultNavItems }: PublicHeaderProps) 
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-2">
         <Link href="/" className="flex items-center">
           <AppLogo
             showIcon
-            iconClassName="size-7"
-            labelClassName="font-serif text-xl leading-tight tracking-tight"
+            iconClassName="size-6"
+            labelClassName="font-serif text-lg leading-tight tracking-tight"
           />
         </Link>
 

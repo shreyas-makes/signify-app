@@ -53,7 +53,7 @@ export function AppHeader() {
   return (
     <>
       <div className="border-sidebar-border/80 border-b">
-        <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+        <div className="mx-auto flex h-14 items-center px-4 md:max-w-7xl">
           {/* Mobile Menu */}
           <div className="lg:hidden">
             <Sheet>
@@ -74,8 +74,8 @@ export function AppHeader() {
                 <SheetHeader className="flex items-center justify-start text-left">
                   <AppLogo
                     showIcon
-                    iconClassName="size-7"
-                    labelClassName="font-serif text-lg leading-tight tracking-tight"
+                    iconClassName="size-6"
+                    labelClassName="font-serif text-base leading-tight tracking-tight"
                   />
                 </SheetHeader>
                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
@@ -108,8 +108,8 @@ export function AppHeader() {
           >
             <AppLogo
               showIcon
-              iconClassName="size-7"
-              labelClassName="font-serif text-lg leading-tight tracking-tight"
+              iconClassName="size-6"
+              labelClassName="font-serif text-base leading-tight tracking-tight"
             />
           </Link>
 

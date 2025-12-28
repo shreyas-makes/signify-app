@@ -15,18 +15,18 @@ export function PublicFooter({ variant = "default" }: PublicFooterProps) {
     <footer
       className={
         isGradient
-          ? "relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/15 py-12 text-sm text-muted-foreground"
-          : "bg-background py-12 text-sm text-muted-foreground"
+          ? "relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/15 py-6 text-sm text-muted-foreground"
+          : "bg-background py-6 text-sm text-muted-foreground"
       }
     >
       {isGradient ? (
         <>
-          <div className="pointer-events-none absolute -left-24 top-8 h-[240px] w-[240px] rounded-full bg-primary/15 blur-3xl blob-drift-1" />
-          <div className="pointer-events-none absolute bottom-[-10%] right-[-12%] h-[260px] w-[260px] rounded-full bg-accent/30 blur-3xl blob-drift-2" />
+          <div className="pointer-events-none absolute -left-24 top-6 h-[200px] w-[200px] rounded-full bg-primary/15 blur-3xl blob-drift-1" />
+          <div className="pointer-events-none absolute bottom-[-12%] right-[-12%] h-[220px] w-[220px] rounded-full bg-accent/30 blur-3xl blob-drift-2" />
         </>
       ) : null}
 
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="font-serif text-lg font-semibold tracking-tight text-foreground">Signify</p>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
