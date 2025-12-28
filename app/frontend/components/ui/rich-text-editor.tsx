@@ -16,6 +16,7 @@ interface RichTextEditorProps {
   textareaClassName?: string
   placeholderClassName?: string
   onEditorReady?: (editor: Editor) => void
+  sentenceCaseAfterPeriod?: boolean
 }
 
 export interface RichTextEditorRef {
@@ -37,6 +38,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       textareaClassName,
       placeholderClassName,
       onEditorReady,
+      sentenceCaseAfterPeriod = false,
     },
     ref
   ) => {
@@ -63,6 +65,21 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       }
     }, [disabled, textareaClassName])
 
+    const editorProps = useMemo(() => {
+      return {
+        attributes: editorAttributes,
+        handleTextInput: (view, from, to, text) => {
+          if (!sentenceCaseAfterPeriod) return false
+          if (text.length !== 1 || !/[a-z]/.test(text)) return false
+          const textBefore = view.state.doc.textBetween(0, from, "\n", "\n")
+          if (!/\.[\s\u00a0]$/.test(textBefore)) return false
+          const tr = view.state.tr.insertText(text.toUpperCase(), from, to)
+          view.dispatch(tr)
+          return true
+        },
+      }
+    }, [editorAttributes, sentenceCaseAfterPeriod])
+
     const editor = useEditor({
       content: value,
       editable: !disabled,
@@ -73,9 +90,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
         Underline,
         Highlight,
       ],
-      editorProps: {
-        attributes: editorAttributes,
-      },
+      editorProps,
       onUpdate: ({ editor }) => {
         const html = editor.getHTML()
         onChange?.(html)
@@ -125,11 +140,9 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       if (!editor) return
       editor.setEditable(!disabled)
       editor.setOptions({
-        editorProps: {
-          attributes: editorAttributes,
-        },
+        editorProps,
       })
-    }, [disabled, editor, editorAttributes])
+    }, [disabled, editor, editorProps])
 
     return (
       <div className={cn("relative", className)}>

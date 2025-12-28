@@ -178,6 +178,7 @@ export default function DocumentsNew() {
                     value={data.document.content}
                     onChange={handleContentChange}
                     placeholder="Start writing your document..."
+                    sentenceCaseAfterPeriod
                     className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
                     textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
                     placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
