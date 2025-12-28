@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { SquarePen } from 'lucide-react'
+import { FingerprintPattern, SquarePen } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { AppHeader } from '@/components/app-header'
@@ -211,8 +211,9 @@ export default function PublicPostShow({ post, meta }: Props) {
         <div className="mt-12 w-full text-center">
           <a
             href="http://www.signifywriting.com"
-            className="text-sm font-medium text-[#8f7d61] transition hover:text-[#8a6d44]"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#8f7d61] transition hover:text-[#8a6d44]"
           >
+            <FingerprintPattern className="h-4 w-4 text-current" aria-hidden="true" />
             This post was written by a human
           </a>
           <div className="mx-auto mt-5 h-px w-28 bg-[#eadcc6]" />
