@@ -42,7 +42,7 @@ Rails.application.routes.draw do
   # Public post routes (no authentication required)
   get "posts", to: "public/posts#index", as: :public_posts
   get "posts/:public_slug", to: "public/posts#show", as: :public_post
-  get "posts/:public_slug/og-image", to: "public/posts#og_image", as: :public_post_og_image
+  get "posts/:public_slug/og-image", to: "public/og_images#show", as: :public_post_og_image
   get "posts/:public_slug/keystrokes", to: "public/posts#keystrokes", as: :public_post_keystrokes
   get "authors/:id", to: "public/authors#show", as: :public_author
   

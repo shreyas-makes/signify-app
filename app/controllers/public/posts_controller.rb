@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class Public::PostsController < InertiaController
-  skip_before_action :authenticate, only: [:index, :show, :keystrokes, :og_image]
+  skip_before_action :authenticate, only: [:index, :show, :keystrokes]
   before_action :perform_authentication, only: [:index, :show, :keystrokes]
-  before_action :set_post, only: [:show, :keystrokes, :og_image]
+  before_action :set_post, only: [:show, :keystrokes]
 
   def index
     @posts = Document.public_visible
@@ -87,22 +87,6 @@ class Public::PostsController < InertiaController
           per_page: per_page
         }
       }
-    end
-  end
-
-  def og_image
-    unless @post
-      render plain: "Post not found", status: :not_found
-      return
-    end
-
-    storage_path = OgImageService.storage_path_for(@post)
-    OgImageService.generate_for_post(@post) unless File.exist?(storage_path)
-
-    if File.exist?(storage_path)
-      send_file storage_path, type: "image/png", disposition: "inline"
-    else
-      render plain: "OG image unavailable", status: :service_unavailable
     end
   end
 
