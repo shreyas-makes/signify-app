@@ -178,18 +178,28 @@ export function KeystrokeReplay({
     // Treat cursor data as valid only when it resembles absolute document offsets.
     if (playableKeystrokes.length === 0) return false
 
-    const positions = playableKeystrokes.map(
-      k => k.cursor_position ?? k.cursorPosition ?? k.document_position ?? 0
-    )
-    const nonZeroPositions = positions.filter(p => p > 0).length
+    const positions = playableKeystrokes
+      .map(k => k.cursor_position ?? k.cursorPosition ?? k.document_position ?? 0)
+      .filter(position => typeof position === "number" && !Number.isNaN(position))
 
-    if (nonZeroPositions === 0) return false
+    const positivePositions = positions.filter(position => position > 0)
+    if (positivePositions.length === 0) return false
 
-    const maxPosition = Math.max(...positions)
-    const zeroRatio = 1 - nonZeroPositions / positions.length
-    const lengthThreshold = Math.max(5, Math.floor(finalContent.length * 0.2))
+    const minSampleSize = Math.max(5, Math.floor(playableKeystrokes.length * 0.2))
+    if (positivePositions.length < minSampleSize) return false
 
-    if (maxPosition < lengthThreshold && zeroRatio > 0.4) {
+    const finalLength = finalContent.length
+    if (finalLength === 0) return false
+
+    const maxPosition = Math.max(...positivePositions)
+    const sortedPositions = [...positivePositions].sort((a, b) => a - b)
+    const p90Index = Math.min(sortedPositions.length - 1, Math.floor(sortedPositions.length * 0.9))
+    const p90Position = sortedPositions[p90Index]
+
+    const maxThreshold = Math.max(5, Math.floor(finalLength * 0.6))
+    const p90Threshold = Math.max(5, Math.floor(finalLength * 0.4))
+
+    if (maxPosition < maxThreshold || p90Position < p90Threshold) {
       return false
     }
 
