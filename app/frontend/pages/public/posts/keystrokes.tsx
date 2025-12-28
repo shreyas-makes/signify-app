@@ -1,16 +1,12 @@
 import { Head, router, usePage } from '@inertiajs/react'
-import { 
-  Activity,
+import {
   ArrowLeft, 
   BarChart3,
   Download,
-  Loader2,
-  Shield
+  Loader2
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GitCommitGraph } from '@/components/ui/git-commit-graph'
@@ -391,33 +387,8 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
           </div>
 
           {/* Header */}
-          <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] xl:gap-10">
-            <div>
-              <div className="mb-4 flex items-start gap-3">
-                <Badge 
-                  variant="outline"
-                  className="border-border bg-muted text-foreground hover:bg-muted"
-                >
-                  <Shield className="mr-1 h-3 w-3" />
-                  Keystroke Verified
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className="border-border bg-background text-muted-foreground hover:bg-muted"
-                >
-                  <Activity className="mr-1 h-3 w-3" />
-                  Live Replay
-                </Badge>
-              </div>
-              
-              <h1 className="mb-2 text-3xl font-bold text-foreground">
-                Keystroke Timeline: {post.title}
-              </h1>
-              <p className="text-muted-foreground">
-                Let readers replay the real keystrokes that shaped this draft from {post.author.display_name}. It is proof that every sentence was written by hand.
-              </p>
-            </div>
-            <div className="relative">
+          <div className="mb-8 flex justify-center">
+            <div className="relative w-full max-w-2xl">
               <div className="pointer-events-none absolute inset-0 -top-6 right-0 hidden rounded-[28px] bg-gradient-to-br from-primary/25 via-accent/20 to-foreground/10 blur-3xl lg:block" />
               <VerifiedSessionCard
                 initials={authorInitials}
@@ -428,7 +399,7 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
                 snippetFooter={snippetFooter}
                 previewHeading="Captured session draft"
                 previewContent={previewContent}
-                className="relative z-10"
+                className="relative z-10 mx-auto"
               />
             </div>
           </div>
