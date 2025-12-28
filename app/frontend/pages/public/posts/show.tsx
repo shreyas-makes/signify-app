@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { FingerprintPattern, SquarePen } from 'lucide-react'
+import { FingerprintPattern, SquarePen, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { AppHeader } from '@/components/app-header'
@@ -36,6 +36,8 @@ interface Post {
   word_count: number
   reading_time_minutes: number
   keystroke_count: number
+  kudos_count?: number
+  kudos_given?: boolean
   author: Author
   verification: Verification
   sample_keystrokes: Keystroke[]
@@ -67,6 +69,12 @@ export default function PublicPostShow({ post, meta }: Props) {
   const isSignedIn = Boolean(auth?.user)
   const getInitials = useInitials()
   const keystrokeUrl = `/posts/${post.public_slug}/keystrokes`
+  const [kudosCount, setKudosCount] = useState(post.kudos_count ?? 0)
+  const [kudosGiven, setKudosGiven] = useState(Boolean(post.kudos_given))
+  const [kudosSubmitting, setKudosSubmitting] = useState(false)
+  const kudosCountLabel = useMemo(() => (
+    new Intl.NumberFormat('en-US').format(kudosCount)
+  ), [kudosCount])
   const authorDescription = post.author.bio?.trim()
     ? post.author.bio
     : "The author has not added a description yet."
@@ -108,6 +116,33 @@ export default function PublicPostShow({ post, meta }: Props) {
 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isSignedIn])
+  const handleKudos = async () => {
+    if (kudosGiven || kudosSubmitting) {
+      return
+    }
+
+    setKudosSubmitting(true)
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`/posts/${post.public_slug}/kudos`, {
+        method: 'POST',
+        headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : {},
+        credentials: 'same-origin'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (typeof data.kudos_count === 'number') {
+          setKudosCount(data.kudos_count)
+        } else {
+          setKudosCount((prev) => prev + 1)
+        }
+        setKudosGiven(true)
+      }
+    } finally {
+      setKudosSubmitting(false)
+    }
+  }
   const headMarkup = (
     <Head title={meta.title}>
       <meta name="description" content={meta.description} />
@@ -217,6 +252,33 @@ export default function PublicPostShow({ post, meta }: Props) {
             This post was written by a human
           </a>
           <div className="mx-auto mt-5 h-px w-28 bg-[#eadcc6]" />
+        </div>
+
+        <div className="mt-8 w-full">
+          <div className="mx-auto flex w-full max-w-sm items-center justify-center gap-5">
+            <button
+              type="button"
+              className={[
+                'flex h-14 w-14 items-center justify-center rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                kudosGiven
+                  ? 'border-[#1b150f] bg-[#1b150f] text-white'
+                  : 'border-[#1b150f] text-[#1b150f] hover:scale-[1.02] hover:bg-[#1b150f] hover:text-white',
+                kudosSubmitting ? 'cursor-wait opacity-70' : ''
+              ].join(' ')}
+              aria-label={kudosGiven ? "Kudos given" : "Give kudos"}
+              aria-pressed={kudosGiven}
+              disabled={kudosGiven || kudosSubmitting}
+              onClick={handleKudos}
+            >
+              <X className="h-6 w-6" strokeWidth={2.6} />
+            </button>
+            <div className="text-left">
+              <p className="text-2xl font-semibold text-[#1f1a12]">{kudosCountLabel}</p>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.38em] text-[#8b7a61]">
+                Kudos
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="mt-10 w-full text-center">

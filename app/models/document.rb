@@ -3,6 +3,7 @@
 class Document < ApplicationRecord
   belongs_to :user
   has_many :keystrokes, dependent: :destroy
+  has_many :kudos, dependent: :destroy
 
   enum :status, {draft: 0, ready_to_publish: 1, published: 2}
 
@@ -11,7 +12,7 @@ class Document < ApplicationRecord
   validates :slug, presence: true, uniqueness: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :public_slug, uniqueness: true, allow_nil: true, format: {with: /\A[a-z0-9\-]+\z/}
   validates :status, presence: true
-  validates :word_count, :reading_time_minutes, :keystroke_count, presence: true, numericality: {greater_than_or_equal_to: 0}
+  validates :word_count, :reading_time_minutes, :keystroke_count, :kudos_count, presence: true, numericality: {greater_than_or_equal_to: 0}
   
   # Workflow validations  
   validates :published_at, presence: true, if: -> { published? && !status_changed?(to: 'published') }
@@ -114,6 +115,7 @@ class Document < ApplicationRecord
     self.word_count ||= 0
     self.reading_time_minutes ||= 0
     self.keystroke_count ||= 0
+    self.kudos_count ||= 0
   end
 
   def set_published_at

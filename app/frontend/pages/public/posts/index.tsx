@@ -1,7 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
-import { Search, Verified, Clock3, FileText, X } from 'lucide-react'
+import { Search, Verified, Clock3, FileText, Sparkles, X } from 'lucide-react'
 import type React from 'react';
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,7 @@ interface Post {
   published_at: string
   word_count: number
   reading_time_minutes: number
+  kudos_count?: number
   author: Author
   excerpt: string
 }
@@ -74,6 +75,7 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
   const visitPost = (publicSlug: string) => {
     router.visit(`/posts/${publicSlug}`)
   }
+  const kudosFormatter = useMemo(() => new Intl.NumberFormat('en-US'), [])
 
   // Auto-expand if there's a search query from URL
   useEffect(() => {
@@ -212,6 +214,11 @@ export default function PublicPostsIndex({ posts, search = '' }: Props) {
                     <div className="flex items-center gap-1">
                       <Verified className="h-3 w-3 text-green-600" />
                       <span>Verified</span>
+                    </div>
+                    <span className="hidden sm:inline">•</span>
+                    <div className="flex items-center gap-1">
+                      <Sparkles className="h-3 w-3 text-[#8f7d61]" />
+                      <span>{kudosFormatter.format(post.kudos_count ?? 0)} kudos</span>
                     </div>
                   </div>
                 </div>

@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
 class Public::PostsController < InertiaController
-  skip_before_action :authenticate, only: [:index, :show, :keystrokes]
-  before_action :perform_authentication, only: [:index, :show, :keystrokes]
-  before_action :set_post, only: [:show, :keystrokes]
+  VISITOR_COOKIE_KEY = :public_visitor_id
+
+  skip_before_action :authenticate, only: [:index, :show, :keystrokes, :kudos]
+  before_action :perform_authentication, only: [:index, :show, :keystrokes, :kudos]
+  before_action :ensure_visitor_id, only: [:index, :show, :keystrokes, :kudos]
+  before_action :set_post, only: [:show, :keystrokes, :kudos]
 
   def index
     @posts = Document.public_visible
                      .includes(:user)
-                     .order(published_at: :desc)
+                     .order(kudos_count: :desc, published_at: :desc)
                      .limit(20)
 
     # Basic search functionality
@@ -39,6 +42,27 @@ class Public::PostsController < InertiaController
       post: detailed_post_json(@post),
       meta: @meta
     }
+  end
+
+  def kudos
+    unless @post
+      render json: { error: "Post not found" }, status: :not_found
+      return
+    end
+
+    existing_kudos = @post.kudos.find_by(visitor_id: visitor_id)
+    if existing_kudos
+      render json: { kudos_count: @post.kudos_count, given: true }, status: :ok
+      return
+    end
+
+    kudos = @post.kudos.new(visitor_id: visitor_id)
+    if kudos.save
+      @post.reload
+      render json: { kudos_count: @post.kudos_count, given: true }, status: :created
+    else
+      render json: { error: "Unable to give kudos" }, status: :unprocessable_entity
+    end
   end
 
   def keystrokes
@@ -96,6 +120,20 @@ class Public::PostsController < InertiaController
     @post = Document.public_visible.find_by(public_slug: params[:public_slug])
   end
 
+  def ensure_visitor_id
+    return if cookies.signed[VISITOR_COOKIE_KEY].present?
+
+    cookies.signed.permanent[VISITOR_COOKIE_KEY] = {
+      value: SecureRandom.uuid,
+      httponly: true,
+      same_site: :lax
+    }
+  end
+
+  def visitor_id
+    cookies.signed[VISITOR_COOKIE_KEY]
+  end
+
   def posts_json(posts)
     posts.map do |post|
       {
@@ -106,6 +144,7 @@ class Public::PostsController < InertiaController
         published_at: post.published_at.strftime("%B %d, %Y"),
         word_count: post.word_count,
         reading_time_minutes: post.reading_time_minutes,
+        kudos_count: post.kudos_count,
         author: {
           display_name: post.user.display_name,
           profile_url: public_author_path(post.user)
@@ -130,6 +169,8 @@ class Public::PostsController < InertiaController
       word_count: post.word_count,
       reading_time_minutes: post.reading_time_minutes,
       keystroke_count: post.keystroke_count,
+      kudos_count: post.kudos_count,
+      kudos_given: visitor_id.present? ? post.kudos.exists?(visitor_id: visitor_id) : false,
       author: {
         id: post.user.id,
         name: post.user.name,

@@ -44,6 +44,7 @@ Rails.application.routes.draw do
   get "posts/:public_slug", to: "public/posts#show", as: :public_post
   get "posts/:public_slug/og-image", to: "public/og_images#show", as: :public_post_og_image
   get "posts/:public_slug/keystrokes", to: "public/posts#keystrokes", as: :public_post_keystrokes
+  post "posts/:public_slug/kudos", to: "public/posts#kudos", as: :public_post_kudos
   get "authors/:id", to: "public/authors#show", as: :public_author
   
   # Data access and verification API
