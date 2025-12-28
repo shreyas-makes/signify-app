@@ -489,6 +489,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                       value={data.document.content}
                       onChange={handleContentChange}
                       placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
+                      sentenceCaseAfterPeriod
                       className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
                       textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
                       placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"

@@ -72,7 +72,9 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           if (!sentenceCaseAfterPeriod) return false
           if (text.length !== 1 || !/[a-z]/.test(text)) return false
           const textBefore = view.state.doc.textBetween(0, from, "\n", "\n")
-          if (!/\.[\s\u00a0]$/.test(textBefore)) return false
+          const isSentenceStart =
+            textBefore.length === 0 || /(?:^|[.!?][\s\u00a0]+|\n+)$/.test(textBefore)
+          if (!isSentenceStart) return false
           const tr = view.state.tr.insertText(text.toUpperCase(), from, to)
           view.dispatch(tr)
           return true
