@@ -76,6 +76,8 @@ Rails.application.routes.draw do
   namespace :support do
     inertia :contact
   end
+
+  get "sandbox", to: "sandbox#index"
   
   # Admin interface
   namespace :admin do
