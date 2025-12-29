@@ -40,6 +40,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     published_at: document.published_at ?? null
   })
   const editorRef = useRef<RichTextEditorRef>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const [toolbarHeight, setToolbarHeight] = useState(0)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
   const keyboardOffset = useKeyboardOffset()
@@ -54,6 +56,17 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
       published_at: document.published_at ?? null
     })
   }, [document.id, document.published_at, document.status, document.updated_at])
+
+  useEffect(() => {
+    const updateToolbarHeight = () => {
+      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
+      setToolbarHeight((prev) => (prev === height ? prev : height))
+    }
+
+    updateToolbarHeight()
+    window.addEventListener("resize", updateToolbarHeight)
+    return () => window.removeEventListener("resize", updateToolbarHeight)
+  }, [])
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
@@ -316,6 +329,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   )
   const mobileToolbarInnerClass = "w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0"
   const contentInsetClass = "px-0"
+  const scrollBottomOffset = keyboardOffset ? toolbarHeight + keyboardOffset : 0
   return (
     <div className="composer-theme min-h-screen bg-background">
       <AppLayout showHeader={false}>
@@ -392,11 +406,18 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
               </div>
             </div>
 
-            <div className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}>
+            <div
+              className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}
+              style={{
+                "--editor-toolbar-height": `${toolbarHeight}px`,
+                "--editor-keyboard-offset": `${keyboardOffset}px`,
+              } as React.CSSProperties}
+            >
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     <div
+                      ref={toolbarRef}
                       className={cn(mobileToolbarWrapperClass, "transition-transform duration-200")}
                       style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
                     >
@@ -490,8 +511,9 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                       onChange={handleContentChange}
                       placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
                       sentenceCaseAfterPeriod
+                      scrollBottomOffset={scrollBottomOffset}
                       className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                      textareaClassName="px-0 pt-0 pb-[calc(6rem+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
+                      textareaClassName="px-0 pt-0 pb-[calc(var(--editor-toolbar-height)+var(--editor-keyboard-offset)+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
                       placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                       onEditorReady={setEditor}
                     />

@@ -25,6 +25,8 @@ export default function DocumentsNew() {
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const editorRef = useRef<RichTextEditorRef>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const [toolbarHeight, setToolbarHeight] = useState(0)
   const keyboardOffset = useKeyboardOffset()
 
   // Update word count when content changes
@@ -51,6 +53,18 @@ export default function DocumentsNew() {
 
   const previewClassName =
     "prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#322718] prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
+  const scrollBottomOffset = keyboardOffset ? toolbarHeight + keyboardOffset : 0
+
+  useEffect(() => {
+    const updateToolbarHeight = () => {
+      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
+      setToolbarHeight((prev) => (prev === height ? prev : height))
+    }
+
+    updateToolbarHeight()
+    window.addEventListener("resize", updateToolbarHeight)
+    return () => window.removeEventListener("resize", updateToolbarHeight)
+  }, [isPreview])
 
   return (
     <AppLayout showHeader={false}>
@@ -104,10 +118,17 @@ export default function DocumentsNew() {
 
         <div className="flex-1 overflow-hidden">
           <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 flex flex-col max-w-4xl w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10">
+            <div
+              className="flex-1 flex flex-col max-w-4xl w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10"
+              style={{
+                "--editor-toolbar-height": `${toolbarHeight}px`,
+                "--editor-keyboard-offset": `${keyboardOffset}px`,
+              } as React.CSSProperties}
+            >
               <div className="mb-2 space-y-2">
                 {!isPreview && (
                   <div
+                    ref={toolbarRef}
                     className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0"
                     style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
                   >
@@ -179,8 +200,9 @@ export default function DocumentsNew() {
                     onChange={handleContentChange}
                     placeholder="Start writing your document..."
                     sentenceCaseAfterPeriod
+                    scrollBottomOffset={scrollBottomOffset}
                     className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
-                    textareaClassName="px-0 pt-0 pb-[calc(6rem+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
+                    textareaClassName="px-0 pt-0 pb-[calc(var(--editor-toolbar-height)+var(--editor-keyboard-offset)+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
                     placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                     onEditorReady={setEditor}
                   />
