@@ -180,7 +180,7 @@ export default function DocumentsNew() {
                     placeholder="Start writing your document..."
                     sentenceCaseAfterPeriod
                     className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
-                    textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                    textareaClassName="px-0 pt-0 pb-[calc(6rem+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
                     placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                     onEditorReady={setEditor}
                   />
