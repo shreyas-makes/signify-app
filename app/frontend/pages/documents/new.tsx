@@ -1,7 +1,7 @@
 import { Head, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
 import { ArrowLeft, Eye, Pencil, Save } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { EditorToolbar } from "@/components/editor-toolbar"
@@ -24,6 +24,8 @@ export default function DocumentsNew() {
   const [wordCount, setWordCount] = useState(0)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const [toolbarHeight, setToolbarHeight] = useState(0)
   const keyboardOffset = useKeyboardOffset()
 
   // Update word count when content changes
@@ -50,6 +52,24 @@ export default function DocumentsNew() {
 
   const previewClassName =
     "prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#322718] prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
+  const toolbarSpace = isPreview ? 0 : toolbarHeight
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (isPreview) {
+      setToolbarHeight(0)
+      return
+    }
+
+    const updateToolbarHeight = () => {
+      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
+      setToolbarHeight((prev) => (prev === height ? prev : height))
+    }
+
+    updateToolbarHeight()
+    window.addEventListener("resize", updateToolbarHeight)
+    return () => window.removeEventListener("resize", updateToolbarHeight)
+  }, [isPreview])
 
   return (
     <AppLayout showHeader={false} showFooter={false}>
@@ -101,11 +121,14 @@ export default function DocumentsNew() {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div
+          className="flex-1 min-h-0 overflow-y-auto pb-[var(--editor-toolbar-height)] sm:pb-0"
+          style={{ "--editor-toolbar-height": `${toolbarSpace}px` } as React.CSSProperties}
+        >
           <form
             id="document-form"
             onSubmit={handleSubmit}
-            className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-6 sm:pb-10"
+            className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10"
           >
             <div className="mb-2 space-y-2">
               {!isPreview && (
@@ -176,7 +199,7 @@ export default function DocumentsNew() {
                   placeholder="Start writing your document..."
                   sentenceCaseAfterPeriod
                   className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
-                  textareaClassName="px-0 pt-0 pb-[calc(4rem+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
+                  textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
                   placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                   onEditorReady={setEditor}
                 />
@@ -189,6 +212,7 @@ export default function DocumentsNew() {
         </div>
         {!isPreview && (
           <div
+            ref={toolbarRef}
             className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:hidden"
             style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
           >
