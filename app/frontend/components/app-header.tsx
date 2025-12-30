@@ -25,7 +25,7 @@ import {
 import { UserMenuContent } from "@/components/user-menu-content"
 import { useInitials } from "@/hooks/use-initials"
 import { cn } from "@/lib/utils"
-import { dashboardPath } from "@/routes"
+import { dashboardPath, rootPath } from "@/routes"
 import type { NavItem, SharedData } from "@/types"
 
 import AppLogo from "./app-logo"
@@ -72,11 +72,13 @@ export function AppHeader() {
               >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <SheetHeader className="flex items-center justify-start text-left">
-                  <AppLogo
-                    showIcon
-                    iconClassName="size-6"
-                    labelClassName="font-serif text-base leading-tight tracking-tight"
-                  />
+                  <Link href={rootPath()} className="flex items-center">
+                    <AppLogo
+                      showIcon
+                      iconClassName="size-6"
+                      labelClassName="font-serif text-base leading-tight tracking-tight"
+                    />
+                  </Link>
                 </SheetHeader>
                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                   <div className="flex h-full flex-col justify-between text-sm">
@@ -102,7 +104,7 @@ export function AppHeader() {
           </div>
 
           <Link
-            href={dashboardPath()}
+            href={rootPath()}
             prefetch
             className="flex items-center"
           >

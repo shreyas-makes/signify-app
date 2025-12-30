@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_18_130000) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_19_120000) do
   create_table "documents", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_130000) do
     t.integer "keystroke_count", default: 0
     t.string "subtitle"
     t.boolean "hidden_from_public", default: false, null: false
+    t.integer "kudos_count", default: 0, null: false
     t.index ["hidden_from_public"], name: "index_documents_on_hidden_from_public"
     t.index ["public_slug"], name: "index_documents_on_public_slug", unique: true, where: "public_slug IS NOT NULL"
     t.index ["published_at"], name: "index_documents_on_published_at"
@@ -47,6 +48,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_130000) do
     t.index ["document_id", "sequence_number"], name: "index_keystrokes_on_document_id_and_sequence_number"
     t.index ["document_id"], name: "index_keystrokes_on_document_id"
     t.index ["timestamp"], name: "index_keystrokes_on_timestamp"
+  end
+
+  create_table "kudos", force: :cascade do |t|
+    t.integer "document_id", null: false
+    t.string "visitor_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["document_id", "visitor_id"], name: "index_kudos_on_document_id_and_visitor_id", unique: true
+    t.index ["document_id"], name: "index_kudos_on_document_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -75,5 +85,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_130000) do
 
   add_foreign_key "documents", "users"
   add_foreign_key "keystrokes", "documents"
+  add_foreign_key "kudos", "documents"
   add_foreign_key "sessions", "users"
 end

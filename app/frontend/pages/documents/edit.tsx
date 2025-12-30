@@ -384,8 +384,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
             </div>
           </div>
 
-          <div className="flex-1">
-            <div className="sticky top-0 z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0">
+          <div className="flex-1 pt-12">
+            <div className="fixed left-0 right-0 top-0 z-30 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
               <div className="mx-auto w-full max-w-6xl px-4 py-2 sm:px-6 sm:py-0">
                 <EditorToolbar
                   editor={editor}
