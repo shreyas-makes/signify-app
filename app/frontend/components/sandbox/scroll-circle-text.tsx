@@ -304,6 +304,25 @@ export default function ScrollCircleText({ variant = 'words', curve = 0 }: Scrol
       scroll.target += event.deltaY
     }
 
+    let lastTouchY: number | null = null
+    const touchMultiplier = 2
+    const onTouchStart = (event: TouchEvent) => {
+      lastTouchY = event.touches[0]?.clientY ?? null
+    }
+
+    const onTouchMove = (event: TouchEvent) => {
+      if (lastTouchY === null) return
+      event.preventDefault()
+      const currentY = event.touches[0]?.clientY ?? lastTouchY
+      const deltaY = lastTouchY - currentY
+      scroll.target += deltaY * touchMultiplier
+      lastTouchY = currentY
+    }
+
+    const onTouchEnd = () => {
+      lastTouchY = null
+    }
+
     let frameId = 0
     const animate = () => {
       frameId = requestAnimationFrame(animate)
@@ -318,11 +337,19 @@ export default function ScrollCircleText({ variant = 'words', curve = 0 }: Scrol
     resize()
     window.addEventListener('resize', resize)
     window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd)
+    window.addEventListener('touchcancel', onTouchEnd)
     animate()
 
     return () => {
       window.removeEventListener('resize', resize)
       window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('touchcancel', onTouchEnd)
       cancelAnimationFrame(frameId)
       texts.forEach((text) => {
         if (text.mesh) {
