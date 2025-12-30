@@ -56,9 +56,11 @@ export default function SandboxV3() {
                 asChild
                 variant="outline"
                 size="sm"
-                className="circle-footer-button circle-footer-button-primary"
+                className="circle-footer-button circle-footer-button-primary circle-button-iso"
               >
-                <Link href={writingHref}>Start writing</Link>
+                <Link href={writingHref}>
+                  <span className="circle-button-label">Start writing</span>
+                </Link>
               </Button>
             </div>
           </div>
@@ -194,11 +196,33 @@ export default function SandboxV3() {
             border-color: #2a2a2a;
           }
 
+          .circle-button-iso {
+            position: relative;
+            transform: skew(-10deg);
+            box-shadow: none;
+          }
+
+          .circle-button-iso::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            transform: translate(6px, 6px);
+            border: 1px solid rgba(31, 31, 31, 0.4);
+            border-radius: inherit;
+            z-index: -1;
+          }
+
+          .circle-button-label {
+            display: block;
+            transform: skew(10deg);
+          }
+
           .circle-footer-button-top {
             background: #ffffff;
-            border-color: #ffffff;
+            border-color: #1f1f1f;
             color: #1f1f1f;
-            box-shadow: 0 10px 24px rgba(31, 31, 31, 0.12);
+            box-shadow: none;
+            border-radius: 0;
           }
 
           .circle-footer-button-top:hover {
