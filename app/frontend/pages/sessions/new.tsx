@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import AuthLayout from "@/layouts/auth-layout"
-import { newIdentityPasswordResetPath, signInPath, signUpPath } from "@/routes"
+import {
+  newIdentityPasswordResetPath,
+  rootPath,
+  signInPath,
+  signUpPath,
+} from "@/routes"
 
 export default function Login() {
   return (
@@ -97,6 +102,10 @@ export default function Login() {
               <TextLink href={signUpPath()} tabIndex={5}>
                 Sign up
               </TextLink>
+            </div>
+
+            <div className="text-muted-foreground text-center text-sm">
+              <TextLink href={rootPath()}>Back to home</TextLink>
             </div>
           </>
         )}
