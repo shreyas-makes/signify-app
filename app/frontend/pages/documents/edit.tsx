@@ -38,6 +38,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     updated_at: document.updated_at,
     published_at: document.published_at ?? null
   })
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
@@ -52,6 +54,18 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
       published_at: document.published_at ?? null
     })
   }, [document.id, document.published_at, document.status, document.updated_at])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const updateHeaderHeight = () => {
+      const height = headerRef.current?.getBoundingClientRect().height ?? 0
+      setHeaderHeight((prev) => (prev === height ? prev : height))
+    }
+
+    updateHeaderHeight()
+    window.addEventListener("resize", updateHeaderHeight)
+    return () => window.removeEventListener("resize", updateHeaderHeight)
+  }, [])
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
@@ -309,13 +323,14 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     "sticky top-0 z-20 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
   )
   const contentInsetClass = "px-0"
+  const toolbarOffset = headerHeight ? `${headerHeight}px` : "3.25rem"
   return (
-    <div className="composer-theme min-h-svh h-dvh bg-background">
+    <div className="composer-theme min-h-svh bg-background">
       <AppLayout showHeader={false} showFooter={false}>
         <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
-        <div className={cn("flex h-full flex-col", pageBackgroundClass)}>
-          <div className={cn(toolbarWrapperClass)}>
+        <div className={cn("flex flex-col", pageBackgroundClass)}>
+          <div ref={headerRef} className={cn(toolbarWrapperClass, "z-30")}>
             <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
               <div className="flex items-center gap-3">
                 <Button
@@ -384,8 +399,11 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="sticky top-0 z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0">
+          <div className="flex-1">
+            <div
+              className="sticky z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0"
+              style={{ top: toolbarOffset }}
+            >
               <div className="mx-auto w-full max-w-6xl px-4 py-2 sm:px-6 sm:py-0">
                 <EditorToolbar
                   editor={editor}
