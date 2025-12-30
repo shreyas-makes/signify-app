@@ -8,6 +8,7 @@ type CommandItem = {
   title: string
   description: string
   keywords: string[]
+  iconLabel: string
   command: (props: { editor: SuggestionProps["editor"]; range: SuggestionProps["range"] }) => void
 }
 
@@ -16,6 +17,7 @@ const commandItems: CommandItem[] = [
     title: "Bold",
     description: "Toggle bold text",
     keywords: ["bold", "strong"],
+    iconLabel: "B",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBold().run()
     },
@@ -24,6 +26,7 @@ const commandItems: CommandItem[] = [
     title: "Italic",
     description: "Toggle italic text",
     keywords: ["italic", "emphasis", "em"],
+    iconLabel: "I",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleItalic().run()
     },
@@ -32,6 +35,7 @@ const commandItems: CommandItem[] = [
     title: "Underline",
     description: "Toggle underline",
     keywords: ["underline", "u"],
+    iconLabel: "U",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleUnderline().run()
     },
@@ -40,6 +44,7 @@ const commandItems: CommandItem[] = [
     title: "Strikethrough",
     description: "Toggle strikethrough",
     keywords: ["strike", "strikethrough", "s"],
+    iconLabel: "S",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleStrike().run()
     },
@@ -48,6 +53,7 @@ const commandItems: CommandItem[] = [
     title: "Highlight",
     description: "Toggle highlight",
     keywords: ["highlight", "mark"],
+    iconLabel: "HL",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleHighlight().run()
     },
@@ -56,6 +62,7 @@ const commandItems: CommandItem[] = [
     title: "Heading 1",
     description: "Large section heading",
     keywords: ["h1", "heading1", "heading 1", "title"],
+    iconLabel: "H1",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleHeading({ level: 1 }).run()
     },
@@ -64,6 +71,7 @@ const commandItems: CommandItem[] = [
     title: "Heading 2",
     description: "Medium section heading",
     keywords: ["h2", "heading2", "heading 2"],
+    iconLabel: "H2",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleHeading({ level: 2 }).run()
     },
@@ -72,6 +80,7 @@ const commandItems: CommandItem[] = [
     title: "Heading 3",
     description: "Small section heading",
     keywords: ["h3", "heading3", "heading 3"],
+    iconLabel: "H3",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleHeading({ level: 3 }).run()
     },
@@ -80,6 +89,7 @@ const commandItems: CommandItem[] = [
     title: "Blockquote",
     description: "Quote block",
     keywords: ["quote", "blockquote"],
+    iconLabel: "QT",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBlockquote().run()
     },
@@ -88,6 +98,7 @@ const commandItems: CommandItem[] = [
     title: "Bulleted list",
     description: "Start a bullet list",
     keywords: ["bullet", "list", "unordered"],
+    iconLabel: "UL",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBulletList().run()
     },
@@ -96,6 +107,7 @@ const commandItems: CommandItem[] = [
     title: "Numbered list",
     description: "Start a numbered list",
     keywords: ["numbered", "ordered", "list"],
+    iconLabel: "OL",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleOrderedList().run()
     },
@@ -144,10 +156,13 @@ const renderItems = (
     const button = document.createElement("button")
     button.type = "button"
     button.className =
-      "flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left text-sm transition-colors"
+      "flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors"
     button.classList.add(index === selectedIndex ? "bg-muted/70" : "hover:bg-muted/60")
     button.setAttribute("role", "option")
     button.setAttribute("aria-selected", index === selectedIndex ? "true" : "false")
+
+    const textWrap = document.createElement("div")
+    textWrap.className = "flex flex-1 flex-col gap-0.5"
 
     const title = document.createElement("span")
     title.className = "font-medium text-foreground"
@@ -157,8 +172,16 @@ const renderItems = (
     description.className = "text-xs text-muted-foreground"
     description.textContent = item.description
 
-    button.appendChild(title)
-    button.appendChild(description)
+    const icon = document.createElement("span")
+    icon.className =
+      "min-w-[2.25rem] rounded-md border border-border/70 bg-muted/40 px-1.5 py-1 text-center text-[10px] font-semibold tracking-wide text-foreground/80"
+    icon.textContent = item.iconLabel
+    icon.setAttribute("aria-hidden", "true")
+
+    textWrap.appendChild(title)
+    textWrap.appendChild(description)
+    button.appendChild(textWrap)
+    button.appendChild(icon)
     button.addEventListener("click", () => onSelect(index))
     container.appendChild(button)
   })
