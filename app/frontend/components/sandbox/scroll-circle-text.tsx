@@ -305,7 +305,7 @@ export default function ScrollCircleText({ variant = 'words', curve = 0 }: Scrol
     }
 
     let lastTouchY: number | null = null
-    const touchMultiplier = 2
+    const touchMultiplier = 3
     const onTouchStart = (event: TouchEvent) => {
       lastTouchY = event.touches[0]?.clientY ?? null
     }
