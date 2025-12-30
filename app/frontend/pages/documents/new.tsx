@@ -23,6 +23,8 @@ export default function DocumentsNew() {
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const slashHintShown = useRef(false)
+  const [showSlashHint, setShowSlashHint] = useState(false)
+  const slashHintTimer = useRef<number | null>(null)
 
   // Update word count when content changes
   useEffect(() => {
@@ -37,11 +39,21 @@ export default function DocumentsNew() {
     const handleFocus = () => {
       if (slashHintShown.current) return
       slashHintShown.current = true
+      setShowSlashHint(true)
+      if (slashHintTimer.current) {
+        window.clearTimeout(slashHintTimer.current)
+      }
+      slashHintTimer.current = window.setTimeout(() => {
+        setShowSlashHint(false)
+      }, 5000)
       toast.message("Tip: type / to format text (headings, lists, bold, italic, underline, highlight, quote).")
     }
     editor.on("focus", handleFocus)
     return () => {
       editor.off("focus", handleFocus)
+      if (slashHintTimer.current) {
+        window.clearTimeout(slashHintTimer.current)
+      }
     }
   }, [editor])
 
@@ -68,7 +80,7 @@ export default function DocumentsNew() {
 
       <div className="editor-body min-h-svh flex flex-col bg-background">
         <div className="border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3 sm:px-6">
             <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0 text-[#5c4d35]">
               <a href={dashboardPath()}>
                 <ArrowLeft className="h-4 w-4" />
@@ -116,7 +128,7 @@ export default function DocumentsNew() {
           <form
             id="document-form"
             onSubmit={handleSubmit}
-            className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10"
+            className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10"
           >
             <div className="mb-2 space-y-2">
               {isPreview ? (
@@ -172,16 +184,25 @@ export default function DocumentsNew() {
                   )}
                 </div>
               ) : (
-                <RichTextEditor
-                  value={data.document.content}
-                  onChange={handleContentChange}
-                  placeholder="Start writing your document... Type / for formatting commands."
-                  sentenceCaseAfterPeriod
-                  className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
-                  textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
-                  placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
-                  onEditorReady={setEditor}
-                />
+                <>
+                  {showSlashHint && (
+                    <div className="mb-2 sm:hidden">
+                      <div className="inline-flex items-center rounded-full bg-[#f4ecdf] px-3 py-1 text-xs font-medium text-[#5c4d35]">
+                        Tip: type / for formatting.
+                      </div>
+                    </div>
+                  )}
+                  <RichTextEditor
+                    value={data.document.content}
+                    onChange={handleContentChange}
+                    placeholder="Start writing your document... Type / for formatting commands."
+                    sentenceCaseAfterPeriod
+                    className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
+                    textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                    placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
+                    onEditorReady={setEditor}
+                  />
+                </>
               )}
               {errors['document.content'] && (
                 <p className="text-sm text-destructive mt-2">{errors['document.content']}</p>

@@ -33,6 +33,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const [showWelcome, setShowWelcome] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const slashHintShown = useRef(false)
+  const [showSlashHint, setShowSlashHint] = useState(false)
+  const slashHintTimer = useRef<number | null>(null)
   const [documentMeta, setDocumentMeta] = useState({
     status: document.status,
     updated_at: document.updated_at,
@@ -58,11 +60,21 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     const handleFocus = () => {
       if (slashHintShown.current) return
       slashHintShown.current = true
+      setShowSlashHint(true)
+      if (slashHintTimer.current) {
+        window.clearTimeout(slashHintTimer.current)
+      }
+      slashHintTimer.current = window.setTimeout(() => {
+        setShowSlashHint(false)
+      }, 5000)
       toast.message("Tip: type / to format text (headings, lists, bold, italic, underline, highlight, quote).")
     }
     editor.on("focus", handleFocus)
     return () => {
       editor.off("focus", handleFocus)
+      if (slashHintTimer.current) {
+        window.clearTimeout(slashHintTimer.current)
+      }
     }
   }, [editor])
 
@@ -329,7 +341,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
 
         <div className={cn("flex flex-col", pageBackgroundClass)}>
           <div className={toolbarWrapperClass}>
-            <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+            <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
               <div className="flex items-center gap-3">
                 <Button
                   asChild
@@ -398,7 +410,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
           </div>
 
           <div className="flex-1">
-            <div className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}>
+            <div className={cn("mx-auto flex w-full max-w-5xl flex-col", shellPaddingClass)}>
               <div className="mt-1 flex-1">
                 <div className="mt-2 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
@@ -478,6 +490,13 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                   )}
 
                   <div className={cn(editorSurfaceClass, "min-h-[420px] px-0 py-0 sm:px-0 sm:py-0", contentInsetClass)}>
+                    {showSlashHint && (
+                      <div className="mb-2 sm:hidden">
+                        <div className="inline-flex items-center rounded-full bg-[#f4ecdf] px-3 py-1 text-xs font-medium text-[#5c4d35]">
+                          Tip: type / for formatting.
+                        </div>
+                      </div>
+                    )}
                     <RichTextEditor
                       ref={editorRef}
                       value={data.document.content}
