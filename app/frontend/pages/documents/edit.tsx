@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { useAutoSave } from "@/hooks/useAutoSave"
-import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
@@ -40,11 +39,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     published_at: document.published_at ?? null
   })
   const editorRef = useRef<RichTextEditorRef>(null)
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  const [toolbarHeight, setToolbarHeight] = useState(0)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
-  const keyboardOffset = useKeyboardOffset()
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
@@ -56,17 +52,6 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
       published_at: document.published_at ?? null
     })
   }, [document.id, document.published_at, document.status, document.updated_at])
-
-  useEffect(() => {
-    const updateToolbarHeight = () => {
-      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
-      setToolbarHeight((prev) => (prev === height ? prev : height))
-    }
-
-    updateToolbarHeight()
-    window.addEventListener("resize", updateToolbarHeight)
-    return () => window.removeEventListener("resize", updateToolbarHeight)
-  }, [])
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
@@ -318,116 +303,98 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const isError = autoSave.saveStatus === 'error'
   const isSaved = autoSave.saveStatus === 'saved'
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10 gap-6"
+  const shellPaddingClass = "w-full px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10 gap-6"
   const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
     "sticky top-0 z-20 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
   )
-  const mobileToolbarWrapperClass = cn(
-    "fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80",
-    "sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0"
-  )
-  const mobileToolbarInnerClass = "w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0"
   const contentInsetClass = "px-0"
-  const scrollBottomOffset = keyboardOffset ? toolbarHeight + keyboardOffset : 0
   return (
-    <div className="composer-theme min-h-screen bg-background">
-      <AppLayout showHeader={false}>
+    <div className="composer-theme min-h-svh h-dvh bg-background">
+      <AppLayout showHeader={false} showFooter={false}>
         <Head title={`Edit: ${document.title || "Untitled Document"}`} />
 
-        <div className={cn("h-full flex flex-col", pageBackgroundClass)}>
-          <div className="flex-1 overflow-visible">
-            <div className={cn(toolbarWrapperClass)}>
-              <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-                <div className="flex items-center gap-3">
+        <div className={cn("flex h-full flex-col", pageBackgroundClass)}>
+          <div className={cn(toolbarWrapperClass)}>
+            <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+              <div className="flex items-center gap-3">
+                <Button
+                  asChild
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0 text-[#5c4d35]"
+                >
+                  <a href={dashboardPath()} aria-label="Back to dashboard">
+                    <ArrowLeft className="h-4 w-4" />
+                  </a>
+                </Button>
+                <button
+                  onClick={autoSave.saveStatus === 'error' ? () => void autoSave.retry() : undefined}
+                  aria-label={`Save status: ${saveStatusLabel}`}
+                  className={cn(
+                    "inline-flex items-center rounded-full border border-transparent bg-transparent px-1 py-1 text-xs font-medium text-[#5c4d35] transition-colors",
+                    autoSave.saveStatus === 'error' ? "hover:bg-white/60 cursor-pointer" : "cursor-default"
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "block h-2.5 w-2.5 rounded-full bg-amber-400",
+                      (isTyping || isSaving) && "bg-amber-400",
+                      isSaved && "bg-emerald-500",
+                      isError && "bg-red-500",
+                      isSaving && "animate-pulse"
+                    )}
+                  />
+                  <span className="sr-only">{saveStatusLabel}</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {publicPostUrl ? (
                   <Button
                     asChild
                     size="sm"
                     variant="ghost"
-                    className="h-7 w-7 p-0 text-[#5c4d35]"
+                    className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
                   >
-                    <a href={dashboardPath()} aria-label="Back to dashboard">
-                      <ArrowLeft className="h-4 w-4" />
+                    <a href={publicPostUrl} aria-label="Preview public post">
+                      <Eye className="mr-1 h-3.5 w-3.5" />
+                      Preview
                     </a>
                   </Button>
-                  <button
-                    onClick={autoSave.saveStatus === 'error' ? () => void autoSave.retry() : undefined}
-                    aria-label={`Save status: ${saveStatusLabel}`}
-                    className={cn(
-                      "inline-flex items-center rounded-full border border-transparent bg-transparent px-1 py-1 text-xs font-medium text-[#5c4d35] transition-colors",
-                      autoSave.saveStatus === 'error' ? "hover:bg-white/60 cursor-pointer" : "cursor-default"
-                    )}
-                  >
-                    <span
-                      aria-hidden
-                      className={cn(
-                        "block h-2.5 w-2.5 rounded-full bg-amber-400",
-                        (isTyping || isSaving) && "bg-amber-400",
-                        isSaved && "bg-emerald-500",
-                        isError && "bg-red-500",
-                        isSaving && "animate-pulse"
-                      )}
-                    />
-                    <span className="sr-only">{saveStatusLabel}</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {publicPostUrl ? (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 text-xs font-semibold text-[#5c4d35]"
-                    >
-                      <a href={publicPostUrl} aria-label="Preview public post">
-                        <Eye className="mr-1 h-3.5 w-3.5" />
-                        Preview
-                      </a>
-                    </Button>
-                  ) : null}
-                  <Button
-                    onClick={() => void handlePublish()}
-                    disabled={!canPublishNow || isPublishing}
-                    size="sm"
-                    aria-label={publishButtonLabel}
-                    className="rounded-full bg-[#2b2417] px-4 text-xs font-semibold text-white hover:bg-[#2b2417]/90 disabled:opacity-80"
-                  >
-                    {isPublishing ? (
-                      <>
-                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                        Publishing...
-                      </>
-                    ) : (
-                      publishButtonLabel
-                    )}
-                  </Button>
-                </div>
+                ) : null}
+                <Button
+                  onClick={() => void handlePublish()}
+                  disabled={!canPublishNow || isPublishing}
+                  size="sm"
+                  aria-label={publishButtonLabel}
+                  className="rounded-full bg-[#2b2417] px-4 text-xs font-semibold text-white hover:bg-[#2b2417]/90 disabled:opacity-80"
+                >
+                  {isPublishing ? (
+                    <>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    publishButtonLabel
+                  )}
+                </Button>
               </div>
             </div>
+          </div>
 
-            <div
-              className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}
-              style={{
-                "--editor-toolbar-height": `${toolbarHeight}px`,
-                "--editor-keyboard-offset": `${keyboardOffset}px`,
-              } as React.CSSProperties}
-            >
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}>
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
-                    <div
-                      ref={toolbarRef}
-                      className={cn(mobileToolbarWrapperClass, "transition-transform duration-200")}
-                      style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
-                    >
-                      <div className={mobileToolbarInnerClass}>
-                        <EditorToolbar
-                          editor={editor}
-                          layout="scroll"
-                          className="mb-0 gap-1 sm:mb-2 sm:gap-2"
-                        />
-                      </div>
+                    <div className="hidden sm:block">
+                      <EditorToolbar
+                        editor={editor}
+                        layout="scroll"
+                        className="mb-2 gap-2"
+                      />
                     </div>
                     <div className="space-y-1.5 mb-6">
                       <Input
@@ -511,9 +478,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                       onChange={handleContentChange}
                       placeholder={isNewDocument && isFirstDocument ? "Start typing your first keystroke-verified document..." : "Start writing your document..."}
                       sentenceCaseAfterPeriod
-                      scrollBottomOffset={scrollBottomOffset}
                       className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)] touch-manipulation"
-                      textareaClassName="px-0 pt-0 pb-[calc(var(--editor-toolbar-height)+var(--editor-keyboard-offset)+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
+                      textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
                       placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
                       onEditorReady={setEditor}
                     />
@@ -523,6 +489,15 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="sm:hidden border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <div className="mx-auto w-full max-w-6xl px-4 py-2">
+              <EditorToolbar
+                editor={editor}
+                layout="scroll"
+                className="mb-0 gap-1"
+              />
             </div>
           </div>
         </div>

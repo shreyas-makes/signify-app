@@ -17,7 +17,6 @@ interface RichTextEditorProps {
   placeholderClassName?: string
   onEditorReady?: (editor: Editor) => void
   sentenceCaseAfterPeriod?: boolean
-  scrollBottomOffset?: number
 }
 
 export interface RichTextEditorRef {
@@ -40,7 +39,6 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       placeholderClassName,
       onEditorReady,
       sentenceCaseAfterPeriod = false,
-      scrollBottomOffset = 0,
     },
     ref
   ) => {
@@ -68,8 +66,6 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     }, [disabled, textareaClassName])
 
     const editorProps = useMemo(() => {
-      const resolvedBottomOffset = Math.max(0, scrollBottomOffset)
-
       return {
         attributes: editorAttributes,
         handleTextInput: (view, from, to, text) => {
@@ -83,20 +79,8 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           view.dispatch(tr)
           return true
         },
-        handleScrollToSelection: (view) => {
-          if (resolvedBottomOffset <= 0 || typeof window === "undefined") return false
-          const coords = view.coordsAtPos(view.state.selection.head)
-          const viewportHeight = window.visualViewport?.height ?? window.innerHeight
-          const visibleBottom = viewportHeight - resolvedBottomOffset
-          if (coords.bottom > visibleBottom) {
-            const delta = coords.bottom - visibleBottom + 8
-            window.scrollBy({ top: delta, behavior: "auto" })
-            return true
-          }
-          return false
-        },
       }
-    }, [editorAttributes, scrollBottomOffset, sentenceCaseAfterPeriod])
+    }, [editorAttributes, sentenceCaseAfterPeriod])
 
     const editor = useEditor({
       content: value,

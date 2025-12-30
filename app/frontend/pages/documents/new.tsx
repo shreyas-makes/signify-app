@@ -1,14 +1,13 @@
 import { Head, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
 import { ArrowLeft, Eye, Pencil, Save } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
-import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import AppLayout from "@/layouts/app-layout"
 import { dashboardPath, documentsPath } from "@/routes"
 
@@ -24,10 +23,6 @@ export default function DocumentsNew() {
   const [wordCount, setWordCount] = useState(0)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
-  const editorRef = useRef<RichTextEditorRef>(null)
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  const [toolbarHeight, setToolbarHeight] = useState(0)
-  const keyboardOffset = useKeyboardOffset()
 
   // Update word count when content changes
   useEffect(() => {
@@ -53,24 +48,12 @@ export default function DocumentsNew() {
 
   const previewClassName =
     "prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#322718] prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
-  const scrollBottomOffset = keyboardOffset ? toolbarHeight + keyboardOffset : 0
-
-  useEffect(() => {
-    const updateToolbarHeight = () => {
-      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
-      setToolbarHeight((prev) => (prev === height ? prev : height))
-    }
-
-    updateToolbarHeight()
-    window.addEventListener("resize", updateToolbarHeight)
-    return () => window.removeEventListener("resize", updateToolbarHeight)
-  }, [isPreview])
 
   return (
-    <AppLayout showHeader={false}>
+    <AppLayout showHeader={false} showFooter={false}>
       <Head title="New Document" />
 
-      <div className="editor-body min-h-svh flex flex-col bg-background">
+      <div className="editor-body min-h-svh h-dvh flex flex-col bg-background">
         <div className="sticky top-0 z-10 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
             <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0 text-[#5c4d35]">
@@ -116,104 +99,103 @@ export default function DocumentsNew() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          <form id="document-form" onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div
-              className="flex-1 flex flex-col max-w-4xl w-full px-4 pt-4 pb-24 sm:px-6 sm:pt-6 sm:pb-10"
-              style={{
-                "--editor-toolbar-height": `${toolbarHeight}px`,
-                "--editor-keyboard-offset": `${keyboardOffset}px`,
-              } as React.CSSProperties}
-            >
-              <div className="mb-2 space-y-2">
-                {!isPreview && (
-                  <div
-                    ref={toolbarRef}
-                    className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:static sm:border-0 sm:bg-transparent sm:pb-0 sm:backdrop-blur-0"
-                    style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
-                  >
-                    <div className="w-full max-w-4xl px-4 py-2 sm:px-0 sm:py-0">
-                      <EditorToolbar
-                        editor={editor}
-                        layout="scroll"
-                        className="mb-0 gap-1 sm:mb-2 sm:gap-2"
-                      />
-                    </div>
-                  </div>
-                )}
-                {isPreview ? (
-                  <div className="space-y-1.5 mb-6">
-                    <h1 className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05]">
-                      {data.document.title.trim() || "Untitled Document"}
-                    </h1>
-                    {data.document.subtitle.trim() && (
-                      <p className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41]">
-                        {data.document.subtitle}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-1.5 mb-6">
-                    <Input
-                      id="title"
-                      name="title"
-                      type="text"
-                      value={data.document.title}
-                      onChange={(e) => setData('document.title', e.target.value)}
-                      placeholder="Untitled Document"
-                      required
-                      autoFocus
-                      className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] md:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
-                    />
-                    {errors['document.title'] && (
-                      <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
-                    )}
-                    <Input
-                      id="subtitle"
-                      name="subtitle"
-                      type="text"
-                      value={data.document.subtitle}
-                      onChange={(e) => setData('document.subtitle', e.target.value)}
-                      placeholder="Add a subtitle"
-                      className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] rounded-none shadow-none h-auto"
-                    />
-                    {errors['document.subtitle'] && (
-                      <p className="text-sm text-destructive mt-2">{errors['document.subtitle']}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1">
-                {isPreview ? (
-                  <div className={previewClassName}>
-                    {data.document.content.trim() ? (
-                      <div dangerouslySetInnerHTML={{ __html: data.document.content }} />
-                    ) : (
-                      <p className="text-[#a89a86]">Nothing to preview yet.</p>
-                    )}
-                  </div>
-                ) : (
-                  <RichTextEditor
-                    ref={editorRef}
-                    value={data.document.content}
-                    onChange={handleContentChange}
-                    placeholder="Start writing your document..."
-                    sentenceCaseAfterPeriod
-                    scrollBottomOffset={scrollBottomOffset}
-                    className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
-                    textareaClassName="px-0 pt-0 pb-[calc(var(--editor-toolbar-height)+var(--editor-keyboard-offset)+env(safe-area-inset-bottom))] text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent sm:pb-0"
-                    placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
-                    onEditorReady={setEditor}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <form
+            id="document-form"
+            onSubmit={handleSubmit}
+            className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10"
+          >
+            <div className="mb-2 space-y-2">
+              {!isPreview && (
+                <div className="hidden sm:block">
+                  <EditorToolbar
+                    editor={editor}
+                    layout="scroll"
+                    className="mb-2 gap-2"
                   />
-                )}
-                {errors['document.content'] && (
-                  <p className="text-sm text-destructive mt-2">{errors['document.content']}</p>
-                )}
-              </div>
+                </div>
+              )}
+              {isPreview ? (
+                <div className="space-y-1.5 mb-6">
+                  <h1 className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05]">
+                    {data.document.title.trim() || "Untitled Document"}
+                  </h1>
+                  {data.document.subtitle.trim() && (
+                    <p className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41]">
+                      {data.document.subtitle}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1.5 mb-6">
+                  <Input
+                    id="title"
+                    name="title"
+                    type="text"
+                    value={data.document.title}
+                    onChange={(e) => setData('document.title', e.target.value)}
+                    placeholder="Untitled Document"
+                    required
+                    autoFocus
+                    className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] md:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4]"
+                  />
+                  {errors['document.title'] && (
+                    <p className="text-sm text-destructive mt-2">{errors['document.title']}</p>
+                  )}
+                  <Input
+                    id="subtitle"
+                    name="subtitle"
+                    type="text"
+                    value={data.document.subtitle}
+                    onChange={(e) => setData('document.subtitle', e.target.value)}
+                    placeholder="Add a subtitle"
+                    className="text-[0.95rem] sm:text-xl md:text-xl lg:text-2xl text-[#6b5a41] border-none bg-transparent p-0 focus-visible:ring-0 placeholder:text-[#cbbba4] rounded-none shadow-none h-auto"
+                  />
+                  {errors['document.subtitle'] && (
+                    <p className="text-sm text-destructive mt-2">{errors['document.subtitle']}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1">
+              {isPreview ? (
+                <div className={previewClassName}>
+                  {data.document.content.trim() ? (
+                    <div dangerouslySetInnerHTML={{ __html: data.document.content }} />
+                  ) : (
+                    <p className="text-[#a89a86]">Nothing to preview yet.</p>
+                  )}
+                </div>
+              ) : (
+                <RichTextEditor
+                  value={data.document.content}
+                  onChange={handleContentChange}
+                  placeholder="Start writing your document..."
+                  sentenceCaseAfterPeriod
+                  className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
+                  textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
+                  placeholderClassName="left-0 top-0 p-0 text-[1.1rem] leading-[1.95]"
+                  onEditorReady={setEditor}
+                />
+              )}
+              {errors['document.content'] && (
+                <p className="text-sm text-destructive mt-2">{errors['document.content']}</p>
+              )}
             </div>
           </form>
         </div>
+        {!isPreview && (
+          <div className="sm:hidden border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <div className="mx-auto w-full max-w-4xl px-4 py-2">
+              <EditorToolbar
+                editor={editor}
+                layout="scroll"
+                className="mb-0 gap-1"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </AppLayout>
   )

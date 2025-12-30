@@ -1,10 +1,18 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import { ArrowUpRight } from 'lucide-react'
 import ScrollCircleText from '@/components/sandbox/scroll-circle-text'
 import { Button } from '@/components/ui/button'
-import { publicPostsPath, signUpPath } from '@/routes'
+import { dashboardPath, newDocumentPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
+import type { SharedData } from '@/types'
 
 export default function SandboxV3() {
+  const page = usePage<SharedData>()
+  const { auth } = page.props
+  const isSignedIn = Boolean(auth.user)
+  const arrowHref = isSignedIn ? dashboardPath() : signInPath()
+  const arrowLabel = isSignedIn ? 'Open dashboard' : 'Sign in'
+  const writingHref = isSignedIn ? newDocumentPath() : signUpPath()
+
   return (
     <>
       <Head title="Signify - Sandbox V3" />
@@ -14,16 +22,16 @@ export default function SandboxV3() {
           <div className="circle-sticky">
             <ScrollCircleText variant="pair" curve={0.003} />
             <div className="circle-shell">
-              <a href="/sign_in" className="circle-arrow" aria-label="Sign in">
+              <Link href={arrowHref} className="circle-arrow" aria-label={arrowLabel}>
                 <ArrowUpRight className="circle-arrow-icon" />
-              </a>
+              </Link>
             </div>
             <div className="circle-footer">
               <Button asChild variant="outline" size="sm" className="circle-footer-button">
                 <Link href={publicPostsPath()}>Explore</Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="circle-footer-button">
-                <Link href={signUpPath()}>Start writing</Link>
+                <Link href={writingHref}>Start writing</Link>
               </Button>
             </div>
           </div>
@@ -45,18 +53,24 @@ export default function SandboxV3() {
               #f2eee6;
             color: var(--ink);
             min-height: 100vh;
+            min-height: 100svh;
+            min-height: 100dvh;
             overflow: hidden;
           }
 
           .circle-hero {
             position: relative;
             min-height: 100vh;
+            min-height: 100svh;
+            min-height: 100dvh;
           }
 
           .circle-sticky {
             position: sticky;
             top: 0;
             height: 100vh;
+            height: 100svh;
+            height: 100dvh;
             overflow: hidden;
             display: grid;
             place-items: center;
@@ -114,11 +128,12 @@ export default function SandboxV3() {
 
           .circle-footer {
             position: absolute;
-            bottom: 32px;
+            bottom: calc(24px + env(safe-area-inset-bottom));
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
+            z-index: 3;
           }
 
           .circle-footer-button {
@@ -142,6 +157,17 @@ export default function SandboxV3() {
             .circle-arrow-icon {
               width: 22px;
               height: 22px;
+            }
+
+            .circle-footer {
+              flex-direction: column;
+              width: min(86vw, 280px);
+              gap: 8px;
+            }
+
+            .circle-footer-button {
+              width: 100%;
+              justify-content: center;
             }
           }
 
