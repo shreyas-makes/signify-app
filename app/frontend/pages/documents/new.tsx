@@ -1,7 +1,7 @@
 import { Head, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
 import { ArrowLeft, Eye, Pencil, Save } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { EditorToolbar } from "@/components/editor-toolbar"
@@ -23,8 +23,6 @@ export default function DocumentsNew() {
   const [wordCount, setWordCount] = useState(0)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
-  const headerRef = useRef<HTMLDivElement>(null)
-  const [headerHeight, setHeaderHeight] = useState(0)
 
   // Update word count when content changes
   useEffect(() => {
@@ -50,29 +48,13 @@ export default function DocumentsNew() {
 
   const previewClassName =
     "prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#322718] prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
-  const toolbarOffset = headerHeight ? `${headerHeight}px` : "3.25rem"
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const updateHeaderHeight = () => {
-      const height = headerRef.current?.getBoundingClientRect().height ?? 0
-      setHeaderHeight((prev) => (prev === height ? prev : height))
-    }
-
-    updateHeaderHeight()
-    window.addEventListener("resize", updateHeaderHeight)
-    return () => window.removeEventListener("resize", updateHeaderHeight)
-  }, [])
 
   return (
     <AppLayout showHeader={false} showFooter={false}>
       <Head title="New Document" />
 
       <div className="editor-body min-h-svh flex flex-col bg-background">
-        <div
-          ref={headerRef}
-          className="sticky top-0 z-30 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
-        >
+        <div className="border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
             <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0 text-[#5c4d35]">
               <a href={dashboardPath()}>
@@ -119,10 +101,7 @@ export default function DocumentsNew() {
 
         <div className="flex-1">
           {!isPreview && (
-            <div
-              className="sticky z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0"
-              style={{ top: toolbarOffset }}
-            >
+            <div className="sticky top-0 z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0">
               <div className="mx-auto w-full max-w-4xl px-4 py-2 sm:px-6 sm:py-0">
                 <EditorToolbar
                   editor={editor}
