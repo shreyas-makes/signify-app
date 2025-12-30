@@ -5,6 +5,7 @@ import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react"
 
+import { SlashCommand } from "@/components/editor/slash-command"
 import { cn } from "@/lib/utils"
 
 interface RichTextEditorProps {
@@ -91,6 +92,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
         }),
         Underline,
         Highlight,
+        SlashCommand,
       ],
       editorProps,
       onUpdate: ({ editor }) => {

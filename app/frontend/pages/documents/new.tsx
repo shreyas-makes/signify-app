@@ -1,10 +1,9 @@
 import { Head, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
 import { ArrowLeft, Eye, Pencil, Save } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
-import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
@@ -23,6 +22,7 @@ export default function DocumentsNew() {
   const [wordCount, setWordCount] = useState(0)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
+  const slashHintShown = useRef(false)
 
   // Update word count when content changes
   useEffect(() => {
@@ -31,6 +31,19 @@ export default function DocumentsNew() {
     const words = textContent ? textContent.split(/\s+/).length : 0
     setWordCount(words)
   }, [data.document.content])
+
+  useEffect(() => {
+    if (!editor) return
+    const handleFocus = () => {
+      if (slashHintShown.current) return
+      slashHintShown.current = true
+      toast.message("Tip: type / to format text (headings, lists, bold, italic, underline, highlight, quote).")
+    }
+    editor.on("focus", handleFocus)
+    return () => {
+      editor.off("focus", handleFocus)
+    }
+  }, [editor])
 
   const handleContentChange = (content: string) => {
     setData('document.content', content)
@@ -99,18 +112,7 @@ export default function DocumentsNew() {
           </div>
         </div>
 
-        <div className="flex-1 pt-12">
-          {!isPreview && (
-            <div className="fixed left-0 right-0 top-0 z-30 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-              <div className="mx-auto w-full max-w-4xl px-4 py-2 sm:px-6 sm:py-0">
-                <EditorToolbar
-                  editor={editor}
-                  layout="scroll"
-                  className="mb-0 gap-1 sm:mb-2 sm:gap-2"
-                />
-              </div>
-            </div>
-          )}
+        <div className="flex-1">
           <form
             id="document-form"
             onSubmit={handleSubmit}
@@ -173,7 +175,7 @@ export default function DocumentsNew() {
                 <RichTextEditor
                   value={data.document.content}
                   onChange={handleContentChange}
-                  placeholder="Start writing your document..."
+                  placeholder="Start writing your document... Type / for formatting commands."
                   sentenceCaseAfterPeriod
                   className="h-full min-h-[320px] sm:min-h-[calc(100vh-300px)]"
                   textareaClassName="p-0 text-[1.1rem] leading-[1.95] text-[#3f3422] bg-transparent"
