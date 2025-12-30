@@ -133,6 +133,18 @@ export default function SandboxV3() {
             border-color: #1f1f1f;
           }
 
+          @media (max-width: 640px) {
+            .circle-arrow {
+              width: 56px;
+              height: 56px;
+            }
+
+            .circle-arrow-icon {
+              width: 22px;
+              height: 22px;
+            }
+          }
+
           @media (prefers-reduced-motion: reduce) {
             .circle-canvas {
               display: none;
