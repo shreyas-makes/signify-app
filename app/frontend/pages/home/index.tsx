@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import PublicLayout from '@/layouts/public-layout'
-import { dashboardPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
+import { dashboardPath, featuresPath, publicPostsPath, signUpPath } from '@/routes'
 import type { SharedData } from '@/types'
 
 export default function Welcome() {
@@ -33,21 +33,28 @@ export default function Welcome() {
                 <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                    No AI generated stories. Just original work and lived ideas.
                 </p>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <Button size="lg" asChild className="group w-full gap-2 rounded-full sm:w-auto">
-                    <Link href={auth.user ? dashboardPath() : signUpPath()}>
-                      {auth.user ? 'Open dashboard' : 'Start writing'}
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    asChild
-                    className="w-full rounded-full sm:w-auto"
-                  >
-                    <Link href={publicPostsPath()}>Discover</Link>
-                  </Button>
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <Button size="lg" asChild className="group w-full gap-2 rounded-full sm:w-auto">
+                      <Link href={auth.user ? dashboardPath() : signUpPath()}>
+                        {auth.user ? 'Open dashboard' : 'Start writing'}
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    </Button>
+                    <Button size="lg" asChild className="w-full rounded-full sm:w-auto">
+                      <Link href={publicPostsPath()}>Explore</Link>
+                    </Button>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      asChild
+                      className="w-full rounded-full sm:w-auto"
+                    >
+                      <Link href={featuresPath()}>How it works</Link>
+                    </Button>
+                  </div>
                 </div>
                 
               </div>

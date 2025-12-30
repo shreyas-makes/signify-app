@@ -2,7 +2,14 @@ import { Head, Link, usePage } from '@inertiajs/react'
 import { ArrowUpRight } from 'lucide-react'
 import ScrollCircleText from '@/components/sandbox/scroll-circle-text'
 import { Button } from '@/components/ui/button'
-import { dashboardPath, newDocumentPath, publicPostsPath, signInPath, signUpPath } from '@/routes'
+import {
+  dashboardPath,
+  featuresPath,
+  newDocumentPath,
+  publicPostsPath,
+  signInPath,
+  signUpPath,
+} from '@/routes'
 import type { SharedData } from '@/types'
 
 export default function SandboxV3() {
@@ -26,11 +33,31 @@ export default function SandboxV3() {
                 <ArrowUpRight className="circle-arrow-icon" />
               </Link>
             </div>
-            <div className="circle-footer">
-              <Button asChild variant="outline" size="sm" className="circle-footer-button">
+            <div className="circle-top-actions">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="circle-footer-button circle-footer-button-top"
+              >
                 <Link href={publicPostsPath()}>Explore</Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="circle-footer-button">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="circle-footer-button circle-footer-button-top"
+              >
+                <Link href={featuresPath()}>How it works</Link>
+              </Button>
+            </div>
+            <div className="circle-bottom-actions">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="circle-footer-button circle-footer-button-primary"
+              >
                 <Link href={writingHref}>Start writing</Link>
               </Button>
             </div>
@@ -126,14 +153,22 @@ export default function SandboxV3() {
             height: 28px;
           }
 
-          .circle-footer {
+          .circle-top-actions,
+          .circle-bottom-actions {
             position: absolute;
-            bottom: calc(24px + env(safe-area-inset-bottom));
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
             z-index: 3;
+          }
+
+          .circle-top-actions {
+            top: calc(20px + env(safe-area-inset-top));
+          }
+
+          .circle-bottom-actions {
+            bottom: calc(24px + env(safe-area-inset-bottom));
           }
 
           .circle-footer-button {
@@ -148,6 +183,29 @@ export default function SandboxV3() {
             border-color: #1f1f1f;
           }
 
+          .circle-footer-button-primary {
+            background: #1f1f1f;
+            border-color: #1f1f1f;
+            color: #f6f2ea;
+          }
+
+          .circle-footer-button-primary:hover {
+            background: #2a2a2a;
+            border-color: #2a2a2a;
+          }
+
+          .circle-footer-button-top {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #1f1f1f;
+            box-shadow: 0 10px 24px rgba(31, 31, 31, 0.12);
+          }
+
+          .circle-footer-button-top:hover {
+            background: #f2f2f2;
+            border-color: #f2f2f2;
+          }
+
           @media (max-width: 640px) {
             .circle-arrow {
               width: 56px;
@@ -159,7 +217,8 @@ export default function SandboxV3() {
               height: 22px;
             }
 
-            .circle-footer {
+            .circle-top-actions,
+            .circle-bottom-actions {
               flex-direction: column;
               width: min(86vw, 280px);
               gap: 8px;
