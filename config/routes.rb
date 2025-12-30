@@ -78,6 +78,9 @@ Rails.application.routes.draw do
   end
 
   get "sandbox", to: "sandbox#index"
+  get "sandbox/v1", to: "sandbox#v1"
+  get "sandbox/v2", to: "sandbox#v2"
+  get "sandbox/v3", to: "sandbox#v3"
   
   # Admin interface
   namespace :admin do
@@ -88,7 +91,7 @@ Rails.application.routes.draw do
 
   get "features", to: "features#index"
   
-  root "home#index"
+  root "sandbox#v3"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
