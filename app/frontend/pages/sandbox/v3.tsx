@@ -167,6 +167,7 @@ export default function SandboxV3() {
 
           .circle-top-actions {
             top: calc(20px + env(safe-area-inset-top));
+            gap: 0;
           }
 
           .circle-bottom-actions {
@@ -252,6 +253,20 @@ export default function SandboxV3() {
               width: 100%;
               justify-content: center;
             }
+
+            .circle-top-actions {
+              flex-direction: row;
+              width: auto;
+              gap: 0;
+            }
+
+            .circle-top-actions .circle-footer-button {
+              width: auto;
+            }
+          }
+
+          .circle-top-actions .circle-footer-button-top + .circle-footer-button-top {
+            border-left-width: 0;
           }
 
           @media (prefers-reduced-motion: reduce) {
