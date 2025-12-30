@@ -8,6 +8,7 @@ import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import AppLayout from "@/layouts/app-layout"
 import { dashboardPath, documentsPath } from "@/routes"
 
@@ -23,6 +24,7 @@ export default function DocumentsNew() {
   const [wordCount, setWordCount] = useState(0)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
+  const keyboardOffset = useKeyboardOffset()
 
   // Update word count when content changes
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function DocumentsNew() {
           <form
             id="document-form"
             onSubmit={handleSubmit}
-            className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10"
+            className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-6 sm:pb-10"
           >
             <div className="mb-2 space-y-2">
               {!isPreview && (
@@ -186,7 +188,10 @@ export default function DocumentsNew() {
           </form>
         </div>
         {!isPreview && (
-          <div className="sm:hidden border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div
+            className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:hidden"
+            style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
+          >
             <div className="mx-auto w-full max-w-4xl px-4 py-2">
               <EditorToolbar
                 editor={editor}

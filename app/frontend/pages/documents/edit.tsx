@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { useAutoSave } from "@/hooks/useAutoSave"
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
@@ -41,6 +42,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const editorRef = useRef<RichTextEditorRef>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
+  const keyboardOffset = useKeyboardOffset()
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
@@ -303,7 +305,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const isError = autoSave.saveStatus === 'error'
   const isSaved = autoSave.saveStatus === 'saved'
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "w-full px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10 gap-6"
+  const shellPaddingClass =
+    "w-full px-4 pt-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-6 sm:pb-10 gap-6"
   const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
     "sticky top-0 z-20 border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
@@ -491,7 +494,10 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
               </div>
             </div>
           </div>
-          <div className="sm:hidden border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div
+            className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:hidden"
+            style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
+          >
             <div className="mx-auto w-full max-w-6xl px-4 py-2">
               <EditorToolbar
                 editor={editor}
