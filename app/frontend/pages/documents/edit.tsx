@@ -316,7 +316,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
   const isError = autoSave.saveStatus === 'error'
   const isSaved = autoSave.saveStatus === 'saved'
   const pageBackgroundClass = "bg-background"
-  const shellPaddingClass = "w-full px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10 gap-6"
+  const shellPaddingClass = "w-full px-4 pt-2 pb-10 sm:px-6 sm:pt-4 sm:pb-10 gap-6"
   const editorSurfaceClass = "w-full bg-transparent"
   const toolbarWrapperClass = cn(
     "border-b border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
@@ -400,7 +400,7 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
           <div className="flex-1">
             <div className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}>
               <div className="mt-1 flex-1">
-                <div className="mt-4 space-y-2">
+                <div className="mt-2 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
                     <div className="space-y-1.5 mb-6">
                       <Input
