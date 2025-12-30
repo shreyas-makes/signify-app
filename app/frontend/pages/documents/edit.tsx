@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor, type RichTextEditorRef } from "@/components/ui/rich-text-editor"
 import { useAutoSave } from "@/hooks/useAutoSave"
-import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import { useKeystrokeCapture } from "@/hooks/useKeystrokeCapture"
 import { usePastePrevention } from "@/hooks/usePastePrevention"
 import AppLayout from "@/layouts/app-layout"
@@ -40,11 +39,8 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
     published_at: document.published_at ?? null
   })
   const editorRef = useRef<RichTextEditorRef>(null)
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  const [toolbarHeight, setToolbarHeight] = useState(0)
   const titleInputRef = useRef<HTMLInputElement>(null)
   const subtitleInputRef = useRef<HTMLInputElement>(null)
-  const keyboardOffset = useKeyboardOffset()
   const publicPostUrl = document.public_slug ? `/posts/${document.public_slug}` : null
   const hasExistingDocuments = documents.some((doc) => doc.id !== document.id)
   const isFirstDocument = !hasExistingDocuments
@@ -56,18 +52,6 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
       published_at: document.published_at ?? null
     })
   }, [document.id, document.published_at, document.status, document.updated_at])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const updateToolbarHeight = () => {
-      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
-      setToolbarHeight((prev) => (prev === height ? prev : height))
-    }
-
-    updateToolbarHeight()
-    window.addEventListener("resize", updateToolbarHeight)
-    return () => window.removeEventListener("resize", updateToolbarHeight)
-  }, [])
 
   // Check if this is a new document (just created)
   const isNewDocument = document.title === "Untitled Document" && !document.content.trim() && wordCount === 0
@@ -400,21 +384,20 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
             </div>
           </div>
 
-          <div
-            className="flex-1 min-h-0 overflow-y-auto pb-[var(--editor-toolbar-height)] sm:pb-0"
-            style={{ "--editor-toolbar-height": `${toolbarHeight}px` } as React.CSSProperties}
-          >
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="sticky top-0 z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0">
+              <div className="mx-auto w-full max-w-6xl px-4 py-2 sm:px-6 sm:py-0">
+                <EditorToolbar
+                  editor={editor}
+                  layout="scroll"
+                  className="mb-0 gap-1 sm:mb-2 sm:gap-2"
+                />
+              </div>
+            </div>
             <div className={cn("mx-auto flex w-full max-w-6xl flex-col", shellPaddingClass)}>
               <div className="mt-1 flex-1">
                 <div className="mt-4 space-y-2">
                   <div className={cn("space-y-2 pt-1 sm:pt-2", contentInsetClass)}>
-                    <div className="hidden sm:block">
-                      <EditorToolbar
-                        editor={editor}
-                        layout="scroll"
-                        className="mb-2 gap-2"
-                      />
-                    </div>
                     <div className="space-y-1.5 mb-6">
                       <Input
                         ref={titleInputRef}
@@ -508,19 +491,6 @@ export default function DocumentsEdit({ document, documents }: DocumentsEditProp
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-          <div
-            ref={toolbarRef}
-            className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:hidden"
-            style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
-          >
-            <div className="mx-auto w-full max-w-6xl px-4 py-2">
-              <EditorToolbar
-                editor={editor}
-                layout="scroll"
-                className="mb-0 gap-1"
-              />
             </div>
           </div>
         </div>

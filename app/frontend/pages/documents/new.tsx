@@ -1,14 +1,13 @@
 import { Head, useForm } from "@inertiajs/react"
 import type { Editor } from "@tiptap/react"
 import { ArrowLeft, Eye, Pencil, Save } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { EditorToolbar } from "@/components/editor-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
-import { useKeyboardOffset } from "@/hooks/useKeyboardOffset"
 import AppLayout from "@/layouts/app-layout"
 import { dashboardPath, documentsPath } from "@/routes"
 
@@ -24,9 +23,6 @@ export default function DocumentsNew() {
   const [wordCount, setWordCount] = useState(0)
   const [isPreview, setIsPreview] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  const [toolbarHeight, setToolbarHeight] = useState(0)
-  const keyboardOffset = useKeyboardOffset()
 
   // Update word count when content changes
   useEffect(() => {
@@ -52,24 +48,6 @@ export default function DocumentsNew() {
 
   const previewClassName =
     "prose prose-lg max-w-none text-[#3f3422] prose-headings:font-semibold prose-headings:text-[#322718] prose-blockquote:border-l-[#eadcc6] prose-blockquote:text-[#5c4d35]"
-  const toolbarSpace = isPreview ? 0 : toolbarHeight
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    if (isPreview) {
-      setToolbarHeight(0)
-      return
-    }
-
-    const updateToolbarHeight = () => {
-      const height = toolbarRef.current?.getBoundingClientRect().height ?? 0
-      setToolbarHeight((prev) => (prev === height ? prev : height))
-    }
-
-    updateToolbarHeight()
-    window.addEventListener("resize", updateToolbarHeight)
-    return () => window.removeEventListener("resize", updateToolbarHeight)
-  }, [isPreview])
 
   return (
     <AppLayout showHeader={false} showFooter={false}>
@@ -121,25 +99,24 @@ export default function DocumentsNew() {
           </div>
         </div>
 
-        <div
-          className="flex-1 min-h-0 overflow-y-auto pb-[var(--editor-toolbar-height)] sm:pb-0"
-          style={{ "--editor-toolbar-height": `${toolbarSpace}px` } as React.CSSProperties}
-        >
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {!isPreview && (
+            <div className="sticky top-0 z-20 border-b border-[#eadcc6] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-0">
+              <div className="mx-auto w-full max-w-4xl px-4 py-2 sm:px-6 sm:py-0">
+                <EditorToolbar
+                  editor={editor}
+                  layout="scroll"
+                  className="mb-0 gap-1 sm:mb-2 sm:gap-2"
+                />
+              </div>
+            </div>
+          )}
           <form
             id="document-form"
             onSubmit={handleSubmit}
             className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-4 pb-10 sm:px-6 sm:pt-6 sm:pb-10"
           >
             <div className="mb-2 space-y-2">
-              {!isPreview && (
-                <div className="hidden sm:block">
-                  <EditorToolbar
-                    editor={editor}
-                    layout="scroll"
-                    className="mb-2 gap-2"
-                  />
-                </div>
-              )}
               {isPreview ? (
                 <div className="space-y-1.5 mb-6">
                   <h1 className="text-[2.1rem] font-semibold tracking-tight text-[#322718] sm:text-[3.1rem] lg:text-[3.35rem] leading-[1.2] sm:leading-[1.05]">
@@ -210,21 +187,6 @@ export default function DocumentsNew() {
             </div>
           </form>
         </div>
-        {!isPreview && (
-          <div
-            ref={toolbarRef}
-            className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#eadcc6] bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-transform duration-200 sm:hidden"
-            style={keyboardOffset ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
-          >
-            <div className="mx-auto w-full max-w-4xl px-4 py-2">
-              <EditorToolbar
-                editor={editor}
-                layout="scroll"
-                className="mb-0 gap-1"
-              />
-            </div>
-          </div>
-        )}
       </div>
     </AppLayout>
   )
