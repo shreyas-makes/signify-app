@@ -273,8 +273,8 @@ export default function Welcome() {
                     onPlaying={handleHeroPlaying}
                     onTimeUpdate={handleHeroTimeUpdate}
                   >
-                    <source src="/hero-remotion.webm" type="video/webm" />
                     <source src="/hero-remotion.mp4" type="video/mp4" />
+                    <source src="/hero-remotion.webm" type="video/webm" />
                   </video>
                   {!heroVideoReady ? (
                     <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-[0.4em] text-muted-foreground">
