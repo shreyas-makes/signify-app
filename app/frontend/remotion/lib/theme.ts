@@ -1,0 +1,17 @@
+export const remotionTheme = {
+  background: '#ffffff',
+  paper: '#fdfaf2',
+  paperWarm: '#f6eddd',
+  paperCool: '#eef1f7',
+  ink: '#3f3422',
+  inkMuted: '#5c4d35',
+  border: '#eadfce',
+  accent: '#8a6d44',
+  accentSoft: '#efe1cf',
+  accentBlue: '#6f84c7',
+  accentTeal: '#7da89a',
+  accentRose: '#c98b7b',
+  shadow: 'rgba(15, 23, 42, 0.12)',
+  fontSans: '"Source Sans 3", "SF Pro Text", "Segoe UI", sans-serif',
+  fontSerif: '"Spectral", "Iowan Old Style", Georgia, serif',
+};

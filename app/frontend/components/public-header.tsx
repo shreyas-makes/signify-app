@@ -2,7 +2,7 @@ import { Link, usePage } from "@inertiajs/react"
 
 import AppLogo from "@/components/app-logo"
 import { Button } from "@/components/ui/button"
-import { dashboardPath, publicPostsPath, signInPath, signUpPath } from "@/routes"
+import { dashboardPath, publicPostsPath, rootPath, signInPath, signUpPath } from "@/routes"
 import type { SharedData } from "@/types"
 
 interface PublicHeaderProps {
@@ -11,7 +11,7 @@ interface PublicHeaderProps {
 
 const defaultNavItems = [
   { label: "Discover", href: publicPostsPath() },
-  { label: "Features", href: "/features" },
+  { label: "Features", href: `${rootPath()}#features` },
 ]
 
 export function PublicHeader({ navItems = defaultNavItems }: PublicHeaderProps) {
