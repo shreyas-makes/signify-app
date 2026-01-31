@@ -72,6 +72,13 @@ RSpec.describe "Public::Posts::Keystrokes", type: :request do
         
         # Note: This is an Inertia request, so it would return Inertia JSON format
         expect(response).to have_http_status(:ok)
+        expect(response.content_type).to include("application/json")
+
+        json = JSON.parse(response.body)
+        expect(json).to have_key("keystrokes")
+        expect(json).to have_key("pagination")
+        expect(json["pagination"]["current_page"]).to eq(1)
+        expect(json["pagination"]).to have_key("has_more")
       end
     end
 
@@ -126,6 +133,20 @@ RSpec.describe "Public::Posts::Keystrokes", type: :request do
       %w[event_type key_code character cursor_position sequence_number].each do |field|
         expect(response.body).to include(field)
       end
+    end
+
+    it "returns millisecond timestamps for AJAX pagination responses" do
+      keystroke = document.keystrokes.ordered.first
+
+      get public_post_keystrokes_path(document.public_slug),
+          params: { page: 1 },
+          headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+      json = JSON.parse(response.body)
+      first = json["keystrokes"].find { |item| item["id"] == keystroke.id }
+
+      expect(first).to be_present
+      expect(first["timestamp"]).to be_within(1).of(keystroke.timestamp.to_f * 1000)
     end
   end
 

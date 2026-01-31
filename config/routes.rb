@@ -46,10 +46,14 @@ Rails.application.routes.draw do
   get "posts/:public_slug/keystrokes", to: "public/posts#keystrokes", as: :public_post_keystrokes
   post "posts/:public_slug/kudos", to: "public/posts#kudos", as: :public_post_kudos
   get "authors/:id", to: "public/authors#show", as: :public_author
+  get "p/:public_id", to: "public/verifications#show", as: :public_verification
+  get "u/:username", to: "public/user_feeds#show", as: :public_user_feed
   
   # Data access and verification API
   namespace :api do
     namespace :v1 do
+      resources :verifications, only: [:create]
+      match "verifications", to: "verifications#options", via: :options
       resources :posts, only: [], param: :public_slug do
         member do
           get :data, to: "data_access#show"

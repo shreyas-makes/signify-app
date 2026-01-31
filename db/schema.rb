@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_19_120000) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_31_014000) do
   create_table "documents", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -36,7 +36,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_19_120000) do
   end
 
   create_table "keystrokes", force: :cascade do |t|
-    t.integer "document_id", null: false
+    t.integer "document_id"
     t.integer "event_type"
     t.string "key_code"
     t.string "character"
@@ -45,9 +45,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_19_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "cursor_position"
+    t.integer "verification_id"
     t.index ["document_id", "sequence_number"], name: "index_keystrokes_on_document_id_and_sequence_number"
     t.index ["document_id"], name: "index_keystrokes_on_document_id"
     t.index ["timestamp"], name: "index_keystrokes_on_timestamp"
+    t.index ["verification_id", "sequence_number"], name: "index_keystrokes_on_verification_id_and_sequence_number", unique: true
+    t.index ["verification_id"], name: "index_keystrokes_on_verification_id"
   end
 
   create_table "kudos", force: :cascade do |t|
@@ -80,11 +83,34 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_19_120000) do
     t.string "avatar_url"
     t.text "bio"
     t.datetime "onboarded_at"
+    t.string "username", null: false
+    t.string "api_token"
+    t.index ["api_token"], name: "index_users_on_api_token", unique: true, where: "api_token IS NOT NULL"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["username"], name: "index_users_on_username", unique: true
+  end
+
+  create_table "verifications", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "platform", null: false
+    t.string "content_hash", null: false
+    t.integer "status", default: 0, null: false
+    t.json "keystroke_stats", default: {}, null: false
+    t.json "paste_events", default: {}, null: false
+    t.datetime "start_at"
+    t.datetime "end_at"
+    t.string "public_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["public_id"], name: "index_verifications_on_public_id", unique: true
+    t.index ["user_id", "created_at"], name: "index_verifications_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_verifications_on_user_id"
   end
 
   add_foreign_key "documents", "users"
   add_foreign_key "keystrokes", "documents"
+  add_foreign_key "keystrokes", "verifications"
   add_foreign_key "kudos", "documents"
   add_foreign_key "sessions", "users"
+  add_foreign_key "verifications", "users"
 end

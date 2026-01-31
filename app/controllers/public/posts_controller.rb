@@ -147,7 +147,7 @@ class Public::PostsController < InertiaController
         kudos_count: post.kudos_count,
         author: {
           display_name: post.user.display_name,
-          profile_url: public_author_path(post.user)
+          profile_url: public_user_feed_path(post.user.username)
         },
         excerpt: truncate_content(post.content, 200)
       }
@@ -177,7 +177,7 @@ class Public::PostsController < InertiaController
         display_name: post.user.display_name,
         avatar_url: post.user.avatar_image_url,
         bio: post.user.bio,
-        profile_url: public_author_path(post.user)
+        profile_url: public_user_feed_path(post.user.username)
       },
       verification: {
         keystroke_verified: post.keystroke_count > 0,

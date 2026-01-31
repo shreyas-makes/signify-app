@@ -5,6 +5,7 @@ require "uri"
 
 class User < ApplicationRecord
   has_secure_password
+  has_secure_token :api_token
 
   generates_token_for :email_verification, expires_in: 2.days do
     email
@@ -17,14 +18,19 @@ class User < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :documents, dependent: :destroy
+  has_many :verifications, dependent: :destroy
 
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true, format: {with: URI::MailTo::EMAIL_REGEXP}
   validates :password, allow_nil: true, length: {minimum: 12}
   validates :display_name, presence: true, length: {maximum: 100}
+  validates :username, presence: true, uniqueness: {case_sensitive: false}, format: {with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/}
   validates :bio, length: { maximum: 500 }, allow_blank: true
+  validates :api_token, uniqueness: true, allow_nil: true
 
   normalizes :email, with: -> { _1.strip.downcase }
+
+  before_validation :set_default_username, if: -> { username.blank? }
 
   before_validation if: :email_changed?, on: :update do
     self.verified = false
@@ -105,5 +111,21 @@ class User < ApplicationRecord
     slug.presence
   rescue URI::InvalidURIError
     nil
+  end
+
+  def set_default_username
+    base = display_name.presence || name.presence || email.to_s.split("@").first
+    base = "user" if base.blank?
+    slug = base.to_s.parameterize
+    slug = "user" if slug.blank?
+
+    candidate = slug
+    counter = 1
+    while self.class.where.not(id: id).exists?(username: candidate)
+      candidate = "#{slug}-#{counter}"
+      counter += 1
+    end
+
+    self.username = candidate
   end
 end

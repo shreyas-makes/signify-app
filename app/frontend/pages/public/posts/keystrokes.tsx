@@ -14,32 +14,9 @@ import { KeystrokeReplay } from '@/components/ui/keystroke-replay'
 import { VerifiedSessionCard } from '@/components/verified-session-card'
 import AppLayout from '@/layouts/app-layout'
 import { PublicPostFooter } from '@/components/public-post-footer'
+import { buildTimelineEvents, calculateTypingStatistics } from '@/lib/keystroke-analytics'
+import { formatDuration, getInitials } from '@/lib/proof-formatters'
 import type { Keystroke, PageProps, TimelineEvent, TypingStatistics } from '@/types'
-
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(part => part[0]?.toUpperCase() ?? '')
-    .slice(0, 2)
-    .join('') || 'WR'
-}
-
-function formatDuration(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return 'under 1s'
-  }
-
-  const totalSeconds = Math.round(seconds)
-  const minutes = Math.floor(totalSeconds / 60)
-  const remainderSeconds = Math.max(0, totalSeconds % 60)
-
-  if (minutes === 0) {
-    return `${remainderSeconds}s`
-  }
-
-  return `${minutes}m ${remainderSeconds.toString().padStart(2, '0')}s`
-}
 
 function extractPreviewParagraphs(rawContent: string, maxParagraphs = 4) {
   const stripped = rawContent
@@ -167,48 +144,10 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
 
 
   // Calculate typing statistics using all available keystrokes
-  const statistics = useMemo((): TypingStatistics => {
-    if (allKeystrokes.length === 0) {
-      return {
-        total_keystrokes: 0,
-        average_wpm: 0,
-        total_time_seconds: 0,
-        pause_count: 0,
-        backspace_count: 0,
-        correction_count: 0
-      }
-    }
-
-    const firstTimestamp = allKeystrokes[0].timestamp
-    const lastTimestamp = allKeystrokes[allKeystrokes.length - 1].timestamp
-    const totalTimeMs = lastTimestamp - firstTimestamp
-    const totalTimeSeconds = totalTimeMs / 1000
-
-    // Count backspaces and corrections
-    const backspaceCount = allKeystrokes.filter(k => k.key_code === 8).length
-    const correctionCount = allKeystrokes.filter(k => k.event_type === 'keydown' && k.key_code === 8).length
-
-    // Calculate pauses (gaps > 2 seconds between keystrokes)
-    let pauseCount = 0
-    for (let i = 1; i < allKeystrokes.length; i++) {
-      const timeDiff = allKeystrokes[i].timestamp - allKeystrokes[i - 1].timestamp
-      if (timeDiff > 2000) { // 2 seconds
-        pauseCount++
-      }
-    }
-
-    // Calculate WPM based on word count and time
-    const averageWpm = totalTimeSeconds > 0 ? (post.word_count / totalTimeSeconds) * 60 : 0
-
-    return {
-      total_keystrokes: allKeystrokes.length,
-      average_wpm: Math.round(averageWpm),
-      total_time_seconds: Math.round(totalTimeSeconds),
-      pause_count: pauseCount,
-      backspace_count: backspaceCount,
-      correction_count: correctionCount
-    }
-  }, [allKeystrokes, post.word_count])
+  const statistics = useMemo(
+    () => calculateTypingStatistics(allKeystrokes, post.word_count),
+    [allKeystrokes, post.word_count]
+  )
 
   const authorInitials = useMemo(() => getInitials(post.author.display_name), [post.author.display_name])
 
@@ -286,53 +225,10 @@ export default function PublicPostKeystrokes({ post, keystrokes, meta, paginatio
   }, [post.content, post.title, post.author.display_name, post.word_count])
 
   // Generate timeline events for visualization (use first chunk for performance)
-  const timelineEvents = useMemo((): TimelineEvent[] => {
-    const events: TimelineEvent[] = []
-    let currentEvent: TimelineEvent | null = null
-    const sampleKeystrokes = allKeystrokes.slice(0, 500) // Limit for performance
-    
-    for (let i = 0; i < sampleKeystrokes.length; i++) {
-      const keystroke = sampleKeystrokes[i]
-      const nextKeystroke = sampleKeystrokes[i + 1]
-      
-      if (keystroke.event_type === 'keydown') {
-        // Determine if this is a correction (backspace)
-        if (keystroke.key_code === 8) {
-          events.push({
-            timestamp: keystroke.timestamp,
-            type: 'correction'
-          })
-        } else {
-          // Regular typing
-          if (!currentEvent || currentEvent.type !== 'typing') {
-            currentEvent = {
-              timestamp: keystroke.timestamp,
-              type: 'typing',
-              keystrokes: 1
-            }
-            events.push(currentEvent)
-          } else {
-            currentEvent.keystrokes = (currentEvent.keystrokes ?? 0) + 1
-          }
-        }
-
-        // Check for pause after this keystroke
-        if (nextKeystroke) {
-          const timeDiff = nextKeystroke.timestamp - keystroke.timestamp
-          if (timeDiff > 2000) { // 2 second pause threshold
-            events.push({
-              timestamp: keystroke.timestamp + 100, // Small offset
-              type: 'pause',
-              duration: timeDiff
-            })
-            currentEvent = null // Reset current event
-          }
-        }
-      }
-    }
-
-    return events
-  }, [allKeystrokes])
+  const timelineEvents = useMemo(
+    () => buildTimelineEvents(allKeystrokes),
+    [allKeystrokes]
+  )
 
 
   // Download keystroke data as JSON

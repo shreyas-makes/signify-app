@@ -3,6 +3,8 @@
 require 'csv'
 
 class Api::V1::DataAccessController < ApplicationController
+  include Api::Cors
+
   skip_before_action :authenticate
   before_action :set_post
   before_action :apply_rate_limiting
@@ -50,9 +52,7 @@ class Api::V1::DataAccessController < ApplicationController
   end
 
   def set_cors_headers
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    apply_cors_headers(allowed_methods: "GET")
   end
 
   def render_json_data

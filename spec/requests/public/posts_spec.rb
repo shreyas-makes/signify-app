@@ -95,6 +95,44 @@ RSpec.describe 'Public::Posts', type: :request do
     end
   end
 
+  describe 'POST /posts/:public_slug/kudos' do
+    it 'creates kudos for a visitor and sets a visitor cookie' do
+      expect {
+        post public_post_kudos_path(published_document.public_slug)
+      }.to change { published_document.kudos.count }.by(1)
+
+      expect(response).to have_http_status(:created)
+      expect(response.headers['Set-Cookie']).to include(Public::PostsController::VISITOR_COOKIE_KEY.to_s)
+
+      json = JSON.parse(response.body)
+      expect(json['given']).to be true
+      expect(json['kudos_count']).to eq(published_document.reload.kudos_count)
+    end
+
+    it 'does not create duplicate kudos for the same visitor' do
+      cookies.signed[Public::PostsController::VISITOR_COOKIE_KEY] = 'visitor-123'
+
+      post public_post_kudos_path(published_document.public_slug)
+      expect(response).to have_http_status(:created)
+
+      expect {
+        post public_post_kudos_path(published_document.public_slug)
+      }.not_to change { published_document.kudos.count }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json['given']).to be true
+    end
+
+    it 'returns 404 for non-existent posts' do
+      post public_post_kudos_path('missing-post')
+
+      expect(response).to have_http_status(:not_found)
+      json = JSON.parse(response.body)
+      expect(json['error']).to eq('Post not found')
+    end
+  end
+
   describe 'Security and Performance' do
     it 'does not expose private document data' do
       get public_posts_path
