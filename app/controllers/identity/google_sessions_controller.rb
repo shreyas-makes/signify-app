@@ -40,7 +40,8 @@ class Identity::GoogleSessionsController < InertiaController
     session_record = user.sessions.create!
     cookies.signed.permanent[:session_token] = {value: session_record.id, httponly: true}
 
-    redirect_path = user.admin? ? admin_dashboard_path : dashboard_path
+    redirect_path = session.delete(:after_sign_in_path)
+    redirect_path ||= user.admin? ? admin_dashboard_path : dashboard_path
     redirect_to redirect_path, notice: "Signed in successfully"
   rescue GoogleIDToken::ValidationError => e
     Rails.logger.warn("Google sign-in failed: #{e.message}")

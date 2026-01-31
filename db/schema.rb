@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_31_014000) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_31_021000) do
   create_table "documents", force: :cascade do |t|
     t.string "title", null: false
     t.text "content"
@@ -33,6 +33,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_31_014000) do
     t.index ["slug"], name: "index_documents_on_slug", unique: true
     t.index ["status"], name: "index_documents_on_status"
     t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "extension_auth_codes", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "code", null: false
+    t.string "state"
+    t.string "redirect_uri", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "redeemed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_extension_auth_codes_on_code", unique: true
+    t.index ["expires_at"], name: "index_extension_auth_codes_on_expires_at"
+    t.index ["user_id"], name: "index_extension_auth_codes_on_user_id"
   end
 
   create_table "keystrokes", force: :cascade do |t|
@@ -108,6 +122,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_31_014000) do
   end
 
   add_foreign_key "documents", "users"
+  add_foreign_key "extension_auth_codes", "users"
   add_foreign_key "keystrokes", "documents"
   add_foreign_key "keystrokes", "verifications"
   add_foreign_key "kudos", "documents"

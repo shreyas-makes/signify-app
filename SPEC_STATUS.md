@@ -43,6 +43,8 @@ This file tracks progress against `SPEC.md`.
 - [x] `POST /api/v1/verifications`
 - [x] Verification model/data fields
 - [x] Response returns id/status/public_url
+- [x] API token auth + CORS allowlist for extension
+- [x] Extension auth handshake (one-time code + redirect)
 
 ## 7) Public Pages
 - [x] Verification page `/p/:id`
@@ -58,3 +60,6 @@ This file tracks progress against `SPEC.md`.
 - [x] `/p/:id` loads
 - [ ] No capture on other sites
 - [ ] Privacy tooltip visible
+
+## 10) Tests
+- [x] Extension auth flow request specs (auth page + code exchange)

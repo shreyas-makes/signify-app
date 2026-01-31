@@ -48,12 +48,17 @@ Rails.application.routes.draw do
   get "authors/:id", to: "public/authors#show", as: :public_author
   get "p/:public_id", to: "public/verifications#show", as: :public_verification
   get "u/:username", to: "public/user_feeds#show", as: :public_user_feed
+
+  get "extension/auth", to: "extension/auth#show", as: :extension_auth
+  post "extension/auth", to: "extension/auth#create"
   
   # Data access and verification API
   namespace :api do
     namespace :v1 do
       resources :verifications, only: [:create]
       match "verifications", to: "verifications#options", via: :options
+      post "extension_tokens", to: "extension_tokens#create"
+      match "extension_tokens", to: "extension_tokens#options", via: :options
       resources :posts, only: [], param: :public_slug do
         member do
           get :data, to: "data_access#show"

@@ -119,6 +119,22 @@ Response:
 }
 ```
 
+### Authentication (extension)
+- Accept `Authorization: Bearer <api_token>` or `X-API-Token: <api_token>`
+- Tokens are per-user; extension stores the token locally
+- CORS allowlist via `SIGNIFY_EXTENSION_ORIGINS` for chrome-extension origins
+- Redirect allowlist via `SIGNIFY_EXTENSION_REDIRECT_URIS`
+  - Example: `chrome-extension://ldhnipnockdjddnkmedmooobhkghddee/auth.html`
+
+### Extension auth handshake (one-time code)
+1) Extension opens `GET /extension/auth?state=<state>&redirect_uri=<chrome-extension://.../auth.html>`
+2) User signs in and confirms on the Signify page
+3) Signify redirects to `redirect_uri?code=<one-time-code>&state=<state>`
+4) Extension exchanges code: `POST /api/v1/extension_tokens` → `{ api_token }`
+
+### Backend coverage
+- Request specs cover extension auth confirmation + code exchange
+
 ### Data model
 - New `Verification` (or reuse `Document` if already exists)
   - user_id
