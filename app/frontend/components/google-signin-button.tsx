@@ -72,7 +72,7 @@ export default function GoogleSignInButton({ className }: GoogleSignInButtonProp
         google.renderButton(googleButtonRef.current, {
           theme: "outline",
           size: "large",
-          width: buttonWidth,
+          width: `${buttonWidth}`,
           text: "continue_with",
         })
         googleInitialized.current = true

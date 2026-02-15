@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import { Search, Verified, Clock3, FileText, Sparkles, X } from 'lucide-react'
 import type React from 'react';
 import { useState, useRef, useEffect, useMemo } from 'react'

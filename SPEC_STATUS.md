@@ -10,19 +10,19 @@ This file tracks progress against `SPEC.md`.
 ---
 
 ## 1) Product Scope
-- [ ] Chrome extension (Manifest V3)
-- [ ] Twitter/X compose box detection
-- [ ] Inline Signify button (appears once typing starts)
-- [ ] Keystroke timing capture + paste detection
+- [~] Chrome extension (Manifest V3)
+- [~] Twitter/X compose box detection
+- [~] Inline Signify button (appears once typing starts)
+- [~] Keystroke timing capture + paste detection
 - [x] Verification record + public URL
-- [ ] Byline appended before publish
+- [~] Byline appended before publish
 - [x] Public verification page + user feed page
 
 ## 2) Privacy & Trust Model
-- [ ] Domain whitelist + composer-only capture
-- [ ] On-device processing
-- [ ] Send minimal payload only after click
-- [ ] Inline label + privacy tooltip/modal
+- [~] Domain whitelist + composer-only capture
+- [~] On-device processing
+- [~] Send minimal payload only after click
+- [~] Inline label + privacy tooltip/modal
 
 ## 3) Human-Written Rules
 - [x] `human_written` if no paste
@@ -34,10 +34,10 @@ This file tracks progress against `SPEC.md`.
 - [x] `/u/:username` feed route
 
 ## 5) Extension Architecture
-- [ ] MV3 manifest
-- [ ] Background script
-- [ ] Content script (Twitter)
-- [ ] Popup UI
+- [x] MV3 manifest
+- [x] Background script
+- [x] Content script (Twitter)
+- [x] Popup UI
 
 ## 6) Backend Changes
 - [x] `POST /api/v1/verifications`

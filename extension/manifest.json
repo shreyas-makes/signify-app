@@ -3,6 +3,19 @@
   "name": "Signify Extension (Dev)",
   "version": "0.0.1",
   "action": {
-    "default_title": "Signify"
-  }
+    "default_title": "Signify",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*", "https://x.com/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["http://localhost:3000/*", "https://signifywriting.com/*"]
 }

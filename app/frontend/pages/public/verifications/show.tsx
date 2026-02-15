@@ -45,7 +45,7 @@ interface Props {
   meta: MetaTags
 }
 
-export default function PublicVerificationShow({ verification, meta }: Props) {
+export default function PublicVerificationShow({ verification, keystrokes, meta }: Props) {
   const isMixed = verification.status === 'mixed'
   const statusLabel = isMixed ? 'Mixed' : 'Human Written'
   const statusDescription = isMixed

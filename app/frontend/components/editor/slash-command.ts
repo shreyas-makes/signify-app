@@ -196,7 +196,10 @@ export const SlashCommand = Extension.create({
     let items: CommandItem[] = []
     let latestProps: SuggestionProps | null = null
 
-    const selectItem = (index: number, props: SuggestionProps) => {
+    const selectItem = (
+      index: number,
+      props: { editor: SuggestionProps["editor"]; range: SuggestionProps["range"] }
+    ) => {
       const item = items[index]
       if (!item) return
       item.command({ editor: props.editor, range: props.range })
@@ -228,8 +231,8 @@ export const SlashCommand = Extension.create({
         char: "/",
         startOfLine: false,
         items: ({ query }) => getFilteredItems(query),
-        command: (props) => {
-          selectItem(selectedIndex, props)
+        command: ({ editor, range }) => {
+          selectItem(selectedIndex, { editor, range })
         },
         render: () => {
           return {

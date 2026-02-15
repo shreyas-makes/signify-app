@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react"
-import { FileText, Globe, Keyboard, Shield, Users } from "lucide-react"
+import { FileText, Globe, Keyboard, Users } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

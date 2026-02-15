@@ -5,6 +5,7 @@ export type SaveStatus = 'typing' | 'saving' | 'saved' | 'error'
 interface SaveData {
   document: {
     title: string
+    subtitle?: string
     content: string
   }
   keystrokes?: unknown[]
@@ -72,7 +73,8 @@ export function useAutoSave(options: AutoSaveOptions) {
     
     return (
       lastDataRef.current.document.title !== newData.document.title ||
-      lastDataRef.current.document.content !== newData.document.content
+      lastDataRef.current.document.content !== newData.document.content ||
+      lastDataRef.current.document.subtitle !== newData.document.subtitle
     )
   }, [])
 

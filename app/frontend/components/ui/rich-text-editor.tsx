@@ -1,5 +1,6 @@
 import Highlight from "@tiptap/extension-highlight"
 import Underline from "@tiptap/extension-underline"
+import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
 import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
@@ -69,7 +70,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     const editorProps = useMemo(() => {
       return {
         attributes: editorAttributes,
-        handleTextInput: (view, from, to, text) => {
+        handleTextInput: (view: EditorView, from: number, to: number, text: string) => {
           if (!sentenceCaseAfterPeriod) return false
           if (text.length !== 1 || !/[a-z]/.test(text)) return false
           const textBefore = view.state.doc.textBetween(0, from, "\n", "\n")

@@ -1,5 +1,4 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, CheckCircle2, Chrome, ShieldCheck } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -11,95 +10,6 @@ import type { SharedData } from '@/types'
 export default function Welcome() {
   const page = usePage<SharedData>()
   const { auth } = page.props
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null)
-  const heroLoopTimeoutRef = useRef<number | null>(null)
-  const heroPlayAttemptsRef = useRef(0)
-  const [heroAspectRatio, setHeroAspectRatio] = useState<number | null>(null)
-  const [heroVideoReady, setHeroVideoReady] = useState(false)
-
-  const requestHeroPlay = () => {
-    const video = heroVideoRef.current
-    if (!video) {
-      return
-    }
-    if (!video.muted) {
-      video.muted = true
-    }
-    const playPromise = video.play()
-    if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch(() => {})
-    }
-
-    if (video.paused && heroPlayAttemptsRef.current < 4) {
-      heroPlayAttemptsRef.current += 1
-      window.setTimeout(() => {
-        requestHeroPlay()
-      }, 350)
-    }
-  }
-
-  useEffect(() => {
-    requestHeroPlay()
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        requestHeroPlay()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibility)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibility)
-      if (heroLoopTimeoutRef.current !== null) {
-        window.clearTimeout(heroLoopTimeoutRef.current)
-        heroLoopTimeoutRef.current = null
-      }
-    }
-  }, [])
-
-  const handleHeroMetadata = () => {
-    const video = heroVideoRef.current
-    if (!video || !video.videoWidth || !video.videoHeight) {
-      return
-    }
-    setHeroAspectRatio(video.videoWidth / video.videoHeight)
-    if (Number.isFinite(video.duration) && video.duration > 0.4) {
-      const startAt = Math.min(1.2, Math.max(0.35, video.duration * 0.06))
-      video.currentTime = startAt
-    }
-    requestHeroPlay()
-  }
-
-  const handleHeroTimeUpdate = () => {
-    const video = heroVideoRef.current
-    if (!video) {
-      return
-    }
-    if (!Number.isFinite(video.duration) || video.duration <= 0) {
-      return
-    }
-    if (video.currentTime < video.duration - 0.08) {
-      return
-    }
-    if (heroLoopTimeoutRef.current !== null) {
-      return
-    }
-    video.pause()
-    heroLoopTimeoutRef.current = window.setTimeout(() => {
-      heroLoopTimeoutRef.current = null
-      video.currentTime = 0
-      requestHeroPlay()
-    }, 2500)
-  }
-
-  const handleHeroCanPlay = () => {
-    requestHeroPlay()
-  }
-
-  const handleHeroPlaying = () => {
-    setHeroVideoReady(true)
-  }
 
   return (
     <>
@@ -167,36 +77,6 @@ export default function Welcome() {
                 </div>
               </div>
 
-              <div className="relative mx-auto w-full max-w-4xl">
-                <div
-                  className="relative aspect-[16/9] overflow-hidden rounded-[28px] border border-border/50 bg-transparent shadow-[0_28px_70px_rgba(15,23,42,0.18)]"
-                  style={heroAspectRatio ? { aspectRatio: `${heroAspectRatio}` } : undefined}
-                >
-                  <video
-                    ref={heroVideoRef}
-                    className="h-full w-full scale-[0.96] object-contain"
-                    autoPlay
-                    muted
-                    defaultMuted
-                    playsInline
-                    preload="metadata"
-                    poster="/hero-remotion-poster.jpg"
-                    onLoadedMetadata={handleHeroMetadata}
-                    onLoadedData={handleHeroCanPlay}
-                    onCanPlay={handleHeroCanPlay}
-                    onPlaying={handleHeroPlaying}
-                    onTimeUpdate={handleHeroTimeUpdate}
-                  >
-                    <source src="/hero-remotion.mp4" type="video/mp4" />
-                    <source src="/hero-remotion.webm" type="video/webm" />
-                  </video>
-                  {!heroVideoReady ? (
-                    <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-[0.4em] text-muted-foreground">
-                      Loading
-                    </div>
-                  ) : null}
-                </div>
-              </div>
             </div>
           </section>
 

@@ -16,7 +16,7 @@ import AppLayout from '@/layouts/app-layout'
 import { PublicPostFooter } from '@/components/public-post-footer'
 import { buildTimelineEvents, calculateTypingStatistics } from '@/lib/keystroke-analytics'
 import { formatDuration, getInitials } from '@/lib/proof-formatters'
-import type { Keystroke, PageProps, TimelineEvent, TypingStatistics } from '@/types'
+import type { Keystroke, PageProps } from '@/types'
 
 function extractPreviewParagraphs(rawContent: string, maxParagraphs = 4) {
   const stripped = rawContent
